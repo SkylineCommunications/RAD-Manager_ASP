@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RAD Manager", "RAD Manager\RAD Manager.csproj", "{C56BB51F-1C1F-408A-B74D-5EE1F3F93968}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddRADParameterGroup", "AddRADParameterGroup\AddRADParameterGroup.csproj", "{975A6024-2DE2-4F80-BFCE-FE9E78A8190D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoveRADParameterGroup", "RemoveRADParameterGroup\RemoveRADParameterGroup.csproj", "{6F116D77-51AE-4346-9F24-249592C3ECFA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C56BB51F-1C1F-408A-B74D-5EE1F3F93968}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C56BB51F-1C1F-408A-B74D-5EE1F3F93968}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C56BB51F-1C1F-408A-B74D-5EE1F3F93968}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C56BB51F-1C1F-408A-B74D-5EE1F3F93968}.Release|Any CPU.Build.0 = Release|Any CPU
+		{975A6024-2DE2-4F80-BFCE-FE9E78A8190D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{975A6024-2DE2-4F80-BFCE-FE9E78A8190D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{975A6024-2DE2-4F80-BFCE-FE9E78A8190D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{975A6024-2DE2-4F80-BFCE-FE9E78A8190D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F116D77-51AE-4346-9F24-249592C3ECFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F116D77-51AE-4346-9F24-249592C3ECFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F116D77-51AE-4346-9F24-249592C3ECFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F116D77-51AE-4346-9F24-249592C3ECFA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
