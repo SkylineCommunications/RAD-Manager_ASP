@@ -37,7 +37,7 @@ title: RAD Manager
 # [Optional]
 # General information about the Catalog item.
 #   Max length: 100,000 characters
-short_description: This is a custom solution for DataMiner.
+short_description: Low-code app to manage Relational Anomaly Detection configuration
 # [Optional]
 # A valid URL that points to the source code.
 #   A valid URL
@@ -56,7 +56,8 @@ documentation_url:
 #   The name is required; max 256 characters.
 #   The email and URL are optional, and should be in valid email/URL formats.
 owners:
-  - name: 'Tobe Deprez'
+  - name: 'Tobe Deprez <tobe.deprez@skyline.be>'
+  - name: 'Dennis Dreesen <dennis.dreesen@skyline.be>'
 # [Optional]
 # Tags that allow you to categorize your Catalog items.
 #   Max number of tags: 5
