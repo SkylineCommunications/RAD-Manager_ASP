@@ -18,7 +18,7 @@ namespace RemoveRADParameterGroup
             GroupName = groupName;
             DataMinerID = dataMinerID;
 
-            var label = new Label($"Are you sure you want to the parameter group '{groupName}' from Relational Anomaly Detection?");
+            var label = new Label($"Are you sure you want to remove the parameter group '{groupName}' from Relational Anomaly Detection?");
             
             var noButton = new Button("No");
             noButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
