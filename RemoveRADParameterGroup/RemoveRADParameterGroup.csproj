@@ -11,7 +11,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.3" />
-		<PackageReference Include="Skyline.DataMiner.Internal.SLAnalyticsTypes" Version="10.5.2509-1752" />
+		<PackageReference Include="Skyline.DataMiner.Internal.SLAnalyticsTypes" Version="10.5.2510-1176" />
 		<PackageReference Include="Skyline.DataMiner.Utils.InteractiveAutomationScriptToolkit" Version="10.0.5" />
 		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="1.2.2">
 			<PrivateAssets>all</PrivateAssets>
