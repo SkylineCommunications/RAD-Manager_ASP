@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RelationalAnomalyScoreDataSource")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7fd7d4d26120cceccdb8a7d0f05779d47821d08")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b15aecae44b1008fbe47d5856109d01d10fd9b0")]
 [assembly: System.Reflection.AssemblyProductAttribute("RelationalAnomalyScoreDataSource")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RelationalAnomalyScoreDataSource")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
