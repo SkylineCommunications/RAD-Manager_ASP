@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RelationalGroupInfoDataSource</name>
+    </assembly>
+    <members>
+        <member name="T:RelationalGroupInfoDataSource.RelationalGroupInfoDataSource">
+            <summary>
+            The input is a group name. We return a table with the parameter keys, element names and parameter names for the selected group.
+            </summary>
+        </member>
+    </members>
+</doc>

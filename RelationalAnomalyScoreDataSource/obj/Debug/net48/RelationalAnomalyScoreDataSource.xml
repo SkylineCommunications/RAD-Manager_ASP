@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RelationalAnomalyScoreDataSource</name>
+    </assembly>
+    <members>
+        <member name="T:RelationalAnomalyScoreDataSource.RelationalAnomalyScoreDataSource">
+            <summary>
+            Represents a DataMiner Automation script.
+            </summary>
+        </member>
+    </members>
+</doc>

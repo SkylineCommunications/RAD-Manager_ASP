@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RelationalAnomalyGroupsDataSource</name>
+    </assembly>
+    <members>
+        <member name="T:RelationalAnomalyGroupsDataSource.RelationalAnomalyGroupsDataSource">
+            <summary>
+            We return a table with the group names, their parameters, updateModel value and AnomalyThreshold for all configured groups.
+            </summary>
+        </member>
+    </members>
+</doc>
