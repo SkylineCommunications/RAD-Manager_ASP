@@ -96,8 +96,9 @@ public class Script
         catch (Exception ex)
         {
 			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
+			exceptionDialog.Title = "Failed to remove parameter group from RAD configuration";
 			app.ShowDialog(exceptionDialog);
-			exceptionDialog.Forward += (s, args) => app.Engine.ExitFail("Failed to remove parameter group from RAD configuration");
+			exceptionDialog.OkButton.Pressed += (s, args) => app.Engine.ExitSuccess("Failed to remove parameter group from RAD configuration");
 			return;
 		}
 
