@@ -92,20 +92,16 @@ public class Script
                 DataMinerID = dialog.DataMinerID
             };
             app.Engine.SendSLNetSingleResponseMessage(message);
-			app.Engine.ExitSuccess("Successfully removed parameter group");
 		}
-		catch (Exception ex)
+        catch (Exception ex)
         {
 			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
-			app.ShowDialog(dialog);
-			exceptionDialog.Forward += (s, args) => app.Engine.ExitFail("Exception occurred"); 
-			
-        }
-    }
+			app.ShowDialog(exceptionDialog);
+			exceptionDialog.Forward += (s, args) => app.Engine.ExitFail("Failed to remove parameter group from RAD configuration");
+			return;
+		}
 
-	private void ExceptionDialog_Forward(object sender, EventArgs e)
-	{
-		throw new NotImplementedException();
+		app.Engine.ExitSuccess("Successfully removed parameter group from RAD configuration");
 	}
 }
 

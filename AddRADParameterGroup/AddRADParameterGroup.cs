@@ -65,15 +65,8 @@ public class Script
     private void AddGroup(string groupName, List<ParameterKey> parameters, bool updateModel, double? anomalyThreshold, int? minimalDuration)
     {
         var groupInfo = new MADGroupInfo(groupName, parameters, updateModel, anomalyThreshold, minimalDuration);
-        try
-        {
-            var message = new AddMADParameterGroupMessage(groupInfo);
-            app.Engine.SendSLNetSingleResponseMessage(message);
-        }
-        catch (Exception e)
-        {
-            app.ShowDialog(new ExceptionDialog(app.Engine, e));
-        }
+        var message = new AddMADParameterGroupMessage(groupInfo);
+        app.Engine.SendSLNetSingleResponseMessage(message);
     }
 
     private List<ParameterKey> GetParameterKeys(int dataMinerID, int elementID, int parameterID, string displayKeyFilter)
@@ -118,23 +111,33 @@ public class Script
         if (dialog == null)
             throw new ArgumentException("Invalid sender type");
 
-        if (dialog.AddType == AddGroupType.Single)
-        {
-            var pKeys = dialog.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
-            AddGroup(dialog.GroupName, pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
-            app.Engine.ExitSuccess("Successfully added parameter group to RAD configuration");
-        }
-        else
-        {
-            var elements = app.Engine.FindElementsByProtocol(dialog.ProtocolName, dialog.ProtocolVersion);
-            foreach (var element in elements)
-            {
-                var pKeys = dialog.ProtolParameters.SelectMany(p => GetParameterKeys(element.DmaId, element.ElementId, p.ParameterID, p.DisplayKeyFilter)).ToList();
-                AddGroup($"{dialog.GroupName} ({element.ElementName})", pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
-            }
-            app.Engine.ExitSuccess($"Successfully added {elements.Length} parameter groups to RAD configuration");
-        }
-    }
+		try
+		{
+			if (dialog.AddType == AddGroupType.Single)
+			{
+				var pKeys = dialog.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
+				AddGroup(dialog.GroupName, pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
+			}
+			else
+			{
+				var elements = app.Engine.FindElementsByProtocol(dialog.ProtocolName, dialog.ProtocolVersion);
+				foreach (var element in elements)
+				{
+					var pKeys = dialog.ProtolParameters.SelectMany(p => GetParameterKeys(element.DmaId, element.ElementId, p.ParameterID, p.DisplayKeyFilter)).ToList();
+					AddGroup($"{dialog.GroupName} ({element.ElementName})", pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
+			app.ShowDialog(exceptionDialog);
+			exceptionDialog.Forward += (s, args) => app.Engine.ExitFail("Failed to add parameter group(s) to RAD configuration");
+			return;
+		}
+
+		app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+	}
 
     //TODO: remove reference to internal SLAnalyticsTypes
 }
