@@ -32,9 +32,17 @@ public class Script
             string groupName = app.Engine.GetScriptParam("GroupName")?.Value;
             if (string.IsNullOrEmpty(groupName))
                 throw new ArgumentException("GroupName parameter is required");
-            string dataMinerIDStr = app.Engine.GetScriptParam("DataMinerID")?.Value;
-            if (string.IsNullOrEmpty(dataMinerIDStr))
+			if (groupName.StartsWith("[\"", StringComparison.Ordinal) && groupName.EndsWith("\"]", StringComparison.Ordinal))
+			{
+				groupName = groupName.Substring(2, groupName.Length - 4);
+			}
+			string dataMinerIDStr = app.Engine.GetScriptParam("DataMinerID")?.Value;
+			if (string.IsNullOrEmpty(dataMinerIDStr))
                 throw new ArgumentException("DataMinerID parameter is required");
+			if(dataMinerIDStr.StartsWith("[\"", StringComparison.Ordinal) && dataMinerIDStr.EndsWith("\"]", StringComparison.Ordinal))
+			{
+				dataMinerIDStr=dataMinerIDStr.Substring(2,dataMinerIDStr.Length - 4);
+			}
             if (!int.TryParse(dataMinerIDStr, out int dataMinerID))
                 throw new ArgumentException($"DataMinerID parameter is not a valid number, got '{dataMinerIDStr}'");
 
@@ -68,7 +76,7 @@ public class Script
 
     private void Dialog_Cancelled(object sender, EventArgs e)
     {
-        app.Engine.ExitSuccess("Adding parameter group cancelled");
+        app.Engine.ExitSuccess("Removing parameter group cancelled");
     }
 
     private void Dialog_Accepted(object sender, EventArgs e)
@@ -84,12 +92,21 @@ public class Script
                 DataMinerID = dialog.DataMinerID
             };
             app.Engine.SendSLNetSingleResponseMessage(message);
-        }
-        catch (Exception ex)
+			app.Engine.ExitSuccess("Successfully removed parameter group");
+		}
+		catch (Exception ex)
         {
-            app.ShowDialog(new ExceptionDialog(app.Engine, ex));
+			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
+			app.ShowDialog(dialog);
+			exceptionDialog.Forward += (s, args) => app.Engine.ExitFail("Exception occurred"); 
+			
         }
     }
+
+	private void ExceptionDialog_Forward(object sender, EventArgs e)
+	{
+		throw new NotImplementedException();
+	}
 }
 
 //TODO: remove nuget package for SLAnalyticsTypes
