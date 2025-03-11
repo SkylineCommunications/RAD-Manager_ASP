@@ -161,7 +161,7 @@ namespace RelationalGroupInfoDataSource
 			}
 
 			var paramInfo = parameterInfos.FirstOrDefault(p => p.ID == paramKey.ParameterID);
-			return paramInfo?.Name ?? "Unknown Parameter";
+			return paramInfo?.DisplayName ?? "Unknown Parameter";
 		}
 
 		#endregion

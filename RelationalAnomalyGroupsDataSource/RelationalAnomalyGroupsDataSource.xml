@@ -5,7 +5,7 @@
 	<Type>Automation</Type>
 	<Author>DDR</Author>
 	<CheckSets>FALSE</CheckSets>
-	<Folder></Folder>
+	<Folder>DataMiner Catalog\RAD Manager</Folder>
 
 	<Protocols>
 	</Protocols>

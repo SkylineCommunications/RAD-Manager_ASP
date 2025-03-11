@@ -52,7 +52,7 @@ namespace RADWidgets
 		private void RemoveButton_Pressed(object sender, EventArgs e)
 		{
 			var newItems = selectedItemsView_.Items.Where(i => !i.IsChecked).ToList();
-			if (selectedItemsView_.Items.Count() != newItems.Count())
+			if (selectedItemsView_.Items.Count() != newItems.Count)
 			{
 				foreach (var item in selectedItemsView_.Items.Where(i => i.IsChecked))
 					selectedItems_.Remove(item.KeyValue);

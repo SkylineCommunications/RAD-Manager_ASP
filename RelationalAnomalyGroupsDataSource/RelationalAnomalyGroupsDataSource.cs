@@ -47,7 +47,7 @@ namespace RelationalAnomalyGroupsDataSource
 						new GQICell(){Value=dataMinerID,},
 						new GQICell(){Value=parameterString,},
 						new GQICell(){Value=groupInfo.UpdateModel.ToString(),},
-						new GQICell(){Value=groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,},
+						new GQICell(){Value=groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? "3",},
 					}
 					));
 			}
