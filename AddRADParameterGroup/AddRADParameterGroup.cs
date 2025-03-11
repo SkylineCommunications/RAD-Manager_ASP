@@ -1,4 +1,5 @@
 using AddParameterGroup;
+using RADWidgets;
 using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
@@ -130,10 +131,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
-			exceptionDialog.Title = "Failed to add parameter group(s) to RAD configuration";
-			app.ShowDialog(exceptionDialog);
-			exceptionDialog.OkButton.Pressed += (s, args) => app.Engine.ExitSuccess("Failed to add parameter group(s) to RAD configuration");
+			Utils.ShowExceptionDialog(app, "Failed to add parameter group(s) to RAD configuration", ex);
 			return;
 		}
 
