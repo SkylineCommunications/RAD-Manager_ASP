@@ -35,7 +35,7 @@ namespace RetrainRADModel
 
 			Title = $"Retrain model for parameter group '{groupName}'";
 
-			var label = new Label($"Retrain the model using the following well-behaved time ranges:");//TODO: good text?
+			var label = new Label($"Retrain the model using the following well-behaved time ranges:");
 
 			timeRangeSelector_ = new MultiTimeRangeSelector(engine);
 			timeRangeSelector_.Changed += (sender, args) => OnTimeRangeSelectorChanged();

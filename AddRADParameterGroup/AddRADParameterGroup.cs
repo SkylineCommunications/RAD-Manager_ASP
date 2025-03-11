@@ -139,6 +139,4 @@ public class Script
 
 		app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
 	}
-
-    //TODO: remove reference to internal SLAnalyticsTypes
 }

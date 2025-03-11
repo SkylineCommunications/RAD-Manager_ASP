@@ -78,10 +78,10 @@ namespace RADWidgets
 				MinHeight = 100
 			};
 
-			var addButton = new Button("Add parameter");
+			var addButton = new Button("Add");
 			addButton.Pressed += AddButton_Pressed;
 
-			var removeButton = new Button("Remove parameter");
+			var removeButton = new Button("Remove");
 			removeButton.Pressed += RemoveButton_Pressed;
 
 			int row = 0;

@@ -105,5 +105,3 @@ public class Script
 		app.Engine.ExitSuccess("Successfully removed parameter group from RAD configuration");
 	}
 }
-
-//TODO: remove nuget package for SLAnalyticsTypes

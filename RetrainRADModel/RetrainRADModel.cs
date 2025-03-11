@@ -101,5 +101,3 @@ public class Script
 		app.Engine.ExitSuccess("Successfully retrained RAD model");
 	}
 }
-
-//TODO: remove nuget package for SLAnalyticsTypes
