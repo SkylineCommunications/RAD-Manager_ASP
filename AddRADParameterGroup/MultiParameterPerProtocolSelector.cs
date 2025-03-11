@@ -16,7 +16,7 @@ namespace AddParameterGroup
 
         public string ProtocolName => protocolNameDropDown_.Selected?.Protocol;
         public string ProtocolVersion => protocolVersionDropDown_.Selected;
-        public List<SlimProtocolParameterSelectorInfo> SelectedParameters => parameterSelector_.SelectedParameters;
+        public List<ProtocolParameterSelectorInfo> SelectedParameters => parameterSelector_.SelectedItems;
 
         public event EventHandler Changed;
 
@@ -76,11 +76,6 @@ namespace AddParameterGroup
             AddWidget(protocolVersionDropDown_, 1, 1, 1, parameterSelector_.ColumnCount - 1);
 
             AddSection(parameterSelector_, 2, 0);
-        }
-
-        private void ParameterSelector__Changed(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
     }
 }

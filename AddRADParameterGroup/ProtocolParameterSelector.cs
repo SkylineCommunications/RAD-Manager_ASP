@@ -1,4 +1,5 @@
-﻿using Skyline.DataMiner.Automation;
+﻿using RADWidgets;
+using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 using System;
@@ -6,44 +7,21 @@ using System.Text.RegularExpressions;
 
 namespace AddParameterGroup
 {
-    public class SlimProtocolParameterSelectorInfo : ParameterSelectorBaseInfo
-    {
-        public int ParameterID { get; set; }
-        public string DisplayKeyFilter { get; set; }
-
-        public override string ToString()
-        {
-            return ToParsableString();
-        }
-
-        public override string ToParsableString()
-        {
-            if (!string.IsNullOrEmpty(DisplayKeyFilter))
-                return $"{ParameterID}/{DisplayKeyFilter}";
-            else
-                return $"{ParameterID}";
-        }
-
-        public static SlimProtocolParameterSelectorInfo Parse(string s)
-        {
-            var parts = s.Split(new char[] { '/' }, 2);
-            if (!int.TryParse(parts[0], out int parameterId))
-                throw new ArgumentException($"Invalid parameter ID {parts[0]} in {s}");
-            string instance = parts.Length == 2 ? parts[1] : "";
-            
-            return new SlimProtocolParameterSelectorInfo()
-            {
-                ParameterID = parameterId,
-                DisplayKeyFilter = instance
-            };
-        }
-    }
-
-    public class ProtocolParameterSelectorInfo : SlimProtocolParameterSelectorInfo
+    public class ProtocolParameterSelectorInfo : MultiSelectorItem
     {
         public string ParameterName { get; set; }
+		public int ParameterID { get; set; }
+		public string DisplayKeyFilter { get; set; }
 
-        public override string ToString()
+		public override string GetKey()
+		{
+			if (!string.IsNullOrEmpty(DisplayKeyFilter))
+				return $"{ParameterID}/{DisplayKeyFilter}";
+			else
+				return $"{ParameterID}";
+		}
+
+		public override string GetDisplayValue()
         {
             if (!string.IsNullOrEmpty(DisplayKeyFilter))
                 return $"{ParameterName}/{DisplayKeyFilter}";
@@ -52,10 +30,10 @@ namespace AddParameterGroup
         }
     }
 
-    public class ProtocolParameterSelector : ParameterSelectorBase
+    public class ProtocolParameterSelector : ParameterSelectorBase<ProtocolParameterSelectorInfo>
     {
-        public override ParameterSelectorBaseInfo Parameter
-        {
+        public override ProtocolParameterSelectorInfo SelectedItem
+		{
             get
             {
                 var parameter = parametersDropDown_.Selected;

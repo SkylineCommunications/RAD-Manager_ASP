@@ -25,6 +25,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelationalTrendDataSource", "RelationalTrendDataSource\RelationalTrendDataSource.csproj", "{034802A9-ED06-4005-A66B-C6B0833D0EC5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelationalAnomalyScoreDataSource", "RelationalAnomalyScoreDataSource\RelationalAnomalyScoreDataSource.csproj", "{6ACAC0BA-48D9-4827-A1C8-E16164035E67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetrainRADModel", "RetrainRADModel\RetrainRADModel.csproj", "{D82E4480-9933-4966-997A-B19AE14ADCAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RADWidgets", "RADWidgets\RADWidgets.csproj", "{391C490F-138C-4CD1-90F2-5514F6C8315A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +63,14 @@ Global
 		{6ACAC0BA-48D9-4827-A1C8-E16164035E67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ACAC0BA-48D9-4827-A1C8-E16164035E67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ACAC0BA-48D9-4827-A1C8-E16164035E67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D82E4480-9933-4966-997A-B19AE14ADCAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D82E4480-9933-4966-997A-B19AE14ADCAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D82E4480-9933-4966-997A-B19AE14ADCAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D82E4480-9933-4966-997A-B19AE14ADCAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{391C490F-138C-4CD1-90F2-5514F6C8315A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{391C490F-138C-4CD1-90F2-5514F6C8315A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{391C490F-138C-4CD1-90F2-5514F6C8315A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{391C490F-138C-4CD1-90F2-5514F6C8315A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

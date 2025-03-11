@@ -32,10 +32,10 @@ namespace AddParameterGroup
 
         public AddGroupType AddType => addTypeDropDown_.Selected;
         public string GroupName => groupNameTextBox_.Text;
-        public List<SlimParameterSelectorInfo> Parameters => parameterSelector_.SelectedParameters;
+        public List<ParameterSelectorInfo> Parameters => parameterSelector_.SelectedItems;
         public string ProtocolName => parameterPerProtocolSelector_.ProtocolName;
         public string ProtocolVersion => parameterPerProtocolSelector_.ProtocolVersion;
-        public List<SlimProtocolParameterSelectorInfo> ProtolParameters => parameterPerProtocolSelector_.SelectedParameters;
+        public List<ProtocolParameterSelectorInfo> ProtolParameters => parameterPerProtocolSelector_.SelectedParameters;
         public bool UpdateModel => updateModelCheckBox_.IsChecked;
         public double? AnomalyThreshold
         {
@@ -64,7 +64,7 @@ namespace AddParameterGroup
         {
             bool parametersSelected;
             if (addTypeDropDown_.Selected == AddGroupType.Single)
-                parametersSelected = parameterSelector_.SelectedParameters.Count > 0;
+                parametersSelected = parameterSelector_.SelectedItems.Count > 0;
             else
                 parametersSelected = parameterPerProtocolSelector_.SelectedParameters.Count > 0;
             okButton_.IsEnabled = !string.IsNullOrEmpty(GroupName) && parametersSelected;

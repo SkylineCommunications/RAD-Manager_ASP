@@ -1,4 +1,5 @@
-﻿using Skyline.DataMiner.Automation;
+﻿using RADWidgets;
+using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 using System.Collections.Generic;
@@ -6,19 +7,11 @@ using System.Linq;
 
 namespace AddParameterGroup
 {
-    public abstract class ParameterSelectorBaseInfo
-    {
-        public abstract override string ToString();
-        public abstract string ToParsableString();
-    }
-
-    public abstract class ParameterSelectorBase : Section
+    public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T> where T: MultiSelectorItem
     {
         protected IEngine engine_;
         protected DropDown<ParameterInfo> parametersDropDown_;
         protected TextBox instanceTextBox_;
-
-        public abstract ParameterSelectorBaseInfo Parameter { get; }
 
         protected void OnSelectedParameterChanged()
         {

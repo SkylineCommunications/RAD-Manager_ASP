@@ -1,63 +1,29 @@
-﻿using Skyline.DataMiner.Analytics.DataTypes;
+﻿using RADWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace AddParameterGroup
 {
-    public class SlimParameterSelectorInfo : ParameterSelectorBaseInfo
-    {
-        public int DataMinerID { get; set; }
-        public int ElementID { get; set; }
-        public int ParameterID { get; set; }
-        public string DisplayKeyFilter { get; set; }
-
-        public override string ToString()
-        {
-            return ToParsableString();
-        }
-
-        public override string ToParsableString()
-        {
-            if (!string.IsNullOrEmpty(DisplayKeyFilter))
-                return $"{DataMinerID}/{ElementID}/{ParameterID}/{DisplayKeyFilter}";
-            else
-                return $"{DataMinerID}/{ElementID}/{ParameterID}";
-        }
-
-        public static SlimParameterSelectorInfo Parse(string s)
-        {
-            var parts = s.Split(new char[] { '/' }, 4);
-            if (parts.Length < 3)
-                throw new ArgumentException($"Invalid parameter key format {s}");
-
-            if (!int.TryParse(parts[0], out int dataMinerId))
-                throw new ArgumentException($"Invalid DataMiner ID {parts[0]} in {s}");
-            if (!int.TryParse(parts[1], out int elementId))
-                throw new ArgumentException($"Invalid element ID {parts[1]} in {s}");
-            if (!int.TryParse(parts[2], out int parameterId))
-                throw new ArgumentException($"Invalid parameter ID {parts[2]} in {s}");
-            string instance = parts.Length == 4 ? parts[3] : "";
-
-            return new SlimParameterSelectorInfo()
-            {
-                DataMinerID = dataMinerId,
-                ElementID = elementId,
-                ParameterID = parameterId,
-                DisplayKeyFilter = instance
-            };
-        }
-    }
-
-    public class ParameterSelectorInfo : SlimParameterSelectorInfo
+    public class ParameterSelectorInfo : MultiSelectorItem
     {
         public string ElementName { get; set; }
         public string ParameterName { get; set; }
+		public int DataMinerID { get; set; }
+		public int ElementID { get; set; }
+		public int ParameterID { get; set; }
+		public string DisplayKeyFilter { get; set; }
 
-        public override string ToString()
+		public override string GetKey()
+		{
+			if (!string.IsNullOrEmpty(DisplayKeyFilter))
+				return $"{DataMinerID}/{ElementID}/{ParameterID}/{DisplayKeyFilter}";
+			else
+				return $"{DataMinerID}/{ElementID}/{ParameterID}";
+		}
+
+		public override string GetDisplayValue()
         {
             if (!string.IsNullOrEmpty(DisplayKeyFilter))
                 return $"{ElementName}/{ParameterName}/{DisplayKeyFilter}";
@@ -66,11 +32,11 @@ namespace AddParameterGroup
         }
     }
 
-    public class ParameterSelector : ParameterSelectorBase
-    {
+    public class ParameterSelector : ParameterSelectorBase<ParameterSelectorInfo>
+	{
         private DropDown<Element> elementsDropDown_;
 
-        public override ParameterSelectorBaseInfo Parameter
+		public override ParameterSelectorInfo SelectedItem
         {
             get
             {
