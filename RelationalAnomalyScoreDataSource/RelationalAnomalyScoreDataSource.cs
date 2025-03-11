@@ -157,10 +157,6 @@ namespace RelationalAnomalyScoreDataSource
 		{
 			var rows = new List<GQIRow>();
 			lastError_ = null;
-			GQICell[] cells = new GQICell[2];
-			cells[0] = new GQICell { Value = DateTime.Now.ToUniversalTime() };
-			cells[1] = new GQICell { Value = 0.0 };
-			rows.Add(new GQIRow(cells));
 			return new GQIPage(rows.ToArray());
 		}
 

@@ -112,22 +112,12 @@ namespace RelationalGroupInfoDataSource
 			var rows = new List<GQIRow>();
 			if (lastError_ != null)
 			{
-				var paramID = new ParamID(1, 1, 1, "");
-				var key = paramID.ToString();
-				var cells = new GQICell[]
-				{
-					new GQICell(){Value=lastError_,},
-					new GQICell(){Value=0,},
-					new GQICell(){Value=0,},
-					new GQICell(){Value=0,},
-					new GQICell(){Value=string.Empty,},
-					new GQICell(){Value=string.Empty,},
-					new GQICell(){Value=string.Empty,},
-					new GQICell(){Value=string.Empty,}
-				};
-				var parameterMetaData = new ObjectRefMetadata { Object = paramID };
-				var rowMetaData = new GenIfRowMetadata(new[] { parameterMetaData });
-				rows.Add(new GQIRow(key, cells) { Metadata = rowMetaData });
+				//var paramID = new ParamID(1, 1, 1, "");
+				//var key = paramID.ToString();
+				//var cells = new GQICell[0] { };
+				//var parameterMetaData = new ObjectRefMetadata { Object = paramID };
+				//var rowMetaData = new GenIfRowMetadata(new[] { parameterMetaData });
+				//rows.Add(new GQIRow(key, }) { Metadata = rowMetaData });
 				return new GQIPage(rows.ToArray());
 			}
 

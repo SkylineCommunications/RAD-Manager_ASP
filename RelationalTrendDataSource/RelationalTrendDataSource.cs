@@ -162,11 +162,6 @@ namespace RelationalTrendDataSource
 
 		public GQIColumn[] GetColumns()
 		{
-			if (lastError_.IsNotNullOrEmpty())
-			{
-				return new GQIColumn[] { new GQIStringColumn("Error") };
-			}
-
 			var columns = new List<GQIColumn>
 			{
 				new GQIDateTimeColumn("Time")
@@ -199,16 +194,7 @@ namespace RelationalTrendDataSource
 			}
 			catch (Exception ex)
 			{
-				lastError_ = ex.Message;
-				var cells = new GQICell[numberOfColums_];
-				cells[0] = new GQICell { Value = DateTime.UtcNow };
-				for (int i = 0; i < parameterIndices_.Count; ++i)
-				{
-					cells[i + 1] = new GQICell { Value = (i == 0) ? lastError_ : string.Empty };
-				}
-				lastError_ = null;
-				rows.Add(new GQIRow(cells));
-				return new GQIPage(rows.ToArray());
+				Error();
 			}
 			return new GQIPage(rows.ToArray());
 		}
@@ -219,9 +205,7 @@ namespace RelationalTrendDataSource
 		{
 			var error = lastError_;
 			lastError_ = null;
-			var errorRow = new GQICell[1];
-			errorRow[0] = new GQICell { Value = error.ToString() };
-			return new GQIPage(new GQIRow[1] { new GQIRow(errorRow) });
+			return new GQIPage(new GQIRow[0] {});
 		}
 
 		#endregion
