@@ -1,3 +1,4 @@
+using RADWidgets;
 using RemoveRADParameterGroup;
 using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.Mad;
@@ -5,8 +6,6 @@ using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 public class Script
 {
@@ -29,20 +28,14 @@ public class Script
         {
             app = new InteractiveController(engine);
 
-            string groupName = app.Engine.GetScriptParam("GroupName")?.Value;
-            if (string.IsNullOrEmpty(groupName))
-                throw new ArgumentException("GroupName parameter is required");
-			if (groupName.StartsWith("[\"", StringComparison.Ordinal) && groupName.EndsWith("\"]", StringComparison.Ordinal))
+            string groupName = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
+			string dataMinerIDStr = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
+			if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(dataMinerIDStr))
 			{
-				groupName = groupName.Substring(2, groupName.Length - 4);
+				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to remove first");
+				return;
 			}
-			string dataMinerIDStr = app.Engine.GetScriptParam("DataMinerID")?.Value;
-			if (string.IsNullOrEmpty(dataMinerIDStr))
-                throw new ArgumentException("DataMinerID parameter is required");
-			if(dataMinerIDStr.StartsWith("[\"", StringComparison.Ordinal) && dataMinerIDStr.EndsWith("\"]", StringComparison.Ordinal))
-			{
-				dataMinerIDStr=dataMinerIDStr.Substring(2,dataMinerIDStr.Length - 4);
-			}
+
             if (!int.TryParse(dataMinerIDStr, out int dataMinerID))
                 throw new ArgumentException($"DataMinerID parameter is not a valid number, got '{dataMinerIDStr}'");
 
@@ -95,10 +88,7 @@ public class Script
 		}
         catch (Exception ex)
         {
-			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
-			exceptionDialog.Title = "Failed to remove parameter group from RAD configuration";
-			app.ShowDialog(exceptionDialog);
-			exceptionDialog.OkButton.Pressed += (s, args) => app.Engine.ExitSuccess("Failed to remove parameter group from RAD configuration");
+			Utils.ShowExceptionDialog(app, "Failed to remove parameter group from RAD configuration", ex);
 			return;
 		}
 

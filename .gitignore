@@ -10,6 +10,10 @@ RADWidgets/bin
 RADWidgets/obj
 RetrainRADModel/bin
 RelationalAnomalyGroupsDataSource/obj
+RelationalAnomalyGroupsDataSource/bin
 RelationalAnomalyScoreDataSource/obj
+RelationalAnomalyScoreDataSource/bin
 RelationalGroupInfoDataSource/obj
+RelationalGroupInfoDataSource/bin
 RelationalTrendDataSource/obj
+RelationalTrendDataSource/bin
