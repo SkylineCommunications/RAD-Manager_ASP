@@ -4,6 +4,8 @@ using Skyline.DataMiner.Net.Helper;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using RelationalAnomalyGroupsDataSource;
+using Skyline.DataMiner.Net;
 
 namespace RelationalAnomalyScoreDataSource
 {
@@ -22,10 +24,13 @@ namespace RelationalAnomalyScoreDataSource
 		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
 		private IGQILogger logger_;
 		private GQIDMS dms_;
+		private static Connection connection_ = null;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
+			if (connection_ == null)
+				connection_ = ConnectionHelper.CreateConnection(dms_);
 			logger_ = args.Logger;
 			return default;
 		}
@@ -92,7 +97,7 @@ namespace RelationalAnomalyScoreDataSource
 				{
 					anomalyScoreData_.AnomalyScores.Clear();
 					GetMADDataMessage msg = new GetMADDataMessage(groupName_, DateTime.Now.AddMonths(-1), DateTime.Now);
-					var madDataReponse = dms_.SendMessage(msg) as GetMADDataResponseMessage;
+					var madDataReponse = connection_.HandleSingleResponseMessage(msg) as GetMADDataResponseMessage;
 					logger_.Error($"Number of points: {madDataReponse.Data.Count}");
 					if (madDataReponse?.Parameters != null)
 					{

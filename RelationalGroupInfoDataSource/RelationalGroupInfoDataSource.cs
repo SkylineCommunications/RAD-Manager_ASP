@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using RelationalAnomalyGroupsDataSource;
 using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Analytics.Mad;
@@ -26,9 +27,13 @@ namespace RelationalGroupInfoDataSource
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
 		Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
 		Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
+		private static Connection connection_ = null;
+
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
+			if (connection_ == null)
+				connection_ = ConnectionHelper.CreateConnection(dms_);
 			logger_ = args.Logger;
 			return default;
 		}
@@ -58,7 +63,7 @@ namespace RelationalGroupInfoDataSource
 				lastError_ = null;
 
 				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName_);
-				var groupInfoResponse = dms_.SendMessage(msg) as GetMADParameterGroupInfoResponseMessage;
+				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 
 				if (groupInfoResponse?.GroupInfo != null) //Fetch elementNames and protocol info
 				{
@@ -71,7 +76,7 @@ namespace RelationalGroupInfoDataSource
 						if (!elementNames_.ContainsKey(elementKey))
 						{
 							var elementRequest = new GetElementByIDMessage(paramKey.DataMinerID, paramKey.ElementID);
-							var elementResponse = dms_.SendMessage(elementRequest) as ElementInfoEventMessage;
+							var elementResponse = connection_.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
 							if (elementResponse != null)
 							{
 								elementNames_[elementKey] = elementResponse.Name;
@@ -82,7 +87,7 @@ namespace RelationalGroupInfoDataSource
 						if (!protocolCache_.ContainsKey(elementKey))
 						{
 							var protocolRequest = new GetElementProtocolMessage(paramKey.DataMinerID, paramKey.ElementID);
-							var protocolResponse = dms_.SendMessage(protocolRequest) as GetElementProtocolResponseMessage;
+							var protocolResponse = connection_.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
 							if (protocolResponse?.AllParameters != null)
 							{
 								protocolCache_[elementKey] = protocolResponse.AllParameters;

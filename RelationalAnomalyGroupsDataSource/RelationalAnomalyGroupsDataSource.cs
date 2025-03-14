@@ -7,6 +7,7 @@ using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
+using Skyline.DataMiner.Net;
 using Skyline.DataMiner.Net.Messages;
 
 namespace RelationalAnomalyGroupsDataSource
@@ -17,12 +18,13 @@ namespace RelationalAnomalyGroupsDataSource
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit
 	{
 		private GQIDMS dms_;
+		private static Connection connection_ = null;
 		private Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
 
 		public GQIColumn[] GetColumns()
 		{
 			return new GQIColumn[] { new GQIStringColumn("Name"), new GQIIntColumn("DataMiner Id"), new GQIStringColumn("Parameters"),
-				new GQIStringColumn("UpdateModel"), new GQIStringColumn("AnomalyThreshold")};
+				new GQIStringColumn("UpdateModel"), new GQIStringColumn("AnomalyThreshold"), new GQIStringColumn("Minimal Anomaly Duration")};
 		}
 
 		private string InnerParameterKeyToString(ParameterKey pKey, string elementName, ParameterInfo[] parameters)
@@ -53,12 +55,12 @@ namespace RelationalAnomalyGroupsDataSource
 			try
 			{
 				var elementRequest = new GetElementByIDMessage(pKey.DataMinerID, pKey.ElementID);
-				var elementResponse = dms_.SendMessage(elementRequest) as ElementInfoEventMessage;
+				var elementResponse = connection_.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
 				if (elementResponse == null)
 					return InnerParameterKeyToString(pKey, null, null);
 
 				var protocolRequest = new GetElementProtocolMessage(pKey.DataMinerID, pKey.ElementID);
-				var protocolResponse = dms_.SendMessage(protocolRequest) as GetElementProtocolResponseMessage;
+				var protocolResponse = connection_.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
 				if (protocolResponse == null)
 					return InnerParameterKeyToString(pKey, null, null);
 
@@ -76,15 +78,14 @@ namespace RelationalAnomalyGroupsDataSource
 			var rows = new List<GQIRow>();
 
 			GetMADParameterGroupsMessage request = new Skyline.DataMiner.Analytics.Mad.GetMADParameterGroupsMessage();
-			var response = dms_.SendMessage(request) as GetMADParameterGroupsResponseMessage;
+			var response = connection_.HandleSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
 			foreach (var groupName in response.GroupNames)
 			{
 				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName);
-				var groupInfoResponse = dms_.SendMessage(msg) as GetMADParameterGroupInfoResponseMessage;
+				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 				MADGroupInfo groupInfo = groupInfoResponse.GroupInfo;
 				var parameterStr = groupInfo.Parameters.Select(p => ParameterKeyToString(p));
 				int dataMinerID = groupInfo.Parameters.FirstOrDefault()?.DataMinerID ?? 0;
-
 				rows.Add(new GQIRow(
 					new GQICell[]
 					{
@@ -93,6 +94,7 @@ namespace RelationalAnomalyGroupsDataSource
 						new GQICell(){Value=$"[{string.Join(", ", parameterStr)}]",},
 						new GQICell(){Value=groupInfo.UpdateModel.ToString(),},
 						new GQICell(){Value=groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? "3",},
+						new GQICell(){Value=(groupInfo.MinimumAnomalyDuration?.ToString(CultureInfo.InvariantCulture) ?? "5")+" min",},
 					}
 					));
 			}
@@ -102,6 +104,8 @@ namespace RelationalAnomalyGroupsDataSource
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
+			if(connection_==null)
+				connection_= ConnectionHelper.CreateConnection(dms_);
 			return default;
 		}
 	}

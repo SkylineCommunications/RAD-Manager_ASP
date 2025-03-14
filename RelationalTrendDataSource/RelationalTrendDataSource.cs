@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using RelationalAnomalyGroupsDataSource;
 using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
+using Skyline.DataMiner.Net;
 using Skyline.DataMiner.Net.Helper;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Net.Messages.SLDataGateway;
@@ -30,11 +32,13 @@ namespace RelationalTrendDataSource
 		private int numberOfColums_ = 1;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
+		private static Connection connection_ = null;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
-			logger_ = args.Logger;
+			if (connection_ == null)
+				connection_ = ConnectionHelper.CreateConnection(dms_);
 			return default;
 		}
 
@@ -116,7 +120,7 @@ namespace RelationalTrendDataSource
 				{
 					logger_.Error("Fetching data");
 					GetMADDataMessage msg = new GetMADDataMessage(groupName_, DateTime.Now.AddMonths(-1), DateTime.Now);
-					var madDataReponse = dms_.SendMessage(msg) as GetMADDataResponseMessage;
+					var madDataReponse = connection_.HandleSingleResponseMessage(msg) as GetMADDataResponseMessage;
 					groupTrendData_ = new GroupTrendData(madDataReponse, groupName_);
 				}
 				else
