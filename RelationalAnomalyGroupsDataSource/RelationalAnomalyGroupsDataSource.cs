@@ -104,9 +104,16 @@ namespace RelationalAnomalyGroupsDataSource
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
-			if(connection_==null)
-				connection_= ConnectionHelper.CreateConnection(dms_);
+			InitializeConnection(dms_);
 			return default;
+		}
+
+		private static void InitializeConnection(GQIDMS dms)
+		{
+			if (connection_ == null)
+			{
+				connection_ = ConnectionHelper.CreateConnection(dms);
+			}
 		}
 	}
 }

@@ -37,9 +37,17 @@ namespace RelationalTrendDataSource
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
-			if (connection_ == null)
-				connection_ = ConnectionHelper.CreateConnection(dms_);
+			InitializeConnection(dms_);
+			logger_= args.Logger;
 			return default;
+		}
+
+		private static void InitializeConnection(GQIDMS dms)
+		{
+			if (connection_ == null)
+			{
+				connection_ = ConnectionHelper.CreateConnection(dms);
+			}
 		}
 
 		public GQIArgument[] GetInputArguments()
