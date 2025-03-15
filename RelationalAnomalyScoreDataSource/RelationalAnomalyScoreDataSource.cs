@@ -24,7 +24,7 @@ namespace RelationalAnomalyScoreDataSource
 		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
 		private IGQILogger logger_;
 		private GQIDMS dms_;
-		private static Connection connection_ = null;
+		private static Connection connection_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{

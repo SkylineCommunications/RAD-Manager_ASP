@@ -27,7 +27,7 @@
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
+				throw new InvalidOperationException("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
 			}
 		}
 

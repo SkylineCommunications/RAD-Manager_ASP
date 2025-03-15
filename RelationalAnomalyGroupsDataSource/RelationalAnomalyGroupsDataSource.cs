@@ -18,7 +18,7 @@ namespace RelationalAnomalyGroupsDataSource
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit
 	{
 		private GQIDMS dms_;
-		private static Connection connection_ = null;
+		private static Connection connection_;
 		private Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
 
 		public GQIColumn[] GetColumns()

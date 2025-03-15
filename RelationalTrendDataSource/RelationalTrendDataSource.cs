@@ -32,7 +32,7 @@ namespace RelationalTrendDataSource
 		private int numberOfColums_ = 1;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
-		private static Connection connection_ = null;
+		private static Connection connection_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{

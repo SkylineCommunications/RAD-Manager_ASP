@@ -27,7 +27,7 @@ namespace RelationalGroupInfoDataSource
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
 		Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
 		Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
-		private static Connection connection_ = null;
+		private static Connection connection_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
