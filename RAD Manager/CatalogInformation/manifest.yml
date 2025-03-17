@@ -17,7 +17,7 @@
 #   - User-Defined API: If the Catalog item is a DataMiner Automation script designed as a user-defined API.
 #   - Visual Overview: If the Catalog item is a Microsoft Visio design.
 # 
-type: Custom Solution
+type: Product Solution
 # [Required]
 # The ID of the Catalog item.
 # All registered versions for the same ID are shown together in the Catalog.
@@ -49,7 +49,7 @@ source_code_url:
 #   A valid URL
 #   Max length: 2048 characters
 #   Note: When Skyline Communications Reusable GitHub workflows are used, this will be automatically filled in.
-documentation_url: 
+documentation_url: https://docs.dataminer.services/user-guide/Basic_Functionality/Alarms/Working_with_alarms/Advanced_analytics_features/Relational_anomaly_detection.html
 # [Optional]
 # People who are responsible for this Catalog item. Might be developers, but this is not required.
 # Format: 'name <email> (URL)'
@@ -66,3 +66,5 @@ owners:
 #   Cannot contain leading or trailing whitespace characters.
 tags:
   - dataminer
+  - Augmented Operations
+  - Relational Anomaly Detection

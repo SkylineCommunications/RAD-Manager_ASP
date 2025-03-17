@@ -44,7 +44,7 @@ namespace AddParameterGroup
         {
             engine_ = engine;
 
-            var protocolNameLabel = new Label("Protocol");
+            var protocolNameLabel = new Label("Connector");
             var request = new GetInfoMessage(InfoType.Protocols);
             var responses = engine_.SendSLNetMessage(request);
             var protocols =  responses.Select(r => r as GetProtocolsResponseMessage).Where(r => r != null).OrderBy(p => p.Protocol).ToList();
@@ -56,7 +56,7 @@ namespace AddParameterGroup
             };
             protocolNameDropDown_.Changed += (sender, args) => OnSelectedProtocolChanged();
 
-            var protocolVersionLabel = new Label("Protocol version");
+            var protocolVersionLabel = new Label("Connector version");
             protocolVersionDropDown_ = new DropDown<string>()
             {
                 Options = new List<Option<string>>(),
