@@ -26,7 +26,7 @@ type: Product Solution
 # If the ID is filled in but does not exist yet, a new Catalog item will be registered with this ID.
 # If the ID is filled in but does exist, properties of the item will be overwritten.
 #   Must be a valid GUID.
-id: d8c9988b-ef78-46d2-9f85-3f567bc99296
+id: 174b9848-43c8-470d-afc2-1b1722f05e74
 # [Required]
 # The human-friendly name of the Catalog item.
 # Can be changed at any time.
