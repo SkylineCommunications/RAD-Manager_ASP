@@ -1,53 +1,86 @@
-﻿using System;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-namespace RADWidgets
+﻿namespace RADWidgets
 {
-	public class Utils
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Helper;
+	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
+	public static class Utils
 	{
 		/// <summary>
 		/// Get the group name and DataMiner ID from the script parameters.
 		/// </summary>
 		/// <param name="app">The app</param>
-		/// <param name="noGroupSelectedMessage">The message to show in the message dialog when no parameter group was selected.</param>
-		/// <param name="groupName">Will be set to the group name (if any).</param>
-		/// <param name="dataMinerID">Will be set to the DataMiner ID (if any).</param>
-		/// <returns>True if the arguments could be successfully parsed, false otherwise.</returns>
-		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed.</exception>
-		public static bool GetGroupNameAndDataMinerID(InteractiveController app, string noGroupSelectedMessage, out string groupName, out int dataMinerID)
+		/// <returns>A list with the DataMiner IDs and names of the provided groups, or an empty list if none were provided.</returns>
+		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
+		public static List<Tuple<int, string>> GetGroupNameAndDataMinerID(InteractiveController app)
 		{
-			groupName = NormalizeScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
-			string dataMinerIDStr = NormalizeScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
-			if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(dataMinerIDStr))
+			app.Engine.GenerateInformation($"GroupName: {app.Engine.GetScriptParam("GroupName")?.Value}"); //TODO: remove
+			app.Engine.GenerateInformation($"DataMinerID: {app.Engine.GetScriptParam("DataMinerID")?.Value}");
+			var groupNames = ParseScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
+			var dataMinerIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
+			if (groupNames.IsNullOrEmpty() || dataMinerIDs.IsNullOrEmpty())
+				return new List<Tuple<int, string>>();
+
+			if (groupNames.Count != dataMinerIDs.Count)
+				throw new FormatException("The number of group names and DataMiner IDs must be equal");
+
+			var result = new List<Tuple<int, string>>(groupNames.Count);
+			for (int i = 0; i < groupNames.Count; ++i)
 			{
-				ShowMessageDialog(app, "No parameter group selected", noGroupSelectedMessage);
-				dataMinerID = -1;
-				return false;
+				if (!int.TryParse(dataMinerIDs[i], out int dataMinerID))
+					throw new FormatException($"DataMinerID parameter is not a valid number, got '{dataMinerIDs[i]}'");
+
+				result.Add(new Tuple<int, string>(dataMinerID, groupNames[i]));
 			}
 
-			if (!int.TryParse(dataMinerIDStr, out dataMinerID))
-				throw new FormatException($"DataMinerID parameter is not a valid number, got '{dataMinerIDStr}'");
-
-			return true;
+			return result;
 		}
 
 		/// <summary>
-		/// Normalize the script parameter value by removing [" and "] if necessary.
+		/// Parses the provided script parameter value to a list of strings.
 		/// </summary>
 		/// <param name="parameterValue">The parameter value.</param>
-		/// <returns>The normalized value.</returns>
-		public static string NormalizeScriptParameterValue(string parameterValue)
+		/// <returns>The parsed values.</returns>
+		public static List<string> ParseScriptParameterValue(string parameterValue)
 		{
 			if (parameterValue == null)
 				return null;
-			else if (parameterValue == "[]")
-				return string.Empty;
-			else if (parameterValue.StartsWith("[\"", StringComparison.Ordinal) && parameterValue.EndsWith("\"]", StringComparison.Ordinal))
-				return parameterValue.Substring(2, parameterValue.Length - 4);
-			else
-				return parameterValue;
+			if (!parameterValue.StartsWith("[") || !parameterValue.EndsWith("]") || parameterValue == "[]")
+				return new List<string>();
+
+			var values = new List<string>();
+
+			bool inQuotes = false;
+			bool escaped = false;
+			var curValue = new StringBuilder(parameterValue.Length);
+			for (int i = 1; i < parameterValue.Length - 1; ++i)
+			{
+				if (parameterValue[i] == '"' && !escaped)
+				{
+					inQuotes = !inQuotes;
+				}
+				else if (parameterValue[i] == '\\' && !escaped)
+				{
+					escaped = true;
+				}
+				else if (parameterValue[i] == ',' && !inQuotes)
+				{
+					values.Add(curValue.ToString());
+					curValue.Clear();
+				}
+				else
+				{
+					escaped = false;
+					curValue.Append(parameterValue[i]);
+				}
+			}
+
+			values.Add(curValue.ToString());
+			return values;
 		}
 
 		/// <summary>
@@ -99,6 +132,49 @@ namespace RADWidgets
 				engine.Log($"Could not fetch protocol for element {dataMinerID}/{elementID}: {e}");
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// Join list of strings into a human readable string. E.g. ["a", "b", "c"] -> "a, b and c".
+		/// </summary>
+		/// <param name="l">A list of strings</param>
+		/// <param name="separator">The separator to use between all items except for the last two items.</param>
+		/// <param name="finalSeparator">The separator to use between the last two items.</param>
+		/// <returns>The resulting string.</returns>
+		public static string HumanReadableJoin(this IEnumerable<string> l, string separator = ", ", string finalSeparator = " and ")
+		{
+			var sb = new StringBuilder();
+			var enumerator = l.GetEnumerator();
+
+			// Got an empty list, so return an empty string
+			if (!enumerator.MoveNext())
+				return string.Empty;
+
+			string previous = enumerator.Current;
+
+			// If we only got a single item, we return it
+			if (!enumerator.MoveNext())
+				return previous;
+
+			// Add the first item, and set previous to the second item
+			sb.Append(previous);
+			previous = enumerator.Current;
+
+			// Add the second and all subsequent items, except the last one
+			while (enumerator.MoveNext())
+			{
+				if (sb.Length > 0)
+					sb.Append(separator);
+				sb.Append(previous);
+				previous = enumerator.Current;
+			}
+
+			// Add the last item
+			if (sb.Length > 0)
+				sb.Append(finalSeparator);
+			sb.Append(previous);
+
+			return sb.ToString();
 		}
 	}
 }

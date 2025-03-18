@@ -27,10 +27,19 @@ public class Script
 		{
 			app = new InteractiveController(engine);
 
-			if (!Utils.GetGroupNameAndDataMinerID(app, "Please select the parameter group you want to retrain first", out string groupName, out int dataMinerID))
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			if (groupNamesAndIds.Count == 0)
+			{
+				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to retrain first");
 				return;
+			}
+			else if (groupNamesAndIds.Count > 1)
+			{
+				Utils.ShowMessageDialog(app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				return;
+			}
 
-			var dialog = new RetrainRADModelDialog(engine, groupName, dataMinerID);
+			var dialog = new RetrainRADModelDialog(engine, groupNamesAndIds[0].Item2, groupNamesAndIds[0].Item1);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 

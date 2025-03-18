@@ -31,9 +31,20 @@ public class Script
 		{
 			app = new InteractiveController(engine);
 
-			if (!Utils.GetGroupNameAndDataMinerID(app, "Please select the parameter group you want to edit first", out string groupName, out int dataMinerID))
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			if (groupNamesAndIds.Count == 0)
+			{
+				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to edit first");
 				return;
+			}
+			else if (groupNamesAndIds.Count > 1)
+			{
+				Utils.ShowMessageDialog(app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
+				return;
+			}
 
+			int dataMinerID = groupNamesAndIds[0].Item1;
+			string groupName = groupNamesAndIds[0].Item2;
 			RADGroupSettings settings = null;
 			try
 			{

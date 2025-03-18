@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using RADWidgets;
 using RemoveRADParameterGroup;
-using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
 
 public class Script
 {
@@ -28,10 +28,14 @@ public class Script
 		{
 			app = new InteractiveController(engine);
 
-			if (!Utils.GetGroupNameAndDataMinerID(app, "Please select the parameter group you want to remove first", out string groupName, out int dataMinerID))
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			if (groupNamesAndIds.Count == 0)
+			{
+				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to remove first");
 				return;
+			}
 
-			var dialog = new RemoveParameterGroupDialog(engine, groupName, dataMinerID);
+			var dialog = new RemoveParameterGroupDialog(engine, groupNamesAndIds);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
@@ -70,17 +74,27 @@ public class Script
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
 
-		try
+		var failedGroups = new List<Tuple<string, Exception>>();
+		foreach (var group in dialog.GroupNamesAndIDs)
 		{
-			var message = new RemoveMADParameterGroupMessage(dialog.GroupName)
+			try
 			{
-				DataMinerID = dialog.DataMinerID,
-			};
-			app.Engine.SendSLNetSingleResponseMessage(message);
+				var message = new RemoveMADParameterGroupMessage(group.Item2)
+				{
+					DataMinerID = group.Item1,
+				};
+				app.Engine.SendSLNetSingleResponseMessage(message);
+			}
+			catch (Exception ex)
+			{
+				failedGroups.Add(Tuple.Create(group.Item2, ex));
+			}
 		}
-		catch (Exception ex)
+
+		if (failedGroups.Count > 0)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to remove parameter group from RAD configuration", ex);
+			var ex = new AggregateException("Failed to remove parameter group(s) from RAD configuration", failedGroups.Select(p => p.Item2));
+			Utils.ShowExceptionDialog(app, $"Failed to remove {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex);
 			return;
 		}
 
