@@ -1,10 +1,9 @@
-﻿using RADWidgets;
-using Skyline.DataMiner.Automation;
+﻿using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 using System.Linq;
 
-namespace AddParameterGroup
+namespace RADWidgets
 {
 	public class ParameterSelectorInfo : MultiSelectorItem
 	{

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using AddParameterGroup;
 using RADWidgets;
 using Skyline.DataMiner.Analytics.DataTypes;
@@ -5,127 +8,128 @@ using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 public class Script
 {
-    private InteractiveController app;
+	private InteractiveController app;
 
-    /// <summary>
-    /// The Script entry point.
-    /// </summary>
-    /// <param name="engine">Link with SLAutomation process.</param>
-    public void Run(IEngine engine)
-    {
-        // DO NOT REMOVE THE COMMENTED OUT CODE BELOW OR THE SCRIPT WONT RUN!
-        // Interactive scripts need to be launched differently.
-        // This is determined by a simple string search looking for "engine.ShowUI" in the source code.
-        // However, due to the NuGet package, this string can no longer be detected.
-        // This comment is here as a temporary workaround until it has been fixed.
-        //// engine.ShowUI();
+	/// <summary>
+	/// The Script entry point.
+	/// </summary>
+	/// <param name="engine">Link with SLAutomation process.</param>
+	public void Run(IEngine engine)
+	{
+		// DO NOT REMOVE THE COMMENTED OUT CODE BELOW OR THE SCRIPT WONT RUN!
+		// Interactive scripts need to be launched differently.
+		// This is determined by a simple string search looking for "engine.ShowUI" in the source code.
+		// However, due to the NuGet package, this string can no longer be detected.
+		// This comment is here as a temporary workaround until it has been fixed.
+		//// engine.ShowUI();
 
-        try
-        {
-            app = new InteractiveController(engine);
+		try
+		{
+			app = new InteractiveController(engine);
 
-            var dialog = new AddParameterGroupDialog(engine);
-            dialog.Accepted += Dialog_Accepted;
-            dialog.Cancelled += Dialog_Cancelled;
+			var dialog = new AddParameterGroupDialog(engine);
+			dialog.Accepted += Dialog_Accepted;
+			dialog.Cancelled += Dialog_Cancelled;
 
-            app.ShowDialog(dialog);
-        }
-        catch (ScriptAbortException)
-        {
-            throw;
-        }
-        catch (ScriptForceAbortException)
-        {
-            throw;
-        }
-        catch (ScriptTimeoutException)
-        {
-            throw;
-        }
-        catch (InteractiveUserDetachedException)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            engine.ExitFail(e.ToString());
-        }
-    }
+			app.ShowDialog(dialog);
+		}
+		catch (ScriptAbortException)
+		{
+			throw;
+		}
+		catch (ScriptForceAbortException)
+		{
+			throw;
+		}
+		catch (ScriptTimeoutException)
+		{
+			throw;
+		}
+		catch (InteractiveUserDetachedException)
+		{
+			throw;
+		}
+		catch (Exception e)
+		{
+			engine.ExitFail(e.ToString());
+		}
+	}
 
-    private void Dialog_Cancelled(object sender, EventArgs e)
-    {
-        app.Engine.ExitSuccess("Adding parameter group cancelled");
-    }
+	private void Dialog_Cancelled(object sender, EventArgs e)
+	{
+		app.Engine.ExitSuccess("Adding parameter group cancelled");
+	}
 
-    private void AddGroup(string groupName, List<ParameterKey> parameters, bool updateModel, double? anomalyThreshold, int? minimalDuration)
-    {
-        var groupInfo = new MADGroupInfo(groupName, parameters, updateModel, anomalyThreshold, minimalDuration);
-        var message = new AddMADParameterGroupMessage(groupInfo);
-        app.Engine.SendSLNetSingleResponseMessage(message);
-    }
+	private void AddGroup(string groupName, List<ParameterKey> parameters, bool updateModel, double? anomalyThreshold, int? minimalDuration)
+	{
+		var groupInfo = new MADGroupInfo(groupName, parameters, updateModel, anomalyThreshold, minimalDuration);
+		var message = new AddMADParameterGroupMessage(groupInfo);
+		app.Engine.SendSLNetSingleResponseMessage(message);
+	}
 
-    private List<ParameterKey> GetParameterKeys(int dataMinerID, int elementID, int parameterID, string displayKeyFilter)
-    {
-        if (string.IsNullOrEmpty(displayKeyFilter))
-            return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID) };
+	private List<ParameterKey> GetParameterKeys(int dataMinerID, int elementID, int parameterID, string displayKeyFilter)
+	{
+		if (string.IsNullOrEmpty(displayKeyFilter))
+			return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID) };
 
-        var protocolRequest = new GetElementProtocolMessage(dataMinerID, elementID);
-        var protocolResponse = app.Engine.SendSLNetSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
-        if (protocolResponse == null)
-        {
-            app.Engine.Log($"Could not fetch protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
-            return new List<ParameterKey>();
-        }
-        var parameter = protocolResponse.Parameters.FirstOrDefault(p => p.ID == parameterID);
-        if (parameter == null)
-        {
-            app.Engine.Log($"Could not find parameter {parameterID} in element protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
-            return new List<ParameterKey>();
-        }
-        if (!parameter.IsTableColumn || parameter.ParentTable == null)
-            return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID, displayKeyFilter) };
+		var protocolRequest = new GetElementProtocolMessage(dataMinerID, elementID);
+		var protocolResponse = app.Engine.SendSLNetSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
+		if (protocolResponse == null)
+		{
+			app.Engine.Log($"Could not fetch protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
+			return new List<ParameterKey>();
+		}
 
-        var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, parameter.ParentTable.ID)
-        {
-            KeyFilter = displayKeyFilter,
-            KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey
-        };
-        var indicesResponse = app.Engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
-        if (indicesResponse == null)
-        {
-            app.Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterID} with filter {displayKeyFilter}", LogType.Error, 5);
-            return new List<ParameterKey>();
-        }
+		var parameter = protocolResponse.Parameters.FirstOrDefault(p => p.ID == parameterID);
+		if (parameter == null)
+		{
+			app.Engine.Log($"Could not find parameter {parameterID} in element protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
+			return new List<ParameterKey>();
+		}
 
-        return indicesResponse.Indices.Select(i => new ParameterKey(dataMinerID, elementID, parameterID, i.IndexValue, i.DisplayValue)).ToList();
-    }
+		if (!parameter.IsTableColumn || parameter.ParentTable == null)
+			return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID, displayKeyFilter) };
 
-    private void Dialog_Accepted(object sender, EventArgs e)
-    {
-        var dialog = sender as AddParameterGroupDialog;
-        if (dialog == null)
-            throw new ArgumentException("Invalid sender type");
+		var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, parameter.ParentTable.ID)
+		{
+			KeyFilter = displayKeyFilter,
+			KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
+		};
+		var indicesResponse = app.Engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
+		if (indicesResponse == null)
+		{
+			app.Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterID} with filter {displayKeyFilter}", LogType.Error, 5);
+			return new List<ParameterKey>();
+		}
+
+		return indicesResponse.Indices.Select(i => new ParameterKey(dataMinerID, elementID, parameterID, i.IndexValue, i.DisplayValue)).ToList();
+	}
+
+	private void Dialog_Accepted(object sender, EventArgs e)
+	{
+		var dialog = sender as AddParameterGroupDialog;
+		if (dialog == null)
+			throw new ArgumentException("Invalid sender type");
 
 		try
 		{
 			if (dialog.AddType == AddGroupType.Single)
 			{
-				var pKeys = dialog.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
-				AddGroup(dialog.GroupName, pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
+				var settings = dialog.GroupSettings;
+				var pKeys = settings.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
+				AddGroup(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 			}
 			else
 			{
-				var elements = app.Engine.FindElementsByProtocol(dialog.ProtocolName, dialog.ProtocolVersion);
+				var settings = dialog.GroupByProtocolSettings;
+				var elements = app.Engine.FindElementsByProtocol(settings.ProtocolName, settings.ProtocolVersion);
 				foreach (var element in elements)
 				{
-					var pKeys = dialog.ProtolParameters.SelectMany(p => GetParameterKeys(element.DmaId, element.ElementId, p.ParameterID, p.DisplayKeyFilter)).ToList();
-					AddGroup($"{dialog.GroupName} ({element.ElementName})", pKeys, dialog.UpdateModel, dialog.AnomalyThreshold, dialog.MinimalDuration);
+					var pKeys = settings.Parameters.SelectMany(p => GetParameterKeys(element.DmaId, element.ElementId, p.ParameterID, p.DisplayKeyFilter)).ToList();
+					AddGroup($"{settings.GroupPrefix} ({element.ElementName})", pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 				}
 			}
 		}
