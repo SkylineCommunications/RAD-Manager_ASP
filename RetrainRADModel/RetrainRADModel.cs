@@ -27,16 +27,8 @@ public class Script
 		{
 			app = new InteractiveController(engine);
 
-			string groupName = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
-			string dataMinerIDStr = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
-			if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(dataMinerIDStr))
-			{
-				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to retrain first");
+			if (!Utils.GetGroupNameAndDataMinerID(app, "Please select the parameter group you want to retrain first", out string groupName, out int dataMinerID))
 				return;
-			}
-
-			if (!int.TryParse(dataMinerIDStr, out int dataMinerID))
-				throw new ArgumentException($"DataMinerID parameter is not a valid number, got '{dataMinerIDStr}'");
 
 			var dialog = new RetrainRADModelDialog(engine, groupName, dataMinerID);
 			dialog.Accepted += Dialog_Accepted;

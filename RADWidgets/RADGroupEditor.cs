@@ -22,19 +22,20 @@
 		private RADGroupOptionsEditor optionsEditor_;
 		private bool isValid_ = false;
 
-		public RADGroupEditor(IEngine engine)
+		public RADGroupEditor(IEngine engine, RADGroupSettings settings = null)
 		{
 			groupNameLabel_ = new Label("Group name");
 			groupNameTextBox_ = new TextBox()
 			{
+				Text = settings?.GroupName ?? string.Empty,
 				MinWidth = 600,
 			};
 			groupNameTextBox_.Changed += (sender, args) => OnGroupNameTextBoxChanged();
 
-			parameterSelector_ = new MultiParameterSelector(engine);
+			parameterSelector_ = new MultiParameterSelector(engine, settings?.Parameters);
 			parameterSelector_.Changed += (sender, args) => UpdateIsValid();
 
-			optionsEditor_ = new RADGroupOptionsEditor();
+			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount, settings?.Options);
 
 			OnGroupNameTextBoxChanged();
 

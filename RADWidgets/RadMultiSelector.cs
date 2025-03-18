@@ -1,37 +1,115 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Skyline.DataMiner.Net.AutomationUI.Objects;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
 namespace RADWidgets
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Skyline.DataMiner.Net.AutomationUI.Objects;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
+	/// <summary>
+	/// Abstract class for items that can be selected in a <see cref="MultiSelector{T}" /> widget.
+	/// </summary>
 	public abstract class MultiSelectorItem : Section
 	{
+		/// <summary>
+		/// Gets the key of the item. This key is used to uniquely identify an item: no two items with the same key can be selected at the same time.
+		/// </summary>
+		/// <returns>The key.</returns>
 		public abstract string GetKey();
+
+		/// <summary>
+		/// Gets the display value of the item. This value is shown in the widget.
+		/// </summary>
+		/// <returns>The display value.</returns>
 		public abstract string GetDisplayValue();
 	}
 
 	/// <summary>
 	/// Selector widget to select a single item in a MultiSelector widget.
 	/// </summary>
-	public abstract class MultiSelectorItemSelector<T> : Section where T: MultiSelectorItem
+	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
+	public abstract class MultiSelectorItemSelector<T> : Section where T : MultiSelectorItem
 	{
+		/// <summary>
+		/// Gets the selected item in the widget.
+		/// </summary>
 		public abstract T SelectedItem { get; }
 	}
 
 	/// <summary>
-	/// Widget allowing to select multiple items of a certain type. The number of columns and rows the widget takes up is determined by the itemSelector: it will take (itemSelector.RowCount + 2) rows and (itemSelector.ColumnCount + 1) columns.
+	/// Widget allowing to select multiple items of a certain type. The number of columns and rows the widget takes up is determined by the itemSelector:
+	/// it will take (itemSelector.RowCount + 2) rows and (itemSelector.ColumnCount + 1) columns.
 	/// </summary>
-	public abstract class MultiSelector<T> : Section where T: MultiSelectorItem
+	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
+	public abstract class MultiSelector<T> : Section where T : MultiSelectorItem
 	{
-		protected MultiSelectorItemSelector<T> itemSelector_;
+		private MultiSelectorItemSelector<T> itemSelector_;
 		private Dictionary<string, T> selectedItems_ = new Dictionary<string, T>();
 		private TreeView selectedItemsView_;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.
+		/// </summary>
+		/// <param name="itemSelector">The widget to select a single item.</param>
+		/// <param name="selectedItems">The initially selected items, or null.</param>
+		protected MultiSelector(MultiSelectorItemSelector<T> itemSelector, List<T> selectedItems = null) : base()
+		{
+			itemSelector_ = itemSelector;
+
+			selectedItemsView_ = new TreeView(new List<TreeViewItem>())
+			{
+				IsReadOnly = false,
+				MinHeight = 100,
+			};
+			if (selectedItems != null)
+			{
+				foreach (var item in selectedItems)
+				{
+					if (!selectedItems_.ContainsKey(item.GetKey()))
+						selectedItems_.Add(item.GetKey(), item);
+				}
+
+				selectedItemsView_.Items = selectedItems.Select(i => new TreeViewItem(i.GetDisplayValue(), i.GetKey())).ToList();
+			}
+
+			var addButton = new Button("Add");
+			addButton.Pressed += AddButton_Pressed;
+
+			var removeButton = new Button("Remove");
+			removeButton.Pressed += RemoveButton_Pressed;
+
+			int row = 0;
+			AddSection(itemSelector_, row, 0);
+			AddWidget(addButton, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
+			row += itemSelector_.RowCount;
+
+			AddWidget(selectedItemsView_, row, 0, 2, itemSelector_.ColumnCount);
+			AddWidget(removeButton, row, itemSelector_.ColumnCount, verticalAlignment: VerticalAlignment.Top);
+		}
+
+		/// <summary>
+		/// Emitted when an item has been added or removed
+		/// </summary>
 		public event EventHandler Changed;
 
+		/// <summary>
+		/// Gets the currently selected items.
+		/// </summary>
 		public List<T> SelectedItems => selectedItems_.Values.ToList();
+
+		/// <summary>
+		/// Gets the widget to select a single item.
+		/// </summary>
+		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;
+
+		/// <summary>
+		/// Clears the selected items.
+		/// </summary>
+		public void ClearSelection()
+		{
+			selectedItems_.Clear();
+			selectedItemsView_.Items = new List<TreeViewItem>();
+		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)
 		{
@@ -60,37 +138,6 @@ namespace RADWidgets
 				selectedItemsView_.Items = newItems;
 				Changed?.Invoke(this, EventArgs.Empty);
 			}
-		}
-
-		public void ClearSelection()
-		{
-			selectedItems_.Clear();
-			selectedItemsView_.Items = new List<TreeViewItem>();
-		}
-
-		protected MultiSelector(MultiSelectorItemSelector<T> itemSelector) : base()
-		{
-			itemSelector_ = itemSelector;
-
-			selectedItemsView_ = new TreeView(new List<TreeViewItem>())
-			{
-				IsReadOnly = false,
-				MinHeight = 100
-			};
-
-			var addButton = new Button("Add");
-			addButton.Pressed += AddButton_Pressed;
-
-			var removeButton = new Button("Remove");
-			removeButton.Pressed += RemoveButton_Pressed;
-
-			int row = 0;
-			AddSection(itemSelector_, row, 0);
-			AddWidget(addButton, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
-			row += itemSelector_.RowCount;
-
-			AddWidget(selectedItemsView_, row, 0, 2, itemSelector_.ColumnCount);
-			AddWidget(removeButton, row, itemSelector_.ColumnCount, verticalAlignment: VerticalAlignment.Top);
 		}
 	}
 }

@@ -7,7 +7,7 @@ namespace AddParameterGroup
     {
         public void SetProtocol(string protocolName, string protocolVersion)
         {
-			var selector = itemSelector_ as ProtocolParameterSelector;
+			var selector = ItemSelector as ProtocolParameterSelector;
 			selector.SetProtocol(protocolName, protocolVersion);
 			ClearSelection();
         }

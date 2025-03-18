@@ -12,6 +12,9 @@
 		public int? MinimalDuration { get; set; }
 	}
 
+	/// <summary>
+	/// Editor for RAD group options.
+	/// </summary>
 	public class RADGroupOptionsEditor : Section
 	{
 		private CheckBox updateModelCheckBox_;
@@ -20,23 +23,37 @@
 		private CheckBox minimalDurationOverrideCheckBox_;
 		private Time minimalDurationTime_;
 
-		public RADGroupOptionsEditor()
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RADGroupOptionsEditor"/> class.
+		/// </summary>
+		/// <param name="columnCount">The number of columns the section should take (should be 2 or greater).</param>
+		/// <param name="options">The initial settings to display (if any).</param>
+		public RADGroupOptionsEditor(int columnCount, RADGroupOptions options = null)
 		{
-			updateModelCheckBox_ = new CheckBox("Update model on new data?");
+			updateModelCheckBox_ = new CheckBox("Update model on new data?")
+			{
+				IsChecked = options?.UpdateModel ?? false,
+			};
 
-			anomalyThresholdOverrideCheckBox_ = new CheckBox("Override default anomaly threshold?");
+			anomalyThresholdOverrideCheckBox_ = new CheckBox("Override default anomaly threshold?")
+			{
+				IsChecked = options?.AnomalyThreshold != null,
+			};
 			anomalyThresholdOverrideCheckBox_.Changed += (sender, args) => anomalyThresholdNumeric_.IsEnabled = (sender as CheckBox).IsChecked;
 
 			var anomalyThresholdLabel = new Label("Anomaly threshold");
 			anomalyThresholdNumeric_ = new Numeric()
 			{
 				Minimum = 0,
-				Value = 3,
+				Value = options?.AnomalyThreshold ?? 3,
 				StepSize = 0.01,
 				IsEnabled = false,
 			};
 
-			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimal anomaly duration?");
+			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimal anomaly duration?")
+			{
+				IsChecked = options?.MinimalDuration != null,
+			};
 			minimalDurationOverrideCheckBox_.Changed += (sender, args) => minimalDurationTime_.IsEnabled = (sender as CheckBox).IsChecked;
 
 			var minimalDurationLabel = new Label("Minimal anomaly duration");
@@ -44,10 +61,27 @@
 			{
 				HasSeconds = false,
 				Minimum = TimeSpan.FromMinutes(5),
-				TimeSpan = TimeSpan.FromMinutes(5),
+				TimeSpan = TimeSpan.FromMinutes(options?.MinimalDuration ?? 5),
 				ClipValueToRange = true,
 				IsEnabled = false,
 			};
+
+			int row = 0;
+			AddWidget(updateModelCheckBox_, row, 0, 1, columnCount);
+			++row;
+
+			AddWidget(anomalyThresholdOverrideCheckBox_, row, 0, 1, columnCount);
+			++row;
+
+			AddWidget(anomalyThresholdLabel, row, 0);
+			AddWidget(anomalyThresholdNumeric_, row, 1, 1, columnCount - 1);
+			++row;
+
+			AddWidget(minimalDurationOverrideCheckBox_, row, 0, 1, columnCount);
+			++row;
+
+			AddWidget(minimalDurationLabel, row, 0);
+			AddWidget(minimalDurationTime_, row, 1, 1, columnCount - 1);
 		}
 
 		public RADGroupOptions Options

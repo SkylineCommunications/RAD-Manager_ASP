@@ -1,17 +1,22 @@
-﻿using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System.Linq;
-
-namespace RADWidgets
+﻿namespace RADWidgets
 {
+	using System.Linq;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public class ParameterSelectorInfo : MultiSelectorItem
 	{
 		public string ElementName { get; set; }
+
 		public string ParameterName { get; set; }
+
 		public int DataMinerID { get; set; }
+
 		public int ElementID { get; set; }
+
 		public int ParameterID { get; set; }
+
 		public string DisplayKeyFilter { get; set; }
 
 		public override string GetKey()
@@ -35,47 +40,6 @@ namespace RADWidgets
 	{
 		private DropDown<Element> elementsDropDown_;
 
-		public override ParameterSelectorInfo SelectedItem
-		{
-			get
-			{
-				var element = elementsDropDown_.Selected;
-				var parameter = parametersDropDown_.Selected;
-				if (element == null || parameter == null)
-					return null;
-
-				return new ParameterSelectorInfo
-				{
-					ElementName = element.ElementName,
-					ParameterName = parameter.DisplayName,
-					DataMinerID = element.DmaId,
-					ElementID = element.ElementId,
-					ParameterID = parameter.ID,
-					DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : "",
-				};
-			}
-		}
-
-		protected override bool IsValidForRAD(ParameterInfo info)
-		{
-			return base.IsValidForRAD(info) && (info.RealTimeTrending || info.AverageTrending) && info.IsTrendAnalyticsSupported;
-		}
-
-		private void OnSelectedElementChanged()
-		{
-			var element = elementsDropDown_.Selected;
-			if (element == null)
-			{
-				ClearPossibleParameters();
-				elementsDropDown_.Tooltip = "";
-				return;
-			}
-			elementsDropDown_.Tooltip = element.ElementName;
-			var request = new GetElementProtocolMessage(element.DmaId, element.ElementId);
-			var response = engine_.SendSLNetSingleResponseMessage(request) as GetElementProtocolResponseMessage;
-			SetPossibleParameters(response);
-		}
-
 		public ParameterSelector(IEngine engine) : base(engine, true)
 		{
 			var elementsLabel = new Label("Element");
@@ -92,6 +56,46 @@ namespace RADWidgets
 
 			AddWidget(elementsLabel, 0, 0);
 			AddWidget(elementsDropDown_, 1, 0);
+		}
+
+		public override ParameterSelectorInfo SelectedItem
+		{
+			get
+			{
+				var element = elementsDropDown_.Selected;
+				var parameter = parametersDropDown_.Selected;
+				if (element == null || parameter == null)
+					return null;
+
+				return new ParameterSelectorInfo
+				{
+					ElementName = element.ElementName,
+					ParameterName = parameter.DisplayName,
+					DataMinerID = element.DmaId,
+					ElementID = element.ElementId,
+					ParameterID = parameter.ID,
+					DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : string.Empty,
+				};
+			}
+		}
+
+		protected override bool IsValidForRAD(ParameterInfo info)
+		{
+			return base.IsValidForRAD(info) && (info.RealTimeTrending || info.AverageTrending) && info.IsTrendAnalyticsSupported;
+		}
+
+		private void OnSelectedElementChanged()
+		{
+			var element = elementsDropDown_.Selected;
+			elementsDropDown_.Tooltip = element?.ElementName ?? string.Empty;
+			if (element == null)
+			{
+				ClearPossibleParameters();
+				return;
+			}
+
+			var protocol = Utils.FetchElementProtocol(engine_, element.DmaId, element.ElementId);
+			SetPossibleParameters(protocol);
 		}
 	}
 }

@@ -44,13 +44,13 @@
 			};
 			parameterSelector_.Changed += (sender, args) => UpdateIsValid();
 
-			optionsEditor_ = new RADGroupOptionsEditor();
+			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount);
 
 			OnGroupPrefixTextBoxChanged();
 
 			int row = 0;
 			AddWidget(groupPrefixLabel_, row, 0);
-			AddWidget(groupPrefixTextBox_, row, 1);
+			AddWidget(groupPrefixTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
 			++row;
 
 			AddSection(parameterSelector_, row, 0);

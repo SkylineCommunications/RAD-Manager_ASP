@@ -1,16 +1,16 @@
-﻿using RADWidgets;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
-using System.Text.RegularExpressions;
-
-namespace AddParameterGroup
+﻿namespace AddParameterGroup
 {
-    public class ProtocolParameterSelectorInfo : MultiSelectorItem
-    {
-        public string ParameterName { get; set; }
+	using System;
+	using RADWidgets;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Messages;
+
+	public class ProtocolParameterSelectorInfo : MultiSelectorItem
+	{
+		public string ParameterName { get; set; }
+
 		public int ParameterID { get; set; }
+
 		public string DisplayKeyFilter { get; set; }
 
 		public override string GetKey()
@@ -22,48 +22,61 @@ namespace AddParameterGroup
 		}
 
 		public override string GetDisplayValue()
-        {
-            if (!string.IsNullOrEmpty(DisplayKeyFilter))
-                return $"{ParameterName}/{DisplayKeyFilter}";
-            else
-                return $"{ParameterName}";
-        }
-    }
-
-    public class ProtocolParameterSelector : ParameterSelectorBase<ProtocolParameterSelectorInfo>
-    {
-        public override ProtocolParameterSelectorInfo SelectedItem
 		{
-            get
-            {
-                var parameter = parametersDropDown_.Selected;
-                if (parameter == null)
-                    return null;
+			if (!string.IsNullOrEmpty(DisplayKeyFilter))
+				return $"{ParameterName}/{DisplayKeyFilter}";
+			else
+				return $"{ParameterName}";
+		}
+	}
 
-                return new ProtocolParameterSelectorInfo
-                {
-                    ParameterName = parameter.DisplayName,
-                    ParameterID = parameter.ID,
-                    DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : ""
-                };
-            }
-        }
+	public class ProtocolParameterSelector : ParameterSelectorBase<ProtocolParameterSelectorInfo>
+	{
+		public ProtocolParameterSelector(string protocolName, string protocolVersion, IEngine engine) : base(engine, false)
+		{
+			SetProtocol(protocolName, protocolVersion);
+		}
 
-        public void SetProtocol(string protocolName, string protocolVersion)
-        {
-            if (string.IsNullOrEmpty(protocolName) || string.IsNullOrEmpty(protocolVersion))
-            {
-                ClearPossibleParameters();
-                return;
-            }
-            var request = new GetProtocolMessage(protocolName, protocolVersion);
-            var response = engine_.SendSLNetSingleResponseMessage(request) as GetProtocolInfoResponseMessage;
-            SetPossibleParameters(response);
-        }
+		public override ProtocolParameterSelectorInfo SelectedItem
+		{
+			get
+			{
+				var parameter = parametersDropDown_.Selected;
+				if (parameter == null)
+					return null;
 
-        public ProtocolParameterSelector(string protocolName, string protocolVersion, IEngine engine) : base(engine, false)
-        {
-            SetProtocol(protocolName, protocolVersion);
-        }
-    }
+				return new ProtocolParameterSelectorInfo
+				{
+					ParameterName = parameter.DisplayName,
+					ParameterID = parameter.ID,
+					DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : string.Empty,
+				};
+			}
+		}
+
+		public void SetProtocol(string protocolName, string protocolVersion)
+		{
+			if (string.IsNullOrEmpty(protocolName) || string.IsNullOrEmpty(protocolVersion))
+			{
+				ClearPossibleParameters();
+				return;
+			}
+
+			SetPossibleParameters(FetchProtocol(protocolName, protocolVersion));
+		}
+
+		private GetProtocolInfoResponseMessage FetchProtocol(string protocolName, string protocolVersion)
+		{
+			try
+			{
+				var request = new GetProtocolMessage(protocolName, protocolVersion);
+				return engine_.SendSLNetSingleResponseMessage(request) as GetProtocolInfoResponseMessage;
+			}
+			catch (Exception e)
+			{
+				engine_.Log($"Could not fetch protocol with name '{protocolName}' and version '{protocolVersion}': {e}");
+				return null;
+			}
+		}
+	}
 }
