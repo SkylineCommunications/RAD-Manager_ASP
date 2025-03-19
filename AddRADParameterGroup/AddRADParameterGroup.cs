@@ -119,7 +119,7 @@ public class Script
 			if (dialog.AddType == AddGroupType.Single)
 			{
 				var settings = dialog.GroupSettings;
-				var pKeys = settings.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
+				var pKeys = settings.Parameters.SelectMany(p => p.GetParameterKeys()).ToList();
 				AddGroup(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 			}
 			else
