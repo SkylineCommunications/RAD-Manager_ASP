@@ -61,16 +61,7 @@ namespace RADWidgets
 				IsReadOnly = false,
 				MinHeight = 100,
 			};
-			if (selectedItems != null)
-			{
-				foreach (var item in selectedItems)
-				{
-					if (!selectedItems_.ContainsKey(item.GetKey()))
-						selectedItems_.Add(item.GetKey(), item);
-				}
-
-				selectedItemsView_.Items = selectedItems.Select(i => new TreeViewItem(i.GetDisplayValue(), i.GetKey())).ToList();
-			}
+			SelectedItems = selectedItems;
 
 			var addButton = new Button("Add");
 			addButton.Pressed += AddButton_Pressed;
@@ -93,23 +84,36 @@ namespace RADWidgets
 		public event EventHandler Changed;
 
 		/// <summary>
-		/// Gets the currently selected items.
+		/// Gets or sets the currently selected items.
 		/// </summary>
-		public List<T> SelectedItems => selectedItems_.Values.ToList();
+		public List<T> SelectedItems
+		{
+			get => selectedItems_.Values.ToList();
+			set
+			{
+				selectedItems_.Clear();
+
+				if (value == null)
+				{
+					selectedItemsView_.Items = new List<TreeViewItem>();
+					return;
+				}
+
+				foreach (var item in value)
+				{
+					var key = item.GetKey();
+					if (!selectedItems_.ContainsKey(key))
+						selectedItems_.Add(key, item);
+				}
+
+				selectedItemsView_.Items = selectedItems_.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
+			}
+		}
 
 		/// <summary>
 		/// Gets the widget to select a single item.
 		/// </summary>
 		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;
-
-		/// <summary>
-		/// Clears the selected items.
-		/// </summary>
-		public void ClearSelection()
-		{
-			selectedItems_.Clear();
-			selectedItemsView_.Items = new List<TreeViewItem>();
-		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)
 		{

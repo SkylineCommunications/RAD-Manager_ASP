@@ -19,7 +19,7 @@
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
 			groupEditor_ = new RADGroupEditor(engine, groupSettings);
-			groupEditor_.IsValidChanged += (sender, args) => UpdateEditGroupIsEnabled();
+			groupEditor_.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			okButton_ = new Button("Apply");
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
@@ -27,7 +27,7 @@
 			var cancelButton = new Button("Cancel");
 			cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
-			UpdateEditGroupIsEnabled();
+			OnGroupEditorValidationChanged();
 
 			int row = 0;
 			AddSection(groupEditor_, row, 0);
@@ -47,9 +47,18 @@
 
 		public RADGroupSettings GroupSettings => groupEditor_.Settings;
 
-		private void UpdateEditGroupIsEnabled()
+		private void OnGroupEditorValidationChanged()
 		{
-			okButton_.IsEnabled = groupEditor_.IsValid;
+			if (groupEditor_.IsValid)
+			{
+				okButton_.IsEnabled = true;
+				okButton_.Tooltip = string.Empty;
+			}
+			else
+			{
+				okButton_.IsEnabled = false;
+				okButton_.Tooltip = groupEditor_.ValidationText;
+			}
 		}
 	}
 }

@@ -34,10 +34,10 @@
 			addTypeDropDown_.Changed += (sender, args) => OnAddTypeChanged();
 
 			groupEditor_ = new RADGroupEditor(engine);
-			groupEditor_.IsValidChanged += (sender, args) => UpdateAddGroupIsEnabled();
+			groupEditor_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 
 			groupByProtocolCreator_ = new RADGroupByProtocolCreator(engine);
-			groupByProtocolCreator_.IsValidChanged += (sender, args) => UpdateAddGroupIsEnabled();
+			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
 			okButton_ = new Button("Add group");
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
@@ -45,7 +45,6 @@
 			var cancelButton = new Button("Cancel");
 			cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
-			UpdateAddGroupIsEnabled();
 			OnAddTypeChanged();
 
 			int row = 0;
@@ -73,12 +72,18 @@
 
 		public RADGroupByProtocolSettings GroupByProtocolSettings => groupByProtocolCreator_.IsVisible ? groupByProtocolCreator_.Settings : null;
 
-		private void UpdateAddGroupIsEnabled()
+		private void OnEditorValidationChanged(bool isValid, string validationText)
 		{
-			if (addTypeDropDown_.Selected == AddGroupType.Single)
-				okButton_.IsEnabled = groupEditor_.IsValid;
+			if (isValid)
+			{
+				okButton_.IsEnabled = true;
+				okButton_.Tooltip = string.Empty;
+			}
 			else
-				okButton_.IsEnabled = groupByProtocolCreator_.IsValid;
+			{
+				okButton_.IsEnabled = false;
+				okButton_.Tooltip = validationText;
+			}
 		}
 
 		private void OnAddTypeChanged()
@@ -87,11 +92,13 @@
 			{
 				groupEditor_.IsVisible = true;
 				groupByProtocolCreator_.IsVisible = false;
+				OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 			}
 			else
 			{
 				groupEditor_.IsVisible = false;
 				groupByProtocolCreator_.IsVisible = true;
+				OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 			}
 		}
 	}

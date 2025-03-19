@@ -25,8 +25,8 @@
 		private Label groupPrefixLabel_;
 		private TextBox groupPrefixTextBox_;
 		private MultiParameterPerProtocolSelector parameterSelector_;
+		private bool parameterSelectorValid_ = false;
 		private RADGroupOptionsEditor optionsEditor_;
-		private bool isValid_ = false;
 
 		public RADGroupByProtocolCreator(IEngine engine)
 		{
@@ -37,16 +37,18 @@
 				MinWidth = 600,
 			};
 			groupPrefixTextBox_.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
+			groupPrefixTextBox_.ValidationText = "Provide a prefix";
 
 			parameterSelector_ = new MultiParameterPerProtocolSelector(engine)
 			{
 				IsVisible = false,
 			};
-			parameterSelector_.Changed += (sender, args) => UpdateIsValid();
+			parameterSelector_.Changed += (sender, args) => OnParameterSelectorChanged();
 
 			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount);
 
 			OnGroupPrefixTextBoxChanged();
+			OnParameterSelectorChanged();
 
 			int row = 0;
 			AddWidget(groupPrefixLabel_, row, 0);
@@ -59,7 +61,7 @@
 			AddSection(optionsEditor_, row, 0);
 		}
 
-		public event EventHandler<EventArgs> IsValidChanged;
+		public event EventHandler<EventArgs> ValidationChanged;
 
 		public RADGroupByProtocolSettings Settings
 		{
@@ -76,28 +78,43 @@
 			}
 		}
 
-		public bool IsValid
-		{
-			get => isValid_;
-			private set
-			{
-				if (isValid_ != value)
-				{
-					isValid_ = value;
-					IsValidChanged?.Invoke(this, EventArgs.Empty);
-				}
-			}
-		}
+		public bool IsValid { get; private set; }
+
+		public string ValidationText { get; private set; }
 
 		private void UpdateIsValid()
 		{
-			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelector_.SelectedParameters.Count > 0;
+			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_;
+			if (groupPrefixTextBox_.ValidationState == UIValidationState.Invalid && !parameterSelectorValid_)
+				ValidationText = "Provide a group name prefix and select at least two instances";
+			else if (groupPrefixTextBox_.ValidationState == UIValidationState.Invalid)
+				ValidationText = "Provide a group name prefix";
+			else if (!parameterSelectorValid_)
+				ValidationText = "Select at least two instances";
+			else
+				ValidationText = string.Empty;
+
+			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void OnParameterSelectorChanged()
+		{
+			bool newState = parameterSelector_.SelectedParameters.Count > 0;
+			if (newState != parameterSelectorValid_)
+			{
+				parameterSelectorValid_ = newState;
+				UpdateIsValid();
+			}
 		}
 
 		private void OnGroupPrefixTextBoxChanged()
 		{
-			groupPrefixTextBox_.ValidationState = string.IsNullOrEmpty(groupPrefixTextBox_.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
-			UpdateIsValid();
+			UIValidationState newState = string.IsNullOrEmpty(groupPrefixTextBox_.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
+			if (newState != groupPrefixTextBox_.ValidationState)
+			{
+				groupPrefixTextBox_.ValidationState = newState;
+				UpdateIsValid();
+			}
 		}
 	}
 }

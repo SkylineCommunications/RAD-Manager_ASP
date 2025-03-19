@@ -7,6 +7,7 @@ using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
+using Skyline.DataMiner.Net.Messages.SLDataGateway;
 using Skyline.DataMiner.Net.ReportsAndDashboards;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -56,27 +57,10 @@ public class Script
 				if (response?.GroupInfo == null)
 					throw new Exception("No response or a response of the wrong type received");
 
-				var parameters = new List<ParameterSelectorInfo>();
-				foreach (var parameter in response.GroupInfo.Parameters)
-				{
-					var element = engine.FindElement(parameter.DataMinerID, parameter.ElementID);
-					var protocol = Utils.FetchElementProtocol(engine, parameter.DataMinerID, parameter.ElementID);
-					var paramInfo = protocol?.Parameters.FirstOrDefault(p => p.ID == parameter.ParameterID);
-					parameters.Add(new ParameterSelectorInfo()
-					{
-						ElementName = element?.ElementName ?? "Unknown element",
-						ParameterName = paramInfo?.DisplayName ?? "Unknown parameter",
-						DataMinerID = parameter.DataMinerID,
-						ElementID = parameter.ElementID,
-						ParameterID = parameter.ParameterID,
-						DisplayKeyFilter = parameter.DisplayInstance,
-					});
-				}
-
 				settings = new RADGroupSettings()
 				{
 					GroupName = response.GroupInfo.Name,
-					Parameters = parameters,
+					Parameters = response.GroupInfo.Parameters,
 					Options = new RADGroupOptions()
 					{
 						UpdateModel = response.GroupInfo.UpdateModel,
@@ -124,45 +108,6 @@ public class Script
 		app.Engine.ExitSuccess("Adding parameter group cancelled");
 	}
 
-	private List<ParameterKey> GetParameterKeys(int dataMinerID, int elementID, int parameterID, string displayKeyFilter)
-	{
-		//TODO: put in utils, I guess
-		if (string.IsNullOrEmpty(displayKeyFilter))
-			return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID) };
-
-		var protocolRequest = new GetElementProtocolMessage(dataMinerID, elementID);
-		var protocolResponse = app.Engine.SendSLNetSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
-		if (protocolResponse == null)
-		{
-			app.Engine.Log($"Could not fetch protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
-			return new List<ParameterKey>();
-		}
-
-		var parameter = protocolResponse.Parameters.FirstOrDefault(p => p.ID == parameterID);
-		if (parameter == null)
-		{
-			app.Engine.Log($"Could not find parameter {parameterID} in element protocol for element {dataMinerID}/{elementID}", LogType.Error, 5);
-			return new List<ParameterKey>();
-		}
-
-		if (!parameter.IsTableColumn || parameter.ParentTable == null)
-			return new List<ParameterKey>() { new ParameterKey(dataMinerID, elementID, parameterID, displayKeyFilter) };
-
-		var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, parameter.ParentTable.ID)
-		{
-			KeyFilter = displayKeyFilter,
-			KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
-		};
-		var indicesResponse = app.Engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
-		if (indicesResponse == null)
-		{
-			app.Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterID} with filter {displayKeyFilter}", LogType.Error, 5);
-			return new List<ParameterKey>();
-		}
-
-		return indicesResponse.Indices.Select(i => new ParameterKey(dataMinerID, elementID, parameterID, i.IndexValue, i.DisplayValue)).ToList();
-	}
-
 	private void Dialog_Accepted(object sender, EventArgs e)
 	{
 		var dialog = sender as EditParameterGroupDialog;
@@ -178,7 +123,7 @@ public class Script
 			app.Engine.SendSLNetSingleResponseMessage(removeMessage);
 
 			var settings = dialog.GroupSettings;
-			var pKeys = settings.Parameters.SelectMany(p => GetParameterKeys(p.DataMinerID, p.ElementID, p.ParameterID, p.DisplayKeyFilter)).ToList();
+			var pKeys = settings.Parameters.ToList();
 			var groupInfo = new MADGroupInfo(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 			var message = new AddMADParameterGroupMessage(groupInfo);
 			app.Engine.SendSLNetSingleResponseMessage(message);

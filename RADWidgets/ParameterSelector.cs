@@ -6,7 +6,7 @@
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
-	using Skyline.DataMiner.Net.Messages.SLDataGateway;
+
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class ParameterSelectorInfo : MultiSelectorItem
