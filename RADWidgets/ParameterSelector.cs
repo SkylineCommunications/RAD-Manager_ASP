@@ -87,11 +87,18 @@
 			get
 			{
 				var element = elementsDropDown_.Selected;
-				var parameter = ParametersDropDown.Selected;
-				if (element == null || parameter == null)
+				if (element == null)
 				{
-					InstanceTextBox.ValidationState = UIValidationState.Invalid;
-					InstanceTextBox.ValidationText = "Element or parameter not found";
+					ValidationState = UIValidationState.Invalid;
+					ValidationText = "Select a valid element";
+					return null;
+				}
+
+				var parameter = ParametersDropDown.Selected;
+				if (parameter == null)
+				{
+					ValidationState = UIValidationState.Invalid;
+					ValidationText = "Select a valid parameter";
 					return null;
 				}
 
@@ -101,8 +108,8 @@
 					matchingInstances = FetchMatchingInstances(element.DmaId, element.ElementId, parameter, InstanceTextBox.Text);
 					if (matchingInstances.Count == 0)
 					{
-						InstanceTextBox.ValidationState = UIValidationState.Invalid;
-						InstanceTextBox.ValidationText = "No matching instances found";
+						ValidationState = UIValidationState.Invalid;
+						ValidationText = "No matching instances found";
 						return null;
 					}
 				}
@@ -122,7 +129,7 @@
 
 		protected override bool IsValidForRAD(ParameterInfo info)
 		{
-			return base.IsValidForRAD(info) && (info.RealTimeTrending || info.AverageTrending) && info.IsTrendAnalyticsSupported;
+			return base.IsValidForRAD(info) && (info.RealTimeTrending || info.AverageTrending);
 		}
 
 		private void OnSelectedElementChanged()

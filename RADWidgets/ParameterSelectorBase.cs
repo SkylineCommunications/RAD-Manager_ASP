@@ -1,12 +1,13 @@
 ﻿namespace RADWidgets
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T> where T : MultiSelectorItem
+	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T>, IValidationWidget where T : MultiSelectorItem
 	{
 		private IEngine engine_;
 		private DropDown<ParameterInfo> parametersDropDown_;
@@ -26,7 +27,7 @@
 
 			var instanceLabel = new Label("Display key filter");
 			instanceTextBox_ = new TextBox();
-			instanceTextBox_.Changed += (sender, args) => instanceTextBox_.ValidationState = UIValidationState.Valid;
+			instanceTextBox_.Changed += (sender, args) => OnInstanceChanged();
 
 			int parametersCol = leaveFirstColEmpty ? 1 : 0;
 			int parametersColSpan = leaveFirstColEmpty ? 1 : 2;
@@ -34,6 +35,20 @@
 			AddWidget(parametersDropDown_, 1, parametersCol, 1, parametersColSpan);
 			AddWidget(instanceLabel, 0, 2);
 			AddWidget(instanceTextBox_, 1, 2);
+		}
+
+		public event EventHandler<EventArgs> InstanceChanged;
+
+		public UIValidationState ValidationState
+		{
+			get => instanceTextBox_.ValidationState;
+			set => instanceTextBox_.ValidationState = value;
+		}
+
+		public string ValidationText
+		{
+			get => instanceTextBox_.ValidationText;
+			set => instanceTextBox_.ValidationText = value;
 		}
 
 		protected IEngine Engine => engine_;
@@ -59,7 +74,7 @@
 
 		protected virtual bool IsValidForRAD(ParameterInfo info)
 		{
-			//TODO: would be better to put this in SLNetTypes at some point
+			// TODO: would be better to put this in SLNetTypes at some point
 			if (info == null)
 				return false;
 			if ((info.ID >= 64300 && info.ID < 70000) || (info.ID >= 100000 && info.ID < 1000000))
@@ -88,6 +103,12 @@
 		{
 			parametersDropDown_.Options = new List<Option<ParameterInfo>>();
 			OnSelectedParameterChanged();
+		}
+
+		private void OnInstanceChanged()
+		{
+			instanceTextBox_.ValidationState = UIValidationState.Valid;
+			InstanceChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

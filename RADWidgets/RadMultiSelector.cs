@@ -3,6 +3,7 @@ namespace RADWidgets
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.AutomationUI.Objects;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -115,20 +116,27 @@ namespace RADWidgets
 		/// </summary>
 		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;
 
+		protected virtual bool AddItem(T item)
+		{
+			string key = item.GetKey();
+			if (selectedItems_.ContainsKey(key))
+				return false;
+
+			selectedItems_.Add(key, item);
+			var treeViewItem = new TreeViewItem(item.GetDisplayValue(), key);
+			selectedItemsView_.Items = selectedItemsView_.Items.Concat(new List<TreeViewItem>() { treeViewItem }).ToList();
+			Changed?.Invoke(this, EventArgs.Empty);
+
+			return true;
+		}
+
 		private void AddButton_Pressed(object sender, EventArgs e)
 		{
 			var selectedItem = itemSelector_.SelectedItem;
 			if (selectedItem == null)
 				return;
 
-			string key = selectedItem.GetKey();
-			if (selectedItems_.ContainsKey(key))
-				return;
-
-			selectedItems_.Add(key, selectedItem);
-			var item = new TreeViewItem(selectedItem.GetDisplayValue(), key);
-			selectedItemsView_.Items = selectedItemsView_.Items.Concat(new List<TreeViewItem>() { item }).ToList();
-			Changed?.Invoke(this, EventArgs.Empty);
+			AddItem(selectedItem);
 		}
 
 		private void RemoveButton_Pressed(object sender, EventArgs e)
