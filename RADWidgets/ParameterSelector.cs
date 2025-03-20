@@ -87,15 +87,24 @@
 			get
 			{
 				var element = elementsDropDown_.Selected;
-				var parameter = parametersDropDown_.Selected;
+				var parameter = ParametersDropDown.Selected;
 				if (element == null || parameter == null)
+				{
+					InstanceTextBox.ValidationState = UIValidationState.Invalid;
+					InstanceTextBox.ValidationText = "Element or parameter not found";
 					return null;
+				}
+
 				var matchingInstances = new List<string>();
 				if (parameter.IsTableColumn && parameter.ParentTable != null)
 				{
-					matchingInstances = FetchMatchingInstances(element.DmaId, element.ElementId, parameter, instanceTextBox_.Text);
+					matchingInstances = FetchMatchingInstances(element.DmaId, element.ElementId, parameter, InstanceTextBox.Text);
 					if (matchingInstances.Count == 0)
-						return null; //TODO: probably show an error here
+					{
+						InstanceTextBox.ValidationState = UIValidationState.Invalid;
+						InstanceTextBox.ValidationText = "No matching instances found";
+						return null;
+					}
 				}
 
 				return new ParameterSelectorInfo
@@ -105,7 +114,7 @@
 					DataMinerID = element.DmaId,
 					ElementID = element.ElementId,
 					ParameterID = parameter.ID,
-					DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : string.Empty,
+					DisplayKeyFilter = parameter.IsTableColumn ? InstanceTextBox.Text : string.Empty,
 					MatchingInstances = matchingInstances,
 				};
 			}
@@ -126,7 +135,7 @@
 				return;
 			}
 
-			var protocol = Utils.FetchElementProtocol(engine_, element.DmaId, element.ElementId);
+			var protocol = Utils.FetchElementProtocol(Engine, element.DmaId, element.ElementId);
 			SetPossibleParameters(protocol);
 		}
 
@@ -139,10 +148,10 @@
 					KeyFilter = displayKeyFilter,
 					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
 				};
-				var indicesResponse = engine_.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
+				var indicesResponse = Engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
 				if (indicesResponse == null)
 				{
-					engine_.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}", LogType.Error, 5);
+					Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}", LogType.Error, 5);
 					return new List<string>();
 				}
 
@@ -150,7 +159,7 @@
 			}
 			catch (Exception e)
 			{
-				engine_.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
+				Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
 				return new List<string>();
 			}
 		}

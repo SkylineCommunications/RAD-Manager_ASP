@@ -1,25 +1,55 @@
-﻿using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace RADWidgets
+﻿namespace RADWidgets
 {
+	using System.Collections.Generic;
+	using System.Linq;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T> where T : MultiSelectorItem
 	{
-		protected IEngine engine_;
-		protected DropDown<ParameterInfo> parametersDropDown_;
-		protected TextBox instanceTextBox_;
+		private IEngine engine_;
+		private DropDown<ParameterInfo> parametersDropDown_;
+		private TextBox instanceTextBox_;
+
+		protected ParameterSelectorBase(IEngine engine, bool leaveFirstColEmpty)
+		{
+			engine_ = engine;
+
+			var parametersLabel = new Label("Parameter");
+			parametersDropDown_ = new DropDown<ParameterInfo>()
+			{
+				IsDisplayFilterShown = true,
+				IsSorted = true,
+			};
+			parametersDropDown_.Changed += (sender, args) => OnSelectedParameterChanged();
+
+			var instanceLabel = new Label("Display key filter");
+			instanceTextBox_ = new TextBox();
+			instanceTextBox_.Changed += (sender, args) => instanceTextBox_.ValidationState = UIValidationState.Valid;
+
+			int parametersCol = leaveFirstColEmpty ? 1 : 0;
+			int parametersColSpan = leaveFirstColEmpty ? 1 : 2;
+			AddWidget(parametersLabel, 0, parametersCol, 1, parametersColSpan);
+			AddWidget(parametersDropDown_, 1, parametersCol, 1, parametersColSpan);
+			AddWidget(instanceLabel, 0, 2);
+			AddWidget(instanceTextBox_, 1, 2);
+		}
+
+		protected IEngine Engine => engine_;
+
+		protected DropDown<ParameterInfo> ParametersDropDown => parametersDropDown_;
+
+		protected TextBox InstanceTextBox => instanceTextBox_;
 
 		protected void OnSelectedParameterChanged()
 		{
 			var parameter = parametersDropDown_.Selected;
-			parametersDropDown_.Tooltip = parameter?.DisplayName ?? "";
+			parametersDropDown_.Tooltip = parameter?.DisplayName ?? string.Empty;
 			if (parameter?.IsTableColumn != true)
 			{
 				instanceTextBox_.IsEnabled = false;
-				instanceTextBox_.Text = "";
+				instanceTextBox_.Text = string.Empty;
 			}
 			else
 			{
@@ -58,29 +88,6 @@ namespace RADWidgets
 		{
 			parametersDropDown_.Options = new List<Option<ParameterInfo>>();
 			OnSelectedParameterChanged();
-		}
-
-		protected ParameterSelectorBase(IEngine engine, bool leaveFirstColEmpty)
-		{
-			engine_ = engine;
-
-			var parametersLabel = new Label("Parameter");
-			parametersDropDown_ = new DropDown<ParameterInfo>()
-			{
-				IsDisplayFilterShown = true,
-				IsSorted = true,
-			};
-			parametersDropDown_.Changed += (sender, args) => OnSelectedParameterChanged();
-
-			var instanceLabel = new Label("Display key filter");
-			instanceTextBox_ = new TextBox();
-
-			int parametersCol = leaveFirstColEmpty ? 1 : 0;
-			int parametersColSpan = leaveFirstColEmpty ? 1 : 2;
-			AddWidget(parametersLabel, 0, parametersCol, 1, parametersColSpan);
-			AddWidget(parametersDropDown_, 1, parametersCol, 1, parametersColSpan);
-			AddWidget(instanceLabel, 0, 2);
-			AddWidget(instanceTextBox_, 1, 2);
 		}
 	}
 }

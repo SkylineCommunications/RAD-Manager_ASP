@@ -41,7 +41,7 @@
 		{
 			get
 			{
-				var parameter = parametersDropDown_.Selected;
+				var parameter = ParametersDropDown.Selected;
 				if (parameter == null)
 					return null;
 
@@ -49,7 +49,7 @@
 				{
 					ParameterName = parameter.DisplayName,
 					ParameterID = parameter.ID,
-					DisplayKeyFilter = parameter.IsTableColumn ? instanceTextBox_.Text : string.Empty,
+					DisplayKeyFilter = parameter.IsTableColumn ? InstanceTextBox.Text : string.Empty,
 				};
 			}
 		}
@@ -70,11 +70,11 @@
 			try
 			{
 				var request = new GetProtocolMessage(protocolName, protocolVersion);
-				return engine_.SendSLNetSingleResponseMessage(request) as GetProtocolInfoResponseMessage;
+				return Engine.SendSLNetSingleResponseMessage(request) as GetProtocolInfoResponseMessage;
 			}
 			catch (Exception e)
 			{
-				engine_.Log($"Could not fetch protocol with name '{protocolName}' and version '{protocolVersion}': {e}");
+				Engine.Log($"Could not fetch protocol with name '{protocolName}' and version '{protocolVersion}': {e}");
 				return null;
 			}
 		}
