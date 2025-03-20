@@ -86,7 +86,7 @@ namespace AddParameterGroup
 				Options = elements.Select(e => new Option<Element>(e.ElementName, e)),
 				IsDisplayFilterShown = true,
 				IsSorted = true,
-				MinWidth = 225,
+				MinWidth = 300,
 			};
 			elementsDropDown_.Changed += (sender, args) => OnSelectedElementChanged();
 			OnSelectedElementChanged();
