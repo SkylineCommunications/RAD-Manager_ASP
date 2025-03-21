@@ -97,6 +97,7 @@ namespace RADWidgets
 				if (value == null)
 				{
 					selectedItemsView_.Items = new List<TreeViewItem>();
+					Changed?.Invoke(this, EventArgs.Empty);
 					return;
 				}
 
@@ -108,6 +109,7 @@ namespace RADWidgets
 				}
 
 				selectedItemsView_.Items = selectedItems_.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
+				Changed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
