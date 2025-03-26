@@ -44,9 +44,9 @@ namespace RADWidgets
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
 	public abstract class MultiSelector<T> : Section where T : MultiSelectorItem
 	{
-		private MultiSelectorItemSelector<T> itemSelector_;
+		private readonly MultiSelectorItemSelector<T> itemSelector_;
+		private readonly TreeView selectedItemsView_;
 		private Dictionary<string, T> selectedItems_ = new Dictionary<string, T>();
-		private TreeView selectedItemsView_;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.

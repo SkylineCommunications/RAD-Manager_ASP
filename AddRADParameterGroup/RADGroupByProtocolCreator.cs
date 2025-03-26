@@ -12,15 +12,15 @@
 
 	public class RADGroupByProtocolCreator : Section
 	{
-		private IEngine engine_;
-		private Label groupPrefixLabel_;
-		private TextBox groupPrefixTextBox_;
-		private MultiParameterPerProtocolSelector parameterSelector_;
+		private readonly IEngine engine_;
+		private readonly Label groupPrefixLabel_;
+		private readonly TextBox groupPrefixTextBox_;
+		private readonly MultiParameterPerProtocolSelector parameterSelector_;
+		private readonly RADGroupOptionsEditor optionsEditor_;
+		private readonly Label detailsLabel_;
+		private Dictionary<string, List<ParameterKey>> selectedInstancesPerElement_ = new Dictionary<string, List<ParameterKey>>();
 		private bool parameterSelectorValid_ = false;
 		private bool elementsOnProtocol_ = false;
-		private RADGroupOptionsEditor optionsEditor_;
-		private Dictionary<string, List<ParameterKey>> selectedInstancesPerElement_ = new Dictionary<string, List<ParameterKey>>();
-		private Label detailsLabel_;
 
 		public RADGroupByProtocolCreator(IEngine engine)
 		{
@@ -88,7 +88,7 @@
 
 		private void UpdateIsValid()
 		{
-			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_ & elementsOnProtocol_;
+			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_ && elementsOnProtocol_;
 			detailsLabel_.IsVisible = IsValid;
 
 			var texts = new List<string>(2);

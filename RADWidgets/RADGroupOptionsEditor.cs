@@ -17,11 +17,11 @@
 	/// </summary>
 	public class RADGroupOptionsEditor : Section
 	{
-		private CheckBox updateModelCheckBox_;
-		private CheckBox anomalyThresholdOverrideCheckBox_;
-		private Numeric anomalyThresholdNumeric_;
-		private CheckBox minimalDurationOverrideCheckBox_;
-		private Time minimalDurationTime_;
+		private readonly CheckBox updateModelCheckBox_;
+		private readonly CheckBox anomalyThresholdOverrideCheckBox_;
+		private readonly Numeric anomalyThresholdNumeric_;
+		private readonly CheckBox minimalDurationOverrideCheckBox_;
+		private readonly Time minimalDurationTime_;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RADGroupOptionsEditor"/> class.

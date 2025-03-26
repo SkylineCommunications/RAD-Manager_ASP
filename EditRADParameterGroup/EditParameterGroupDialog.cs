@@ -1,16 +1,14 @@
 ﻿namespace EditRADParameterGroup
 {
 	using System;
-	using System.Linq;
 	using RADWidgets;
-	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class EditParameterGroupDialog : Dialog
 	{
-		private RADGroupEditor groupEditor_;
-		private Button okButton_;
+		private readonly RADGroupEditor groupEditor_;
+		private readonly Button okButton_;
 
 		public EditParameterGroupDialog(IEngine engine, RADGroupSettings groupSettings, int dataMinerID) : base(engine)
 		{

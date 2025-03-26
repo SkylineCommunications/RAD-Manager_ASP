@@ -25,7 +25,6 @@
 	<Script>
 		<Exe id="3" type="csharp">
 			<Value><![CDATA[[Project:EditRADParameterGroup]]]></Value>
-			<!--<Param type="debug">true</Param>-->
 			<Message></Message>
 		</Exe>
 	</Script>

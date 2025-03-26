@@ -47,7 +47,7 @@
 		public static List<string> ParseScriptParameterValue(string parameterValue)
 		{
 			if (parameterValue == null)
-				return null;
+				return new List<string>();
 			if (!parameterValue.StartsWith("[") || !parameterValue.EndsWith("]") || parameterValue == "[]")
 				return new List<string>();
 

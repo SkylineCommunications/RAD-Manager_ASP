@@ -9,9 +9,9 @@
 
 	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T>, IValidationWidget where T : MultiSelectorItem
 	{
-		private IEngine engine_;
-		private DropDown<ParameterInfo> parametersDropDown_;
-		private TextBox instanceTextBox_;
+		private readonly IEngine engine_;
+		private readonly DropDown<ParameterInfo> parametersDropDown_;
+		private readonly TextBox instanceTextBox_;
 
 		protected ParameterSelectorBase(IEngine engine, bool leaveFirstColEmpty)
 		{

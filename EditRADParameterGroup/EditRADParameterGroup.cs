@@ -55,7 +55,13 @@ public class Script
 				};
 				var response = app.Engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupInfoResponseMessage;
 				if (response?.GroupInfo == null)
-					throw new Exception("No response or a response of the wrong type received");
+				{
+					Utils.ShowMessageDialog(
+						app,
+						"Failed to fetch parameter group information",
+						"Failed to fetch parameter group information: no response or a response of the wrong type received");
+					return;
+				}
 
 				settings = new RADGroupSettings()
 				{

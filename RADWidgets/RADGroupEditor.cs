@@ -18,11 +18,11 @@
 
 	public class RADGroupEditor : Section
 	{
-		private Label groupNameLabel_;
-		private TextBox groupNameTextBox_;
-		private MultiParameterSelector parameterSelector_;
+		private readonly Label groupNameLabel_;
+		private readonly TextBox groupNameTextBox_;
+		private readonly MultiParameterSelector parameterSelector_;
+		private readonly RADGroupOptionsEditor optionsEditor_;
 		private bool parameterSelectorValid_ = false;
-		private RADGroupOptionsEditor optionsEditor_;
 
 		public RADGroupEditor(IEngine engine, RADGroupSettings settings = null)
 		{

@@ -20,10 +20,10 @@
 
 	public class AddParameterGroupDialog : Dialog
 	{
-		private EnumDropDown<AddGroupType> addTypeDropDown_;
-		private RADGroupEditor groupEditor_;
-		private RADGroupByProtocolCreator groupByProtocolCreator_;
-		private Button okButton_;
+		private readonly EnumDropDown<AddGroupType> addTypeDropDown_;
+		private readonly RADGroupEditor groupEditor_;
+		private readonly RADGroupByProtocolCreator groupByProtocolCreator_;
+		private readonly Button okButton_;
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{

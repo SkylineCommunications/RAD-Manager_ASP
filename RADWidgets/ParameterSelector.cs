@@ -62,7 +62,7 @@
 
 	public class ParameterSelector : ParameterSelectorBase<ParameterSelectorInfo>
 	{
-		private DropDown<Element> elementsDropDown_;
+		private readonly DropDown<Element> elementsDropDown_;
 
 		public ParameterSelector(IEngine engine) : base(engine, true)
 		{

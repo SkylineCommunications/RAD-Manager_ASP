@@ -2,7 +2,6 @@
 {
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Runtime.CompilerServices;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 
@@ -52,7 +51,7 @@
 			{
 				var selector = ItemSelector as ParameterSelector;
 				selector.ValidationState = UIValidationState.Invalid;
-				selector.ValidationText = newParameters.Count() > 1 ? "Parameters already selected" : "Parameter already selected";
+				selector.ValidationText = newParameters.Count > 1 ? "Parameters already selected" : "Parameter already selected";
 				parameterAlreadySelected_ = true;
 				return false;
 			}
