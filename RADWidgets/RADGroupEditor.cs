@@ -21,10 +21,15 @@
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
 		private readonly RADGroupOptionsEditor optionsEditor_;
+		private readonly List<string> existingGroupNames_;
 		private bool parameterSelectorValid_ = false;
 
-		public RADGroupEditor(IEngine engine, RADGroupSettings settings = null)
+		public RADGroupEditor(IEngine engine, List<string> existingGroupNames, RADGroupSettings settings = null)
 		{
+			existingGroupNames_ = existingGroupNames;
+			if (settings != null) // The current group name should be accepted as valid
+				existingGroupNames_.Remove(settings.GroupName);
+
 			var groupNameLabel = new Label("Group name");
 			groupNameTextBox_ = new TextBox()
 			{
@@ -32,7 +37,6 @@
 				MinWidth = 600,
 			};
 			groupNameTextBox_.Changed += (sender, args) => OnGroupNameTextBoxChanged();
-			groupNameTextBox_.ValidationText = "Provide a group name";
 
 			parameterSelector_ = new MultiParameterSelector(engine, settings?.Parameters);
 			parameterSelector_.Changed += (sender, args) => OnParameterSelectorChanged();
@@ -76,9 +80,9 @@
 		{
 			IsValid = groupNameTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_;
 			if (groupNameTextBox_.ValidationState == UIValidationState.Invalid && !parameterSelectorValid_)
-				ValidationText = "Provide a group name and select at least two instances";
+				ValidationText = "Provide a valid group name and select at least two instances";
 			else if (groupNameTextBox_.ValidationState == UIValidationState.Invalid)
-				ValidationText = "Provide a group name";
+				ValidationText = "Provide a valid group name";
 			else if (!parameterSelectorValid_)
 				ValidationText = "Select at least two instances";
 			else
@@ -99,12 +103,23 @@
 
 		private void OnGroupNameTextBoxChanged()
 		{
-			UIValidationState newState = string.IsNullOrEmpty(groupNameTextBox_.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
-			if (newState != groupNameTextBox_.ValidationState)
+			if (string.IsNullOrEmpty(groupNameTextBox_.Text))
 			{
-				groupNameTextBox_.ValidationState = newState;
-				UpdateIsValid();
+				groupNameTextBox_.ValidationState = UIValidationState.Invalid;
+				groupNameTextBox_.ValidationText = "Provide a group name";
 			}
+			else if (existingGroupNames_.Contains(groupNameTextBox_.Text))
+			{
+				groupNameTextBox_.ValidationState = UIValidationState.Invalid;
+				groupNameTextBox_.ValidationText = "Group name already exists";
+			}
+			else
+			{
+				groupNameTextBox_.ValidationState = UIValidationState.Valid;
+				groupNameTextBox_.ValidationText = string.Empty;
+			}
+
+			UpdateIsValid();
 		}
 	}
 }

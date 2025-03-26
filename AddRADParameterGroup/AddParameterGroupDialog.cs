@@ -36,10 +36,11 @@
 			};
 			addTypeDropDown_.Changed += (sender, args) => OnAddTypeChanged();
 
-			groupEditor_ = new RADGroupEditor(engine);
+			var existingGroupNames = Utils.FetchRadGroupNames(engine);
+			groupEditor_ = new RADGroupEditor(engine, existingGroupNames);
 			groupEditor_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 
-			groupByProtocolCreator_ = new RADGroupByProtocolCreator(engine);
+			groupByProtocolCreator_ = new RADGroupByProtocolCreator(engine, existingGroupNames);
 			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
 			okButton_ = new Button("Add group");

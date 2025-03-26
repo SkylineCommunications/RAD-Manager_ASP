@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
+	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Helper;
 	using Skyline.DataMiner.Net.Messages;
@@ -150,7 +151,11 @@
 				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
 				if (indicesResponse == null)
 				{
-					engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}", LogType.Error, 5);
+					engine.Log(
+						$"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: " +
+						$"no response, or response of the wrong type received",
+						LogType.Error,
+						5);
 					return new List<string> { };
 				}
 
@@ -160,6 +165,27 @@
 			{
 				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
 				return new List<string> { };
+			}
+		}
+
+		public static List<string> FetchRadGroupNames(IEngine engine)
+		{
+			try
+			{
+				var request = new GetMADParameterGroupsMessage();
+				var response = engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
+				if (response == null)
+				{
+					engine.Log("Could not fetch RAD group names: no response or response of the wrong type received", LogType.Error, 5);
+					return new List<string> { };
+				}
+
+				return response.GroupNames;
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Could not fetch RAD group names: {e}", LogType.Error, 5);
+				return new List<string>() { };
 			}
 		}
 

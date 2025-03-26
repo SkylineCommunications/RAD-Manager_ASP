@@ -16,7 +16,7 @@
 			OriginalGroupName = groupSettings.GroupName;
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
-			groupEditor_ = new RADGroupEditor(engine, groupSettings);
+			groupEditor_ = new RADGroupEditor(engine, Utils.FetchRadGroupNames(engine), groupSettings);
 			groupEditor_.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			okButton_ = new Button("Apply");
