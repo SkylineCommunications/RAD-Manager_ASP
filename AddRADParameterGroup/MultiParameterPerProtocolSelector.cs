@@ -9,10 +9,10 @@
 
 	public class MultiParameterPerProtocolSelector : Section
 	{
-		private IEngine engine_;
-		private DropDown<GetProtocolsResponseMessage> protocolNameDropDown_;
-		private DropDown<string> protocolVersionDropDown_;
-		private MultiProtocolParameterSelector parameterSelector_;
+		private readonly IEngine engine_;
+		private readonly DropDown<GetProtocolsResponseMessage> protocolNameDropDown_;
+		private readonly DropDown<string> protocolVersionDropDown_;
+		private readonly MultiProtocolParameterSelector parameterSelector_;
 
 		public MultiParameterPerProtocolSelector(IEngine engine) : base()
 		{
@@ -60,6 +60,14 @@
 			return parameterSelector_.GetSelected();
 		}
 
+		private static Option<string> GetProtocolVersionOption(string version)
+		{
+			if (version.StartsWith("Production"))
+				return new Option<string>(version, "Production");
+			else
+				return new Option<string>(version);
+		}
+
 		private void OnSelectedProtocolVersionChanged()
 		{
 			var protocol = protocolNameDropDown_.Selected;
@@ -76,7 +84,7 @@
 			if (protocol == null)
 				protocolVersionDropDown_.Options = new List<Option<string>>();
 			else
-				protocolVersionDropDown_.Options = protocol.Versions.OrderBy(v => v).Select(s => new Option<string>(s)).ToList();
+				protocolVersionDropDown_.Options = protocol.Versions.OrderBy(v => v).Select(s => GetProtocolVersionOption(s)).ToList();
 			OnSelectedProtocolVersionChanged();
 		}
 
