@@ -82,9 +82,9 @@
 				return false;
 			if (info.WriteType || info.IsDuplicate)
 				return false;
-			if(!info.IsTrendAnalyticsSupported)
+			if (!info.IsTrendAnalyticsSupported)
 				return false;
-			return !info.WriteType && !info.IsDuplicate;
+			return true;
 		}
 
 		protected void SetPossibleParameters(GetProtocolInfoResponseMessage protocol)
