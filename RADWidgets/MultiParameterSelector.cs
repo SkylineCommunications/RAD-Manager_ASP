@@ -28,6 +28,7 @@
 						ParameterID = parameter.ParameterID,
 						DisplayKeyFilter = parameter.DisplayInstance,
 						MatchingInstances = new List<string>() { parameter.Instance },
+						IsTableColumn = paramInfo?.IsTableColumn ?? false,
 					});
 				}
 

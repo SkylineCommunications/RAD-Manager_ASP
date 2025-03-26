@@ -22,6 +22,8 @@
 
 		public string DisplayKeyFilter { get; set; }
 
+		public bool IsTableColumn { get; set; }
+
 		/// <summary>
 		/// Gets or sets a list of instance primary keys for which the display key matches the provided filter.
 		/// </summary>
@@ -37,7 +39,7 @@
 
 		public override string GetDisplayValue()
 		{
-			if (!string.IsNullOrEmpty(DisplayKeyFilter))
+			if (IsTableColumn)
 			{
 				if (MatchingInstances.Count != 1)
 					return $"{ElementName}/{ParameterName}/{DisplayKeyFilter} ({MatchingInstances.Count} matching instances)";
@@ -122,6 +124,7 @@
 					ParameterID = parameter.ID,
 					DisplayKeyFilter = parameter.IsTableColumn ? InstanceTextBox.Text : string.Empty,
 					MatchingInstances = matchingInstances,
+					IsTableColumn = parameter.IsTableColumn,
 				};
 			}
 		}
