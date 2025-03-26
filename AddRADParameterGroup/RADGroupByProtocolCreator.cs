@@ -13,7 +13,6 @@
 	public class RADGroupByProtocolCreator : Section
 	{
 		private readonly IEngine engine_;
-		private readonly Label groupPrefixLabel_;
 		private readonly TextBox groupPrefixTextBox_;
 		private readonly MultiParameterPerProtocolSelector parameterSelector_;
 		private readonly RADGroupOptionsEditor optionsEditor_;
@@ -25,7 +24,7 @@
 		public RADGroupByProtocolCreator(IEngine engine)
 		{
 			engine_ = engine;
-			groupPrefixLabel_ = new Label("Group name prefix");
+			var groupPrefixLabel = new Label("Group name prefix");
 
 			groupPrefixTextBox_ = new TextBox()
 			{
@@ -51,7 +50,7 @@
 			OnParameterSelectorChanged();
 
 			int row = 0;
-			AddWidget(groupPrefixLabel_, row, 0);
+			AddWidget(groupPrefixLabel, row, 0);
 			AddWidget(groupPrefixTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
 			++row;
 

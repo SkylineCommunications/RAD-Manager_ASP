@@ -18,7 +18,6 @@
 
 	public class RADGroupEditor : Section
 	{
-		private readonly Label groupNameLabel_;
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
 		private readonly RADGroupOptionsEditor optionsEditor_;
@@ -26,7 +25,7 @@
 
 		public RADGroupEditor(IEngine engine, RADGroupSettings settings = null)
 		{
-			groupNameLabel_ = new Label("Group name");
+			var groupNameLabel = new Label("Group name");
 			groupNameTextBox_ = new TextBox()
 			{
 				Text = settings?.GroupName ?? string.Empty,
@@ -44,7 +43,7 @@
 			OnParameterSelectorChanged();
 
 			int row = 0;
-			AddWidget(groupNameLabel_, row, 0);
+			AddWidget(groupNameLabel, row, 0);
 			AddWidget(groupNameTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
 			++row;
 
