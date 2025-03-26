@@ -1,9 +1,12 @@
 ﻿namespace AddParameterGroup
 {
 	using System;
+	using System.Collections.Generic;
 	using System.ComponentModel;
+	using System.Linq;
 	using AddRADParameterGroup;
 	using RADWidgets;
+	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -66,11 +69,23 @@
 
 		public event EventHandler Cancelled;
 
-		public AddGroupType AddType => addTypeDropDown_.Selected;
-
-		public RADGroupSettings GroupSettings => groupEditor_.IsVisible ? groupEditor_.Settings : null;
-
-		public RADGroupByProtocolSettings GroupByProtocolSettings => groupByProtocolCreator_.IsVisible ? groupByProtocolCreator_.Settings : null;
+		public List<MADGroupInfo> GetGroupsToAdd()
+		{
+			if (addTypeDropDown_.Selected == AddGroupType.Single)
+			{
+				var groupInfo = new MADGroupInfo(
+					groupEditor_.Settings.GroupName,
+					groupEditor_.Settings.Parameters.ToList(),
+					groupEditor_.Settings.Options.UpdateModel,
+					groupEditor_.Settings.Options.AnomalyThreshold,
+					groupEditor_.Settings.Options.MinimalDuration);
+				return new List<MADGroupInfo>() { groupInfo };
+			}
+			else
+			{
+				return groupByProtocolCreator_.GetGroupsToAdd();
+			}
+		}
 
 		private void OnEditorValidationChanged(bool isValid, string validationText)
 		{

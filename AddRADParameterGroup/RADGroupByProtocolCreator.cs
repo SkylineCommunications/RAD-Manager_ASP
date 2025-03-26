@@ -2,34 +2,29 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using AddParameterGroup;
 	using RADWidgets;
+	using Skyline.DataMiner.Analytics.DataTypes;
+	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class RADGroupByProtocolSettings
-	{
-		public string GroupPrefix { get; set; }
-
-		public string ProtocolName { get; set; }
-
-		public string ProtocolVersion { get; set; }
-
-		public List<ProtocolParameterSelectorInfo> Parameters { get; set; }
-
-		public RADGroupOptions Options { get; set; }
-	}
-
 	public class RADGroupByProtocolCreator : Section
 	{
+		private IEngine engine_;
 		private Label groupPrefixLabel_;
 		private TextBox groupPrefixTextBox_;
 		private MultiParameterPerProtocolSelector parameterSelector_;
 		private bool parameterSelectorValid_ = false;
+		private bool elementsOnProtocol_ = false;
 		private RADGroupOptionsEditor optionsEditor_;
+		private Dictionary<string, List<ParameterKey>> selectedInstancesPerElement_ = new Dictionary<string, List<ParameterKey>>();
+		private Label detailsLabel_;
 
 		public RADGroupByProtocolCreator(IEngine engine)
 		{
+			engine_ = engine;
 			groupPrefixLabel_ = new Label("Group name prefix");
 
 			groupPrefixTextBox_ = new TextBox()
@@ -47,6 +42,11 @@
 
 			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount);
 
+			detailsLabel_ = new Label()
+			{
+				MaxWidth = 900,
+			};
+
 			OnGroupPrefixTextBoxChanged();
 			OnParameterSelectorChanged();
 
@@ -59,52 +59,131 @@
 			row += parameterSelector_.RowCount;
 
 			AddSection(optionsEditor_, row, 0);
+			row += optionsEditor_.RowCount;
+
+			AddWidget(detailsLabel_, row, 0, 1, parameterSelector_.ColumnCount, HorizontalAlignment.Stretch);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
-
-		public RADGroupByProtocolSettings Settings
-		{
-			get
-			{
-				return new RADGroupByProtocolSettings
-				{
-					GroupPrefix = groupPrefixTextBox_.Text,
-					ProtocolName = parameterSelector_.ProtocolName,
-					ProtocolVersion = parameterSelector_.ProtocolVersion,
-					Parameters = parameterSelector_.SelectedParameters,
-					Options = optionsEditor_.Options,
-				};
-			}
-		}
 
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
 
+		public List<MADGroupInfo> GetGroupsToAdd()
+		{
+			var groups = new List<MADGroupInfo>(selectedInstancesPerElement_.Count);
+			foreach (var p in selectedInstancesPerElement_)
+			{
+				groups.Add(new MADGroupInfo(
+					$"{groupPrefixTextBox_.Text} ({p.Key})",
+					p.Value,
+					optionsEditor_.Options.UpdateModel,
+					optionsEditor_.Options.AnomalyThreshold,
+					optionsEditor_.Options.MinimalDuration));
+			}
+
+			return groups;
+		}
+
 		private void UpdateIsValid()
 		{
-			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_;
-			if (groupPrefixTextBox_.ValidationState == UIValidationState.Invalid && !parameterSelectorValid_)
-				ValidationText = "Provide a group name prefix and select at least two instances";
-			else if (groupPrefixTextBox_.ValidationState == UIValidationState.Invalid)
-				ValidationText = "Provide a group name prefix";
-			else if (!parameterSelectorValid_)
-				ValidationText = "Select at least two instances";
-			else
-				ValidationText = string.Empty;
+			IsValid = groupPrefixTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_ & elementsOnProtocol_;
+			detailsLabel_.IsVisible = IsValid;
 
+			var texts = new List<string>(2);
+			if (groupPrefixTextBox_.ValidationState == UIValidationState.Invalid)
+				texts.Add("provide a group name prefix");
+			if (!elementsOnProtocol_)
+				texts.Add("select a protocol with at least one element");
+			else if (!parameterSelectorValid_)
+				texts.Add("select at least two instances");
+
+			// Capitalize the first letter of the first text
+			if (texts.Count > 0)
+				texts[0] = string.Concat(texts[0][0].ToString().ToUpper(), texts[0].Substring(1));
+
+			ValidationText = Utils.HumanReadableJoin(texts);
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void UpdateSelectedInstancesPerElement()
+		{
+			var elements = engine_.FindElementsByProtocol(parameterSelector_.ProtocolName, parameterSelector_.ProtocolVersion);
+			if (elements == null || elements.Length == 0)
+			{
+				selectedInstancesPerElement_ = new Dictionary<string, List<ParameterKey>>();
+				return;
+			}
+
+			selectedInstancesPerElement_ = new Dictionary<string, List<ParameterKey>>();
+			foreach (var element in elements)
+			{
+				var pKeys = new List<ParameterKey>();
+				foreach (var parameter in parameterSelector_.SelectedParameters)
+				{
+					if (parameter.ParentTableID == null)
+					{
+						pKeys.Add(new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID));
+					}
+					else
+					{
+						var matchingInstances = Utils.FetchMatchingInstances(engine_, element.DmaId, element.ElementId, parameter.ParentTableID.Value, parameter.DisplayKeyFilter);
+						pKeys.AddRange(matchingInstances.Select(i => new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID, i)));
+					}
+				}
+
+				engine_.GenerateInformation($"Element {element.ElementName} has parameters {pKeys}"); //TODO: remove
+				selectedInstancesPerElement_[element.ElementName] = pKeys;
+			}
+		}
+
+		private void UpdateDetailsLabel()
+		{
+			detailsLabel_.IsVisible = IsValid;
+			if (!IsValid)
+				return;
+
+			if (selectedInstancesPerElement_.Count == 0)
+			{
+				detailsLabel_.Text = "No elements found on the selected protocol";
+				return;
+			}
+
+			var elementsWithGroups = selectedInstancesPerElement_.Where(p => p.Value.Count >= 2).ToList();
+			var elementsWithTooFewInstances = selectedInstancesPerElement_.Where(p => p.Value.Count < 2).ToList();
+
+			List<string> lines = new List<string>();
+			if (elementsWithGroups.Count > 0)
+			{
+				lines.Add("The following groups will be created:");
+				lines.AddRange(elementsWithGroups.OrderBy(k => k.Key).Select(p => $"\t'{groupPrefixTextBox_.Text} ({p.Key})' with {p.Value.Count} instances").Take(5));
+				if (elementsWithGroups.Count > 5)
+					lines.Add($"\t... and {elementsWithGroups.Count - 5} more");
+			}
+
+			if (elementsWithTooFewInstances.Count > 0)
+			{
+				lines.Add($"Too few instances have been selected for {Utils.HumanReadableJoin(elementsWithTooFewInstances.Select(s => $"'{s.Key}'"))}");
+			}
+
+			detailsLabel_.Text = string.Join("\n", lines);
 		}
 
 		private void OnParameterSelectorChanged()
 		{
-			bool newState = parameterSelector_.SelectedParameters.Count > 0;
-			if (newState != parameterSelectorValid_)
+			UpdateSelectedInstancesPerElement();
+
+			bool newElementsOnProtocol = selectedInstancesPerElement_.Count > 0;
+			bool newParameterSelectorValid = selectedInstancesPerElement_.Values.Any(v => v.Count >= 2);
+			if (newParameterSelectorValid != parameterSelectorValid_ || newElementsOnProtocol != elementsOnProtocol_)
 			{
-				parameterSelectorValid_ = newState;
+				parameterSelectorValid_ = newParameterSelectorValid;
+				elementsOnProtocol_ = newElementsOnProtocol;
 				UpdateIsValid();
 			}
+
+			UpdateDetailsLabel();
 		}
 
 		private void OnGroupPrefixTextBoxChanged()
@@ -114,6 +193,7 @@
 			{
 				groupPrefixTextBox_.ValidationState = newState;
 				UpdateIsValid();
+				UpdateDetailsLabel();
 			}
 		}
 	}

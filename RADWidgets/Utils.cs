@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using System.Text;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Helper;
@@ -18,8 +19,6 @@
 		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
 		public static List<Tuple<int, string>> GetGroupNameAndDataMinerID(InteractiveController app)
 		{
-			app.Engine.GenerateInformation($"GroupName: {app.Engine.GetScriptParam("GroupName")?.Value}"); //TODO: remove
-			app.Engine.GenerateInformation($"DataMinerID: {app.Engine.GetScriptParam("DataMinerID")?.Value}");
 			var groupNames = ParseScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
 			var dataMinerIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
 			if (groupNames.IsNullOrEmpty() || dataMinerIDs.IsNullOrEmpty())
@@ -131,6 +130,36 @@
 			{
 				engine.Log($"Could not fetch protocol for element {dataMinerID}/{elementID}: {e}");
 				return null;
+			}
+		}
+
+		public static IEnumerable<string> FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
+		{
+			return FetchMatchingInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter);
+		}
+
+		public static IEnumerable<string> FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter)
+		{
+			try
+			{
+				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, tableParameterID)
+				{
+					KeyFilter = displayKeyFilter,
+					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
+				};
+				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
+				if (indicesResponse == null)
+				{
+					engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}", LogType.Error, 5);
+					return new List<string> { };
+				}
+
+				return indicesResponse.Indices.Select(i => i.IndexValue);
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
+				return new List<string> { };
 			}
 		}
 

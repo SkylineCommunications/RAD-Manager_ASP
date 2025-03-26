@@ -11,6 +11,8 @@
 
 		public int ParameterID { get; set; }
 
+		public int? ParentTableID { get; set; }
+
 		public string DisplayKeyFilter { get; set; }
 
 		public override string GetKey()
@@ -45,11 +47,25 @@
 				if (parameter == null)
 					return null;
 
+				int? parentTableID;
+				string displayKeyFilter;
+				if (parameter.IsTableColumn)
+				{
+					parentTableID = parameter.ParentTablePid;
+					displayKeyFilter = InstanceTextBox.Text;
+				}
+				else
+				{
+					parentTableID = null;
+					displayKeyFilter = string.Empty;
+				}
+
 				return new ProtocolParameterSelectorInfo
 				{
 					ParameterName = parameter.DisplayName,
 					ParameterID = parameter.ID,
-					DisplayKeyFilter = parameter.IsTableColumn ? InstanceTextBox.Text : string.Empty,
+					ParentTableID = parentTableID,
+					DisplayKeyFilter = displayKeyFilter,
 				};
 			}
 		}

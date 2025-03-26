@@ -105,7 +105,7 @@
 				var matchingInstances = new List<string>();
 				if (parameter.IsTableColumn && parameter.ParentTable != null)
 				{
-					matchingInstances = FetchMatchingInstances(element.DmaId, element.ElementId, parameter, InstanceTextBox.Text);
+					matchingInstances = Utils.FetchMatchingInstances(Engine, element.DmaId, element.ElementId, parameter, InstanceTextBox.Text).ToList();
 					if (matchingInstances.Count == 0)
 					{
 						ValidationState = UIValidationState.Invalid;
@@ -144,31 +144,6 @@
 
 			var protocol = Utils.FetchElementProtocol(Engine, element.DmaId, element.ElementId);
 			SetPossibleParameters(protocol);
-		}
-
-		private List<string> FetchMatchingInstances(int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
-		{
-			try
-			{
-				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, parameterInfo.ParentTable.ID)
-				{
-					KeyFilter = displayKeyFilter,
-					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
-				};
-				var indicesResponse = Engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
-				if (indicesResponse == null)
-				{
-					Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}", LogType.Error, 5);
-					return new List<string>();
-				}
-
-				return indicesResponse.Indices.Select(i => i.IndexValue).ToList();
-			}
-			catch (Exception e)
-			{
-				Engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {parameterInfo.ID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
-				return new List<string>();
-			}
 		}
 	}
 }

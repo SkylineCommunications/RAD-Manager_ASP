@@ -87,6 +87,7 @@ public class Script
 			}
 			catch (Exception ex)
 			{
+				app.Engine.GenerateInformation($"Failed to remove parameter group '{group.Item2}': {ex}");
 				failedGroups.Add(Tuple.Create(group.Item2, ex));
 			}
 		}
