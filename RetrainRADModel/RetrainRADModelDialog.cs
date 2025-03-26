@@ -1,32 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-namespace RetrainRADModel
+﻿namespace RetrainRADModel
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public class RetrainRADModelDialog : Dialog
 	{
-		private Button okButton_;
-		private MultiTimeRangeSelector timeRangeSelector_;
-
-		public event EventHandler Accepted;
-		public event EventHandler Cancelled;
-
-		public string GroupName { get; private set; }
-
-		public int DataMinerID { get; private set; }
-
-		public List<TimeRange> TimeRanges => timeRangeSelector_.SelectedItems.Select(i => i.TimeRange).ToList();
-
-		private void OnTimeRangeSelectorChanged()
-		{
-			okButton_.IsEnabled = timeRangeSelector_.SelectedItems.Count > 0;
-		}
+		private readonly Button okButton_;
+		private readonly MultiTimeRangeSelector timeRangeSelector_;
 
 		public RetrainRADModelDialog(IEngine engine, string groupName, int dataMinerID) : base(engine)
 		{
@@ -57,6 +41,24 @@ namespace RetrainRADModel
 
 			AddWidget(cancelButton, row, 0, 1, 2);
 			AddWidget(okButton_, row, 2, 1, timeRangeSelector_.ColumnCount - 2);
+		}
+
+		public event EventHandler Accepted;
+
+		public event EventHandler Cancelled;
+
+		public string GroupName { get; private set; }
+
+		public int DataMinerID { get; private set; }
+
+		public IEnumerable<TimeRange> GetSelectedTimeRanges()
+		{
+			return timeRangeSelector_.GetSelected().Select(i => i.TimeRange);
+		}
+
+		private void OnTimeRangeSelectorChanged()
+		{
+			okButton_.IsEnabled = timeRangeSelector_.GetSelected().Any();
 		}
 	}
 }

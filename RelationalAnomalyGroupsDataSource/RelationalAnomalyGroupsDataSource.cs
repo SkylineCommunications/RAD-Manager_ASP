@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net;
 using Skyline.DataMiner.Net.Messages;
 

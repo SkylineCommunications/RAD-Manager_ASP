@@ -36,7 +36,7 @@
 			};
 			protocolVersionDropDown_.Changed += (sender, args) => OnSelectedProtocolVersionChanged();
 
-			parameterSelector_ = new MultiProtocolParameterSelector("", "", engine);
+			parameterSelector_ = new MultiProtocolParameterSelector(string.Empty, string.Empty, engine);
 			parameterSelector_.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 			OnSelectedProtocolChanged();
 
@@ -55,9 +55,12 @@
 
 		public string ProtocolVersion => protocolVersionDropDown_.Selected;
 
-		public List<ProtocolParameterSelectorInfo> SelectedParameters => parameterSelector_.SelectedItems;
+		public IEnumerable<ProtocolParameterSelectorInfo> GetSelectedParameters()
+		{
+			return parameterSelector_.GetSelected();
+		}
 
-		public void OnSelectedProtocolVersionChanged()
+		private void OnSelectedProtocolVersionChanged()
 		{
 			var protocol = protocolNameDropDown_.Selected;
 			var version = protocolVersionDropDown_.Selected;
@@ -67,7 +70,7 @@
 			parameterSelector_.SetProtocol(protocol.Protocol, version);
 		}
 
-		public void OnSelectedProtocolChanged()
+		private void OnSelectedProtocolChanged()
 		{
 			var protocol = protocolNameDropDown_.Selected;
 			if (protocol == null)

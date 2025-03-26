@@ -120,7 +120,7 @@
 			foreach (var element in elements)
 			{
 				var pKeys = new List<ParameterKey>();
-				foreach (var parameter in parameterSelector_.SelectedParameters)
+				foreach (var parameter in parameterSelector_.GetSelectedParameters())
 				{
 					if (parameter.ParentTableID == null)
 					{

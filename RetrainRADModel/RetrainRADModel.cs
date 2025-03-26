@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using RADWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Analytics.Mad;
@@ -80,7 +81,7 @@ public class Script
 
 		try
 		{
-			var message = new RetrainMADModelMessage(dialog.GroupName, dialog.TimeRanges)
+			var message = new RetrainMADModelMessage(dialog.GroupName, dialog.GetSelectedTimeRanges().ToList())
 			{
 				DataMinerID = dialog.DataMinerID,
 			};

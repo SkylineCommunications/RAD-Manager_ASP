@@ -14,7 +14,7 @@
 		/// <summary>
 		/// Get the group name and DataMiner ID from the script parameters.
 		/// </summary>
-		/// <param name="app">The app</param>
+		/// <param name="app">The app.</param>
 		/// <returns>A list with the DataMiner IDs and names of the provided groups, or an empty list if none were provided.</returns>
 		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
 		public static List<Tuple<int, string>> GetGroupNameAndDataMinerID(InteractiveController app)
@@ -166,7 +166,7 @@
 		/// <summary>
 		/// Join list of strings into a human readable string. E.g. ["a", "b", "c"] -> "a, b and c".
 		/// </summary>
-		/// <param name="l">A list of strings</param>
+		/// <param name="l">A list of strings.</param>
 		/// <param name="separator">The separator to use between all items except for the last two items.</param>
 		/// <param name="finalSeparator">The separator to use between the last two items.</param>
 		/// <returns>The resulting string.</returns>

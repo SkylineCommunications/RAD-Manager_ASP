@@ -31,7 +31,7 @@
 					});
 				}
 
-				SelectedItems = selection;
+				SetSelected(selection);
 			}
 
 			var selector = ItemSelector as ParameterSelector;
@@ -41,7 +41,7 @@
 
 		public IEnumerable<ParameterKey> GetSelectedParameters()
 		{
-			return SelectedItems.SelectMany(i => i.GetParameterKeys()).Distinct();
+			return GetSelected().SelectMany(i => i.GetParameterKeys()).Distinct();
 		}
 
 		protected override bool AddItem(ParameterSelectorInfo item)

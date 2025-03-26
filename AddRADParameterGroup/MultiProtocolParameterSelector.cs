@@ -1,17 +1,20 @@
-﻿using RADWidgets;
-using Skyline.DataMiner.Automation;
-
-namespace AddParameterGroup
+﻿namespace AddParameterGroup
 {
-    public class MultiProtocolParameterSelector : MultiSelector<ProtocolParameterSelectorInfo>
+	using RADWidgets;
+	using Skyline.DataMiner.Automation;
+
+	public class MultiProtocolParameterSelector : MultiSelector<ProtocolParameterSelectorInfo>
     {
-        public void SetProtocol(string protocolName, string protocolVersion)
+		public MultiProtocolParameterSelector(string protocolName, string protocolVersion, IEngine engine) :
+			base(new ProtocolParameterSelector(protocolName, protocolVersion, engine))
+		{
+		}
+
+		public void SetProtocol(string protocolName, string protocolVersion)
         {
 			var selector = ItemSelector as ProtocolParameterSelector;
 			selector.SetProtocol(protocolName, protocolVersion);
-			SelectedItems = null;
+			SetSelected(null);
         }
-
-        public MultiProtocolParameterSelector(string protocolName, string protocolVersion, IEngine engine) : base(new ProtocolParameterSelector(protocolName, protocolVersion, engine)) { }
     }
 }

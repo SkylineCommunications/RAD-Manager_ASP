@@ -62,7 +62,7 @@ namespace RADWidgets
 				IsReadOnly = false,
 				MinHeight = 100,
 			};
-			SelectedItems = selectedItems;
+			SetSelected(selectedItems);
 
 			var addButton = new Button("Add");
 			addButton.Pressed += AddButton_Pressed;
@@ -85,38 +85,44 @@ namespace RADWidgets
 		public event EventHandler Changed;
 
 		/// <summary>
-		/// Gets or sets the currently selected items.
-		/// </summary>
-		public List<T> SelectedItems
-		{
-			get => selectedItems_.Values.ToList();
-			set
-			{
-				selectedItems_.Clear();
-
-				if (value == null)
-				{
-					selectedItemsView_.Items = new List<TreeViewItem>();
-					Changed?.Invoke(this, EventArgs.Empty);
-					return;
-				}
-
-				foreach (var item in value)
-				{
-					var key = item.GetKey();
-					if (!selectedItems_.ContainsKey(key))
-						selectedItems_.Add(key, item);
-				}
-
-				selectedItemsView_.Items = selectedItems_.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
-				Changed?.Invoke(this, EventArgs.Empty);
-			}
-		}
-
-		/// <summary>
 		/// Gets the widget to select a single item.
 		/// </summary>
 		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;
+
+		/// <summary>
+		/// Get the currently selected items.
+		/// </summary>
+		/// <returns>The currently selected items.</returns>
+		public IEnumerable<T> GetSelected()
+		{
+			return selectedItems_.Values;
+		}
+
+		/// <summary>
+		/// Sets the selected items.
+		/// </summary>
+		/// <param name="selected">The new selected items (empty or null if none are selected).</param>
+		public void SetSelected(IEnumerable<T> selected)
+		{
+			selectedItems_.Clear();
+
+			if (selected == null)
+			{
+				selectedItemsView_.Items = new List<TreeViewItem>();
+				Changed?.Invoke(this, EventArgs.Empty);
+				return;
+			}
+
+			foreach (var item in selected)
+			{
+				var key = item.GetKey();
+				if (!selectedItems_.ContainsKey(key))
+					selectedItems_.Add(key, item);
+			}
+
+			selectedItemsView_.Items = selectedItems_.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
 
 		protected virtual bool AddItem(T item)
 		{
