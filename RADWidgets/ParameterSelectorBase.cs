@@ -61,6 +61,7 @@
 		{
 			var parameter = parametersDropDown_.Selected;
 			parametersDropDown_.Tooltip = parameter?.DisplayName ?? string.Empty;
+			instanceTextBox_.ValidationState = UIValidationState.Valid;
 			if (parameter?.IsTableColumn != true)
 			{
 				instanceTextBox_.IsEnabled = false;
