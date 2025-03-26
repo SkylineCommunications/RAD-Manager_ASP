@@ -133,7 +133,6 @@
 					}
 				}
 
-				engine_.GenerateInformation($"Element {element.ElementName} has parameters {pKeys}"); //TODO: remove
 				selectedInstancesPerElement_[element.ElementName] = pKeys;
 			}
 		}
