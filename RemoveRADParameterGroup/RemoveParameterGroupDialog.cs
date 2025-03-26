@@ -26,6 +26,8 @@
 				label = new Label($"Are you sure you want to remove the parameter groups {groupNamesStr} from Relational Anomaly Detection?");
 			}
 
+			label.MaxWidth = 900;
+
 			var noButton = new Button("No");
 			noButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
