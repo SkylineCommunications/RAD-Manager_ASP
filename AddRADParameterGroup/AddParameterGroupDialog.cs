@@ -27,6 +27,7 @@
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{
+			ShowScriptAbortPopup = false;
 			Title = "Add Parameter Group";
 
 			var addTypeLabel = new Label("What to add?");

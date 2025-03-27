@@ -12,6 +12,7 @@
 
 		public EditParameterGroupDialog(IEngine engine, RADGroupSettings groupSettings, int dataMinerID) : base(engine)
 		{
+			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
 			OriginalGroupName = groupSettings.GroupName;
 			Title = $"Edit group '{groupSettings.GroupName}'";

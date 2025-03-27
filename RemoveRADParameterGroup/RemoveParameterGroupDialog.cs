@@ -11,6 +11,7 @@
     {
 		public RemoveParameterGroupDialog(IEngine engine, List<Tuple<int, string>> groupNamesAndIDs) : base(engine)
 		{
+			ShowScriptAbortPopup = false;
 			GroupNamesAndIDs = groupNamesAndIDs;
 
 			Label label;

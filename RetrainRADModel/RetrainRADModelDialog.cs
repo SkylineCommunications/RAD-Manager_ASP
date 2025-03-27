@@ -14,6 +14,7 @@
 
 		public RetrainRADModelDialog(IEngine engine, string groupName, int dataMinerID) : base(engine)
 		{
+			ShowScriptAbortPopup = false;
 			GroupName = groupName;
 			DataMinerID = dataMinerID;
 
