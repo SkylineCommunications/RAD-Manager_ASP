@@ -26,12 +26,10 @@ namespace RelationalAnomalyScoreDataSource
 		private DateTime? startTime_ = null;
 		private DateTime? endTime_ = null;
 		private IGQILogger logger_;
-		private GQIDMS dms_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			dms_ = args.DMS;
-			InitializeConnection(dms_);
+			InitializeConnection(args.DMS);
 			logger_ = args.Logger;
 			return default;
 		}
