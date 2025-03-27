@@ -104,16 +104,17 @@
 		/// <param name="app">The app.</param>
 		/// <param name="title">The title of the dialog.</param>
 		/// <param name="ex">The exception to display in the dialog.</param>
-		/// <param name="exitOnOK">Whether to exit when OK is pressed</param>
-		public static ExceptionDialog ShowExceptionDialog(InteractiveController app, string title, Exception ex, bool exitOnOK = true)
+		/// <param name="parent">Parent dialog to show (again) after pressing OK. If null, the script will exit after pressing OK.</param>
+		public static void ShowExceptionDialog(InteractiveController app, string title, Exception ex, Dialog parent = null)
 		{
 			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
 			exceptionDialog.Title = title;
-			if (exitOnOK)
+			if (parent == null)
 				exceptionDialog.OkButton.Pressed += (s, args) => app.Engine.ExitSuccess(title);
+			else
+				exceptionDialog.OkButton.Pressed += (s, args) => app.ShowDialog(parent);
 
 			app.ShowDialog(exceptionDialog);
-			return exceptionDialog;
 		}
 
 		/// <summary>

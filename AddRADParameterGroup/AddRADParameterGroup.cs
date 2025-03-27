@@ -86,8 +86,7 @@ public class Script
 		if (failedGroups.Count > 0)
 		{
 			var ex = new AggregateException("Failed to add parameter group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
-			var exceptionDialog = Utils.ShowExceptionDialog(app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, false);
-			exceptionDialog.Interacted += (s, args) => dialog.Show();
+			Utils.ShowExceptionDialog(app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
 
 			return;
 		}
