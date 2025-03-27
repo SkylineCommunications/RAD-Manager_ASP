@@ -13,11 +13,21 @@ namespace RelationalAnomalyGroupsDataSource
 	/// <summary>
 	/// We return a table with the group names, their parameters, updateModel value and AnomalyThreshold for all configured groups.
 	/// </summary>
-	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit
+	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
 		private static Connection connection_;
 		private GQIDMS dms_;
+		private IGQILogger logger_;
+		private IEnumerator<int> dmaIDEnumerator_;
 		private Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
+
+		public OnInitOutputArgs OnInit(OnInitInputArgs args)
+		{
+			dms_ = args.DMS;
+			logger_ = args.Logger;
+			InitializeConnection(dms_);
+			return default;
+		}
 
 		public GQIColumn[] GetColumns()
 		{
@@ -32,39 +42,60 @@ namespace RelationalAnomalyGroupsDataSource
 			};
 		}
 
+		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
+		{
+			var infoMessages = dms_.SendMessages(new GetInfoMessage(InfoType.DataMinerInfo));
+			dmaIDEnumerator_ = infoMessages.Select(m => m as GetDataMinerInfoResponseMessage).Where(m => m != null).Select(m => m.ID).ToList().GetEnumerator();
+
+			return default;
+		}
+
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			var rows = new List<GQIRow>();
+			if (!dmaIDEnumerator_.MoveNext())
+				return new GQIPage(new GQIRow[0]);
 
-			GetMADParameterGroupsMessage request = new Skyline.DataMiner.Analytics.Mad.GetMADParameterGroupsMessage();
+			int dataMinerID = dmaIDEnumerator_.Current;
+			GetMADParameterGroupsMessage request = new GetMADParameterGroupsMessage()
+			{
+				DataMinerID = dataMinerID,
+			};
 			var response = connection_.HandleSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
+			if (response == null)
+			{
+				logger_.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
+				return new GQIPage(new GQIRow[0]);
+			}
+
+			var rows = new List<GQIRow>(response.GroupNames.Count);
 			foreach (var groupName in response.GroupNames)
 			{
-				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName);
+				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName)
+				{
+					DataMinerID = dataMinerID,
+				};
 				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
+				if (groupInfoResponse?.GroupInfo == null)
+				{
+					logger_.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
+					continue;
+				}
+
 				MADGroupInfo groupInfo = groupInfoResponse.GroupInfo;
 				var parameterStr = groupInfo.Parameters.Select(p => ParameterKeyToString(p));
-				int dataMinerID = groupInfo.Parameters.FirstOrDefault()?.DataMinerID ?? 0;
 				rows.Add(new GQIRow(
 					new GQICell[]
 					{
-						new GQICell(){ Value=groupName },
-						new GQICell(){ Value=dataMinerID },
-						new GQICell(){ Value=$"[{string.Join(", ", parameterStr)}]" },
-						new GQICell(){ Value=groupInfo.UpdateModel.ToString() },
-						new GQICell(){ Value=groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? "3" },
-						new GQICell(){ Value=(groupInfo.MinimumAnomalyDuration?.ToString(CultureInfo.InvariantCulture) ?? "5") + " min" },
+						new GQICell() { Value = groupName },
+						new GQICell() { Value = dataMinerID },
+						new GQICell() { Value = $"[{string.Join(", ", parameterStr)}]" },
+						new GQICell() { Value = groupInfo.UpdateModel.ToString() },
+						new GQICell() { Value = groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? "3" },
+						new GQICell() { Value = (groupInfo.MinimumAnomalyDuration?.ToString(CultureInfo.InvariantCulture) ?? "5") + " min" },
 					}));
 			}
 
 			return new GQIPage(rows.ToArray());
-		}
-
-		public OnInitOutputArgs OnInit(OnInitInputArgs args)
-		{
-			dms_ = args.DMS;
-			InitializeConnection(dms_);
-			return default;
 		}
 
 		private static void InitializeConnection(GQIDMS dms)
