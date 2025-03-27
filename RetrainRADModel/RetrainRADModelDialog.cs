@@ -24,7 +24,10 @@
 			timeRangeSelector_ = new MultiTimeRangeSelector(engine);
 			timeRangeSelector_.Changed += (sender, args) => OnTimeRangeSelectorChanged();
 
-			okButton_ = new Button("Retrain");
+			okButton_ = new Button("Retrain")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			var cancelButton = new Button("Cancel");

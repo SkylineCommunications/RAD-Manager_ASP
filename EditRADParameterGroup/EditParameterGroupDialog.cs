@@ -19,7 +19,10 @@
 			groupEditor_ = new RADGroupEditor(engine, Utils.FetchRadGroupNames(engine), groupSettings);
 			groupEditor_.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
-			okButton_ = new Button("Apply");
+			okButton_ = new Button("Apply")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			var cancelButton = new Button("Cancel");

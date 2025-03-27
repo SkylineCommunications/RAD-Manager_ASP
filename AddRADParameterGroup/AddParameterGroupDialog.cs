@@ -43,7 +43,10 @@
 			groupByProtocolCreator_ = new RADGroupByProtocolCreator(engine, existingGroupNames);
 			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
-			okButton_ = new Button("Add group");
+			okButton_ = new Button("Add group")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			var cancelButton = new Button("Cancel");
