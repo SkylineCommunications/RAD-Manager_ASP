@@ -3,13 +3,13 @@ namespace RelationalGroupInfoDataSource
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadDataSourceUtils;
 	using RelationalAnomalyGroupsDataSource;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
-	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
 	/// The input is a group name. We return a table with the parameter keys, element names and parameter names for the selected group.
@@ -19,8 +19,8 @@ namespace RelationalGroupInfoDataSource
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("DataMinerID");
 		private static Connection connection_;
-		private readonly Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
-		private readonly Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
+		private ElementNameCache elementNames_;
+		private ParametersCache parameters_;
 		private IGQILogger logger_;
 		private string groupName_ = string.Empty;
 		private int dataMinerID_ = -1;
@@ -30,6 +30,8 @@ namespace RelationalGroupInfoDataSource
 		{
 			InitializeConnection(args.DMS);
 			logger_ = args.Logger;
+			elementNames_ = new ElementNameCache(connection_, logger_);
+			parameters_ = new ParametersCache(connection_, logger_);
 			return default;
 		}
 
@@ -65,45 +67,22 @@ namespace RelationalGroupInfoDataSource
 					DataMinerID = dataMinerID_,
 				};
 				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
-
-				// Fetch elementNames and protocol info
 				if (groupInfoResponse?.GroupInfo != null)
-				{
 					parameterKeys_ = groupInfoResponse.GroupInfo.Parameters;
-					foreach (ParameterKey paramKey in parameterKeys_)
-					{
-						var elementKey = (paramKey.DataMinerID, paramKey.ElementID);
-
-						// Get element name if not already cached
-						if (!elementNames_.ContainsKey(elementKey))
-						{
-							var elementRequest = new GetElementByIDMessage(paramKey.DataMinerID, paramKey.ElementID);
-							var elementResponse = connection_.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
-							if (elementResponse != null)
-							{
-								elementNames_[elementKey] = elementResponse.Name;
-							}
-						}
-
-						// Get protocol information if not already cached for this element
-						if (!protocolCache_.ContainsKey(elementKey))
-						{
-							var protocolRequest = new GetElementProtocolMessage(paramKey.DataMinerID, paramKey.ElementID);
-							var protocolResponse = connection_.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
-							if (protocolResponse?.AllParameters != null)
-							{
-								protocolCache_[elementKey] = protocolResponse.AllParameters;
-							}
-						}
-					}
-				}
-
-				return new OnPrepareFetchOutputArgs();
 			}
 			catch (Exception ex)
 			{
 				throw new DataMinerCommunicationException($"Failed to fetch group info for group {groupName_} on agent {dataMinerID_}", ex);
 			}
+
+			// Fetch and cache elementNames and protocol info
+			foreach (ParameterKey paramKey in parameterKeys_)
+			{
+				elementNames_.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
+				parameters_.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
+			}
+
+			return default;
 		}
 
 		public GQIColumn[] GetColumns()
@@ -131,14 +110,14 @@ namespace RelationalGroupInfoDataSource
 				var key = paramID.ToString();
 				var cells = new GQICell[]
 				{
-					new GQICell(){ Value=pKey.ToString() },
-					new GQICell(){ Value=pKey.DataMinerID },
-					new GQICell(){ Value=pKey.ElementID },
-					new GQICell(){ Value=pKey.ParameterID },
-					new GQICell(){ Value=pKey.Instance },
-					new GQICell(){ Value=pKey.DisplayInstance },
-					new GQICell(){ Value=GetElementName(pKey) },
-					new GQICell(){ Value=GetParameterName(pKey) },
+					new GQICell(){ Value = pKey.ToString() },
+					new GQICell(){ Value = pKey.DataMinerID },
+					new GQICell(){ Value = pKey.ElementID },
+					new GQICell(){ Value = pKey.ParameterID },
+					new GQICell(){ Value = pKey.Instance },
+					new GQICell(){ Value = pKey.DisplayInstance },
+					new GQICell(){ Value = GetElementName(pKey) },
+					new GQICell(){ Value = GetParameterName(pKey) },
 				};
 				var parameterMetaData = new ObjectRefMetadata() { Object = paramID };
 				var rowMetaData = new GenIfRowMetadata(new[] { parameterMetaData });
@@ -160,23 +139,21 @@ namespace RelationalGroupInfoDataSource
 
 		private string GetElementName(ParameterKey paramKey)
 		{
-			var elementKey = (paramKey.DataMinerID, paramKey.ElementID);
-			return elementNames_.TryGetValue(elementKey, out var name) ? name : "Unknown Element";
+			if (elementNames_.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out string name))
+				return name;
+			else
+				return "Unknown Element";
 		}
 
 		private string GetParameterName(ParameterKey paramKey)
 		{
-			var elementKey = (paramKey.DataMinerID, paramKey.ElementID);
-			if (!protocolCache_.TryGetValue(elementKey, out var parameterInfos))
-			{
+			if (!parameters_.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out var parameterInfos))
 				return "Unknown Parameter";
-			}
 
-			var paramInfo = parameterInfos.FirstOrDefault(p => p.ID == paramKey.ParameterID);
+			var paramInfo = parameterInfos?.FirstOrDefault(p => p.ID == paramKey.ParameterID);
 			return paramInfo?.DisplayName ?? "Unknown Parameter";
 		}
 
 		#endregion
-
 	}
 }

@@ -4,6 +4,7 @@ namespace RelationalAnomalyGroupsDataSource
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Linq;
+	using RadDataSourceUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -16,7 +17,8 @@ namespace RelationalAnomalyGroupsDataSource
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
 		private static Connection connection_;
-		private readonly Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
+		private ElementNameCache elementNames_;
+		private ParametersCache parameters_;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
 		private IEnumerator<int> dmaIDEnumerator_;
@@ -26,6 +28,8 @@ namespace RelationalAnomalyGroupsDataSource
 			dms_ = args.DMS;
 			logger_ = args.Logger;
 			InitializeConnection(dms_);
+			elementNames_ = new ElementNameCache(connection_, logger_);
+			parameters_ = new ParametersCache(connection_, logger_);
 			return default;
 		}
 
@@ -109,11 +113,13 @@ namespace RelationalAnomalyGroupsDataSource
 			}
 		}
 
-		private static string InnerParameterKeyToString(ParameterKey pKey, string elementName, ParameterInfo[] parameters)
+		private string ParameterKeyToString(ParameterKey pKey)
 		{
-			if (string.IsNullOrEmpty(elementName))
+			string elementName;
+			if (!elementNames_.TryGet(pKey.DataMinerID, pKey.ElementID, out elementName))
 				elementName = $"{pKey.DataMinerID}/{pKey.ElementID}";
 
+			parameters_.TryGet(pKey.DataMinerID, pKey.ElementID, out ParameterInfo[] parameters);
 			var parameter = parameters?.FirstOrDefault(p => p.ID == pKey.ParameterID);
 			var parameterName = parameter?.DisplayName ?? pKey.ParameterID.ToString();
 
@@ -127,32 +133,6 @@ namespace RelationalAnomalyGroupsDataSource
 				return $"{elementName}/{parameterName}";
 			else
 				return $"{elementName}/{parameterName}/{instance}";
-		}
-
-		private string ParameterKeyToString(ParameterKey pKey)
-		{
-			if (cache_.TryGetValue((pKey.DataMinerID, pKey.ElementID), out var cacheInfo))
-				return InnerParameterKeyToString(pKey, cacheInfo.elementName, cacheInfo.parameters);
-
-			try
-			{
-				var elementRequest = new GetElementByIDMessage(pKey.DataMinerID, pKey.ElementID);
-				var elementResponse = connection_.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
-				if (elementResponse == null)
-					return InnerParameterKeyToString(pKey, null, null);
-
-				var protocolRequest = new GetElementProtocolMessage(pKey.DataMinerID, pKey.ElementID);
-				var protocolResponse = connection_.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
-				if (protocolResponse == null)
-					return InnerParameterKeyToString(pKey, null, null);
-
-				cache_.Add((pKey.DataMinerID, pKey.ElementID), (elementResponse.Name, protocolResponse.AllParameters));
-				return InnerParameterKeyToString(pKey, elementResponse.Name, protocolResponse.AllParameters);
-			}
-			catch (Exception)
-			{
-				return InnerParameterKeyToString(pKey, null, null);
-			}
 		}
 	}
 }
