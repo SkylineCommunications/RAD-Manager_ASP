@@ -31,12 +31,15 @@
 			var noButton = new Button("No");
 			noButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
-			var yesButton = new Button("Yes");
+			var yesButton = new Button("Yes")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
 			yesButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			AddWidget(label, 0, 0, 1, 2);
-			AddWidget(noButton, 1, 0);
-			AddWidget(yesButton, 1, 1);
+			AddWidget(yesButton, 1, 0);
+			AddWidget(noButton, 1, 1);
 		}
 
 		public event EventHandler Accepted;
