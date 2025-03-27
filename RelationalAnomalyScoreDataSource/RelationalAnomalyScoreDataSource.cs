@@ -1,30 +1,30 @@
-using Skyline.DataMiner.Analytics.GenericInterface;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Net.Helper;
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using RelationalAnomalyGroupsDataSource;
-using Skyline.DataMiner.Net;
-
 namespace RelationalAnomalyScoreDataSource
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using RelationalAnomalyGroupsDataSource;
+	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Helper;
+
 	/// <summary>
 	/// Represents a DataMiner Automation script.
 	/// </summary>
 	public class RelationalAnomalyScoreDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
-		private static readonly GQIStringArgument groupName = new GQIStringArgument("groupName");
-		private static readonly GQIDateTimeArgument startTime = new GQIDateTimeArgument("startTime");
-		private static readonly GQIDateTimeArgument endTime = new GQIDateTimeArgument("endTime");
+		private static readonly GQIStringArgument GroupName = new GQIStringArgument("groupName");
+		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("startTime");
+		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
+		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
+		private static Connection connection_;
 		private string groupName_;
 		private DateTime startTime_;
 		private DateTime endTime_;
-		private string lastError_ = "";
-		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
+		private string lastError_ = string.Empty;
 		private IGQILogger logger_;
 		private GQIDMS dms_;
-		private static Connection connection_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
@@ -34,26 +34,18 @@ namespace RelationalAnomalyScoreDataSource
 			return default;
 		}
 
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
-		}
-
 		public GQIArgument[] GetInputArguments()
 		{
-			return new GQIArgument[] { groupName, startTime, endTime };
+			return new GQIArgument[] { GroupName, StartTime, EndTime };
 		}
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
 			try
 			{
-				if (args.TryGetArgumentValue(groupName, out string GroupName))
+				if (args.TryGetArgumentValue(GroupName, out string groupNameValue))
 				{
-					groupName_ = GroupName;
+					groupName_ = groupNameValue;
 				}
 				else
 				{
@@ -63,36 +55,40 @@ namespace RelationalAnomalyScoreDataSource
 					anomalyScoreData_ = new AnomalyScoreData();
 					return new OnArgumentsProcessedOutputArgs();
 				}
-				if (args.TryGetArgumentValue(startTime, out DateTime StartTime) && args.TryGetArgumentValue(endTime, out DateTime EndTime))
+
+				if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
 				{
-					startTime_ = StartTime.ToUniversalTime();
-					endTime_ = EndTime.ToUniversalTime();
+					startTime_ = startTimeValue.ToUniversalTime();
+					endTime_ = endTimeValue.ToUniversalTime();
 				}
 				else
 				{
 					throw new Exception("Unable to parse input times");
 				}
-
 			}
 			catch (Exception ex)
 			{
 				logger_.Error("Cant parse input, abort");
 				lastError_ = ex.Message;
 			}
+
 			return new OnArgumentsProcessedOutputArgs();
 		}
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
-			if (lastError_.IsNotNullOrEmpty()) //An error occurred while parsing input arguments, so we shouldn't fetch data
+			// An error occurred while parsing input arguments, so we shouldn't fetch data
+			if (lastError_.IsNotNullOrEmpty())
 			{
 				return new OnPrepareFetchOutputArgs();
 			}
+
 			try
 			{
 				bool fetchData = true;
-				if (groupName_ == anomalyScoreData_.GroupName && anomalyScoreData_.AnomalyScores.IsNotNullOrEmpty()) //ie we've already fetched the data for this group previously
+				if (groupName_ == anomalyScoreData_.GroupName && anomalyScoreData_.AnomalyScores.IsNotNullOrEmpty())
 				{
+					// ie we've already fetched the data for this group previously
 					var lastTimestamp = anomalyScoreData_.AnomalyScores.Last().Key;
 					if ((DateTime.UtcNow - lastTimestamp).TotalMinutes <= 5)
 					{
@@ -113,6 +109,7 @@ namespace RelationalAnomalyScoreDataSource
 							anomalyScoreData_.AnomalyScores.Add(new KeyValuePair<DateTime, double>(point.Timestamp, point.AnomalyScore));
 						}
 					}
+
 					anomalyScoreData_.GroupName = groupName_;
 				}
 
@@ -133,10 +130,12 @@ namespace RelationalAnomalyScoreDataSource
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			if (lastError_.IsNotNullOrEmpty()) //An error occurrend while parsing the input arguments of fetching the data
+			// An error occurrend while parsing the input arguments of fetching the data
+			if (lastError_.IsNotNullOrEmpty())
 			{
 				return Error();
 			}
+
 			var rows = new List<GQIRow>();
 			try
 			{
@@ -150,17 +149,27 @@ namespace RelationalAnomalyScoreDataSource
 					{
 						break;
 					}
+
 					GQICell[] cells = new GQICell[2];
 					cells[0] = new GQICell { Value = entry.Key.ToUniversalTime() };
 					cells[1] = new GQICell { Value = entry.Value };
 					rows.Add(new GQIRow(cells));
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return Error();
 			}
+
 			return new GQIPage(rows.ToArray());
+		}
+
+		private static void InitializeConnection(GQIDMS dms)
+		{
+			if (connection_ == null)
+			{
+				connection_ = ConnectionHelper.CreateConnection(dms);
+			}
 		}
 
 		#region Helper Methods
@@ -177,12 +186,13 @@ namespace RelationalAnomalyScoreDataSource
 
 	public class AnomalyScoreData
 	{
-		public string GroupName { get; set; }
-		public List<KeyValuePair<DateTime, double>> AnomalyScores { get; set; }
-
 		public AnomalyScoreData()
 		{
 			AnomalyScores = new List<KeyValuePair<DateTime, double>>();
 		}
+
+		public string GroupName { get; set; }
+
+		public List<KeyValuePair<DateTime, double>> AnomalyScores { get; set; }
 	}
 }

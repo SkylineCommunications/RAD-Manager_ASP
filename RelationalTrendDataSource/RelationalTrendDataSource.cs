@@ -1,38 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using RelationalAnomalyGroupsDataSource;
-using Skyline.DataMiner.Analytics.DataTypes;
-using Skyline.DataMiner.Analytics.GenericInterface;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net;
-using Skyline.DataMiner.Net.Helper;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Net.Messages.SLDataGateway;
-using Skyline.DataMiner.Net.SLSearch.Messages.Management;
-
 namespace RelationalTrendDataSource
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using RelationalAnomalyGroupsDataSource;
+	using Skyline.DataMiner.Analytics.DataTypes;
+	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Helper;
+	using Skyline.DataMiner.Net.Messages.SLDataGateway;
+
 	/// <summary>
 	/// The input is a concatenated string of parameter keys and the groupName.
 	/// The output is a table with the values of the selected parameters, so they can be displayed on the trend graph.
 	/// </summary>
 	public class RelationalTrendDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
-		private static readonly GQIStringArgument groupName = new GQIStringArgument("groupName");
-		private static readonly GQIStringArgument parameterKeysString = new GQIStringArgument("parameterKeysString");
+		private static readonly GQIStringArgument GroupName = new GQIStringArgument("groupName");
+		private static readonly GQIStringArgument ParameterKeysString = new GQIStringArgument("parameterKeysString");
+		private static GroupTrendData groupTrendData_ = new GroupTrendData();
+		private static Connection connection_;
 		private string groupName_;
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
 		private string lastError_ = string.Empty;
-		private static GroupTrendData groupTrendData_ = new GroupTrendData();
 		private List<int> parameterIndices_ = new List<int>();
 		private int numberOfColums_ = 1;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
-		private static Connection connection_;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
@@ -42,24 +37,17 @@ namespace RelationalTrendDataSource
 			return default;
 		}
 
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
-		}
-
 		public GQIArgument[] GetInputArguments()
 		{
-			return new GQIArgument[] { groupName, parameterKeysString };
+			return new GQIArgument[] { GroupName, ParameterKeysString };
 		}
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
-			try // Parse which parameterKeys are selected
+			// Parse which parameterKeys are selected
+			try
 			{
-				if (args.TryGetArgumentValue(parameterKeysString, out string concatenatedKeys))
+				if (args.TryGetArgumentValue(ParameterKeysString, out string concatenatedKeys))
 				{
 					var keys = concatenatedKeys.Split(',');
 					if (keys.IsNullOrEmpty())
@@ -67,6 +55,7 @@ namespace RelationalTrendDataSource
 						lastError_ = "No parameter keys selected";
 						return new OnArgumentsProcessedOutputArgs();
 					}
+
 					foreach (string key in keys)
 					{
 						var parts = key.Split('/');
@@ -94,11 +83,12 @@ namespace RelationalTrendDataSource
 				return new OnArgumentsProcessedOutputArgs();
 			}
 
-			try // Parse the group name
+			// Parse the group name
+			try
 			{
-				if (args.TryGetArgumentValue(groupName, out string GroupName))
+				if (args.TryGetArgumentValue(GroupName, out string groupNameStr))
 				{
-					groupName_ = GroupName;
+					groupName_ = groupNameStr;
 				}
 				else
 				{
@@ -153,6 +143,7 @@ namespace RelationalTrendDataSource
 							parameterIndices_.Add(i);
 						}
 					}
+
 					if (parameterIndices_.IsNullOrEmpty())
 					{
 						lastError_ = "No matching parameters found";
@@ -163,6 +154,7 @@ namespace RelationalTrendDataSource
 				{
 					throw new Exception("No parameters found in the groupTrendData");
 				}
+
 				return new OnPrepareFetchOutputArgs();
 			}
 			catch (Exception ex)
@@ -176,7 +168,7 @@ namespace RelationalTrendDataSource
 		{
 			var columns = new List<GQIColumn>
 			{
-				new GQIDateTimeColumn("Time")
+				new GQIDateTimeColumn("Time"),
 			};
 
 			columns.AddRange(parameterKeys_.Select(pKey => new GQIDoubleColumn(pKey.ToString())));
@@ -190,6 +182,7 @@ namespace RelationalTrendDataSource
 			{
 				return Error();
 			}
+
 			var rows = new List<GQIRow>();
 			try
 			{
@@ -201,14 +194,24 @@ namespace RelationalTrendDataSource
 					{
 						cells[i + 1] = new GQICell { Value = dataPoint.Values[parameterIndices_[i]] };
 					}
+
 					rows.Add(new GQIRow(cells));
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				Error();
 			}
+
 			return new GQIPage(rows.ToArray());
+		}
+
+		private static void InitializeConnection(GQIDMS dms)
+		{
+			if (connection_ == null)
+			{
+				connection_ = ConnectionHelper.CreateConnection(dms);
+			}
 		}
 
 		#region Helper Methods
@@ -225,18 +228,22 @@ namespace RelationalTrendDataSource
 
 	public class GroupTrendData
 	{
-		public string GroupName { get; set; }
-		public List<MADDataPoint> Data { get; set; }
-		public List<ParameterID> Parameters { get; set; }
 		public GroupTrendData()
 		{
 			Data = new List<MADDataPoint>();
 		}
+
 		public GroupTrendData(GetMADDataResponseMessage response, string groupName)
 		{
 			GroupName = groupName;
 			Data = response.Data;
 			Parameters = response.Parameters;
 		}
+
+		public string GroupName { get; set; }
+
+		public List<MADDataPoint> Data { get; set; }
+
+		public List<ParameterID> Parameters { get; set; }
 	}
 }

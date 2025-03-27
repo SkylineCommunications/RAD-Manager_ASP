@@ -1,4 +1,4 @@
-﻿namespace  RelationalAnomalyGroupsDataSource
+﻿namespace RelationalAnomalyGroupsDataSource
 {
 	using System;
 	using System.IO;
@@ -75,5 +75,4 @@
 			}
 		}
 	}
-
 }

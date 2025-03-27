@@ -1,60 +1,50 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using RelationalAnomalyGroupsDataSource;
-using Skyline.DataMiner.Analytics.DataTypes;
-using Skyline.DataMiner.Analytics.GenericInterface;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Net.Messages.SLDataGateway;
-
 namespace RelationalGroupInfoDataSource
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using RelationalAnomalyGroupsDataSource;
+	using Skyline.DataMiner.Analytics.DataTypes;
+	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Messages;
+
 	/// <summary>
 	/// The input is a group name. We return a table with the parameter keys, element names and parameter names for the selected group.
 	/// </summary>
 	public class RelationalGroupInfoDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");
+		private static Connection connection_;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
 		private string groupName_;
 		private string lastError_;
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
-		Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
-		Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
-		private static Connection connection_;
+		private Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
+		private Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			dms_ = args.DMS;
 			InitializeConnection(dms_);
-			logger_=args.Logger;
+			logger_ = args.Logger;
 			return default;
-		}
-
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
 		}
 
 		public GQIArgument[] GetInputArguments()
 		{
 			return new GQIArgument[] { GroupName };
 		}
+
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
 			if (args.TryGetArgumentValue(GroupName, out string groupName))
 			{
 				groupName_ = groupName;
 			}
+
 			return new OnArgumentsProcessedOutputArgs();
 		}
 
@@ -73,7 +63,8 @@ namespace RelationalGroupInfoDataSource
 				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName_);
 				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 
-				if (groupInfoResponse?.GroupInfo != null) //Fetch elementNames and protocol info
+				// Fetch elementNames and protocol info
+				if (groupInfoResponse?.GroupInfo != null)
 				{
 					parameterKeys_ = groupInfoResponse.GroupInfo.Parameters;
 					foreach (ParameterKey paramKey in parameterKeys_)
@@ -103,6 +94,7 @@ namespace RelationalGroupInfoDataSource
 						}
 					}
 				}
+
 				return new OnPrepareFetchOutputArgs();
 			}
 			catch (Exception ex)
@@ -114,10 +106,17 @@ namespace RelationalGroupInfoDataSource
 
 		public GQIColumn[] GetColumns()
 		{
-			return new GQIColumn[] { new GQIStringColumn("Parameter Key"), new GQIIntColumn("DataMiner ID"), new GQIIntColumn("Element ID"),
-				new GQIIntColumn("Parameter ID"), new GQIStringColumn("Primary Key"), new GQIStringColumn("Display Key"), new GQIStringColumn("Element Name"),
-				new GQIStringColumn("Parameter Name")
-				};
+			return new GQIColumn[]
+			{
+				new GQIStringColumn("Parameter Key"),
+				new GQIIntColumn("DataMiner ID"),
+				new GQIIntColumn("Element ID"),
+				new GQIIntColumn("Parameter ID"),
+				new GQIStringColumn("Primary Key"),
+				new GQIStringColumn("Display Key"),
+				new GQIStringColumn("Element Name"),
+				new GQIStringColumn("Parameter Name"),
+			};
 		}
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
@@ -125,12 +124,6 @@ namespace RelationalGroupInfoDataSource
 			var rows = new List<GQIRow>();
 			if (lastError_ != null)
 			{
-				//var paramID = new ParamID(1, 1, 1, "");
-				//var key = paramID.ToString();
-				//var cells = new GQICell[0] { };
-				//var parameterMetaData = new ObjectRefMetadata { Object = paramID };
-				//var rowMetaData = new GenIfRowMetadata(new[] { parameterMetaData });
-				//rows.Add(new GQIRow(key, }) { Metadata = rowMetaData });
 				return new GQIPage(rows.ToArray());
 			}
 
@@ -140,21 +133,29 @@ namespace RelationalGroupInfoDataSource
 				var key = paramID.ToString();
 				var cells = new GQICell[]
 				{
-					new GQICell(){Value=pKey.ToString(),},
-					new GQICell(){Value=pKey.DataMinerID,},
-					new GQICell(){Value=pKey.ElementID,},
-					new GQICell(){Value=pKey.ParameterID,},
-					new GQICell(){Value=pKey.Instance,},
-					new GQICell(){Value=pKey.DisplayInstance,},
-					new GQICell(){Value=GetElementName(pKey),},
-					new GQICell(){Value=GetParameterName(pKey),}
+					new GQICell(){ Value=pKey.ToString() },
+					new GQICell(){ Value=pKey.DataMinerID },
+					new GQICell(){ Value=pKey.ElementID },
+					new GQICell(){ Value=pKey.ParameterID },
+					new GQICell(){ Value=pKey.Instance },
+					new GQICell(){ Value=pKey.DisplayInstance },
+					new GQICell(){ Value=GetElementName(pKey) },
+					new GQICell(){ Value=GetParameterName(pKey) },
 				};
 				var parameterMetaData = new ObjectRefMetadata() { Object = paramID };
 				var rowMetaData = new GenIfRowMetadata(new[] { parameterMetaData });
 				rows.Add(new GQIRow(key, cells) { Metadata = rowMetaData });
-
 			}
+
 			return new GQIPage(rows.ToArray());
+		}
+
+		private static void InitializeConnection(GQIDMS dms)
+		{
+			if (connection_ == null)
+			{
+				connection_ = ConnectionHelper.CreateConnection(dms);
+			}
 		}
 
 		#region Helper Methods
