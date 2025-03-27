@@ -89,7 +89,8 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to retrain parameter group", ex);
+			var exceptionDialog = Utils.ShowExceptionDialog(app, "Failed to retrain parameter group", ex, false);
+			exceptionDialog.Interacted += (s, args) => dialog.Show();
 			return;
 		}
 

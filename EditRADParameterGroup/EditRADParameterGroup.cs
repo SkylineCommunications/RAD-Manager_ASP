@@ -136,7 +136,8 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to add parameter group(s) to RAD configuration", ex);
+			var exceptionDialog = Utils.ShowExceptionDialog(app, "Failed to add parameter group(s) to RAD configuration", ex, false);
+			exceptionDialog.Interacted += (s, args) => dialog.Show();
 			return;
 		}
 
