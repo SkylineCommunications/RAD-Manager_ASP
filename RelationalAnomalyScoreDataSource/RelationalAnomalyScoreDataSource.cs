@@ -20,10 +20,10 @@ namespace RelationalAnomalyScoreDataSource
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
 		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
 		private static Connection connection_;
-		private string groupName_;
+		private string groupName_ = string.Empty;
 		private int dataMinerID_ = -1;
-		private DateTime startTime_;
-		private DateTime endTime_;
+		private DateTime? startTime_ = null;
+		private DateTime? endTime_ = null;
 		private IGQILogger logger_;
 		private GQIDMS dms_;
 

@@ -20,7 +20,7 @@ namespace RelationalGroupInfoDataSource
 		private static Connection connection_;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
-		private string groupName_;
+		private string groupName_ = string.Empty;
 		private int dataMinerID_ = -1;
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
 		private Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
