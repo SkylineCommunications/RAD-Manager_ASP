@@ -18,11 +18,13 @@
 
 		public List<ParameterKey> ParameterKeys { get; set; }
 
-		public bool ValidInstances => ParameterKeys.Count >= 2;
+		public bool MoreThanMinInstances => ParameterKeys.Count >= RadGroupEditor.MIN_PARAMETERS;
+
+		public bool LessThanMaxInstances => ParameterKeys.Count <= RadGroupEditor.MAX_PARAMETERS;
 
 		public bool ValidGroupName { get; set; }
 
-		public bool Valid => ValidInstances && ValidGroupName;
+		public bool Valid => MoreThanMinInstances && LessThanMaxInstances && ValidGroupName;
 	}
 
 	public class RadGroupByProtocolCreator : Section
@@ -179,7 +181,8 @@
 
 			var validGroups = groups.Where(g => g.Valid).ToList();
 			var groupsWithInvalidName = groups.Where(g => !g.ValidGroupName).ToList();
-			var groupsWithInvalidInstances = groups.Where(g => g.ValidGroupName && !g.ValidInstances).ToList();
+			var groupsWithTooFewInstances = groups.Where(g => g.ValidGroupName && !g.MoreThanMinInstances).ToList();
+			var groupsWithTooManyInstances = groups.Where(g => g.ValidGroupName && !g.LessThanMaxInstances).ToList();
 
 			List<string> lines = new List<string>();
 			if (validGroups.Count > 0)
@@ -192,12 +195,17 @@
 
 			if (groupsWithInvalidName.Count > 0)
 			{
-				lines.Add($"Not overwriting existing groups with the same name for {Utils.HumanReadableJoin(groupsWithInvalidName.Select(s => $"'{s.ElementName}'"))}");
+				lines.Add($"Not overwriting existing groups with the same name for {groupsWithInvalidName.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
 			}
 
-			if (groupsWithInvalidInstances.Count > 0)
+			if (groupsWithTooFewInstances.Count > 0)
 			{
-				lines.Add($"Too few instances have been selected for {Utils.HumanReadableJoin(groupsWithInvalidInstances.Select(s => $"'{s.ElementName}'"))}");
+				lines.Add($"Too few instances have been selected for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+			}
+
+			if (groupsWithTooManyInstances.Count > 0)
+			{
+				lines.Add($"Too many instances have been selected for {groupsWithTooManyInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
 			}
 
 			detailsLabel_.Text = string.Join("\n", lines);

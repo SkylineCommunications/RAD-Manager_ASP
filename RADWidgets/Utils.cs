@@ -235,5 +235,18 @@
 
 			return sb.ToString();
 		}
+
+		/// <summary>
+		/// Capitalize the first letter of the string. If the provided string is null, null will be returned. If the provided string is empty,
+		/// an empty string will be returned.
+		/// </summary>
+		/// <param name="s">The string to capitalize, or null.</param>
+		/// <returns>The capitalized string, an empty string, or null.</returns>
+		public static string Capitalize(this string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return s;
+			return char.ToUpper(s[0]) + s.Substring(1);
+		}
 	}
 }

@@ -18,11 +18,14 @@
 
 	public class RadGroupEditor : Section
 	{
+		public const int MIN_PARAMETERS = 2;
+		public const int MAX_PARAMETERS = 100;
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
 		private readonly RadGroupOptionsEditor optionsEditor_;
 		private readonly List<string> existingGroupNames_;
-		private bool parameterSelectorValid_ = false;
+		private bool moreThanMinParametersSelected_ = false;
+		private bool lessThanMaxParametersSelected_ = false;
 
 		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, RadGroupSettings settings = null)
 		{
@@ -78,25 +81,29 @@
 
 		private void UpdateIsValid()
 		{
-			IsValid = groupNameTextBox_.ValidationState == UIValidationState.Valid && parameterSelectorValid_;
-			if (groupNameTextBox_.ValidationState == UIValidationState.Invalid && !parameterSelectorValid_)
-				ValidationText = "Provide a valid group name and select at least two instances";
-			else if (groupNameTextBox_.ValidationState == UIValidationState.Invalid)
-				ValidationText = "Provide a valid group name";
-			else if (!parameterSelectorValid_)
-				ValidationText = "Select at least two instances";
-			else
-				ValidationText = string.Empty;
+			IsValid = groupNameTextBox_.ValidationState == UIValidationState.Valid && moreThanMinParametersSelected_ && lessThanMaxParametersSelected_;
 
+			List<string> validationTexts = new List<string>(2);
+			if (groupNameTextBox_.ValidationState == UIValidationState.Invalid && !moreThanMinParametersSelected_)
+				validationTexts.Add("provide a valid group name");
+			if (!moreThanMinParametersSelected_)
+				validationTexts.Add("select at least two instances");
+			else if (!lessThanMaxParametersSelected_)
+				validationTexts.Add($"select at most {MAX_PARAMETERS} instances");
+
+			ValidationText = validationTexts.HumanReadableJoin().Capitalize();
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void OnParameterSelectorChanged()
 		{
-			bool newState = parameterSelector_.GetSelectedParameters().Count() >= 2;
-			if (newState != parameterSelectorValid_)
+			var count = parameterSelector_.GetSelectedParameters().Count();
+			bool newMinParametersState = count >= MIN_PARAMETERS;
+			bool newMaxParametersState = count <= MAX_PARAMETERS;
+			if (newMinParametersState != moreThanMinParametersSelected_ || newMaxParametersState != lessThanMaxParametersSelected_)
 			{
-				parameterSelectorValid_ = newState;
+				moreThanMinParametersSelected_ = newMinParametersState;
+				lessThanMaxParametersSelected_ = newMaxParametersState;
 				UpdateIsValid();
 			}
 		}
