@@ -64,7 +64,7 @@ namespace RelationalAnomalyGroupsDataSource
 			if (response == null)
 			{
 				logger_.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
-				return new GQIPage(new GQIRow[0]);
+				return new GQIPage(new GQIRow[0]) { HasNextPage = true };
 			}
 
 			var rows = new List<GQIRow>(response.GroupNames.Count);
@@ -95,7 +95,10 @@ namespace RelationalAnomalyGroupsDataSource
 					}));
 			}
 
-			return new GQIPage(rows.ToArray());
+			return new GQIPage(rows.ToArray())
+			{
+				HasNextPage = true,
+			};
 		}
 
 		private static void InitializeConnection(GQIDMS dms)
