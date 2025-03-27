@@ -5,7 +5,7 @@
 	<Type>Automation</Type>
 	<Author>Tobe Deprez</Author>
 	<CheckSets>FALSE</CheckSets>
-	<Folder>DataMiner Catalog\RAD Manager</Folder>
+	<Folder>DataMiner Catalog/RAD Manager</Folder>
 
 	<Protocols>
 	</Protocols>
@@ -18,8 +18,7 @@
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:AddRadParameterGroup]]]></Value>
-			<!--<Param type="debug">true</Param>-->
+			<Value><![CDATA[[Project:AddRADParameterGroup]]]></Value>
 			<Message></Message>
 		</Exe>
 	</Script>
