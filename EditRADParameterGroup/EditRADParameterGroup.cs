@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using EditRADParameterGroup;
 using RADWidgets;
-using Skyline.DataMiner.Analytics.DataTypes;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Net.Messages.SLDataGateway;
-using Skyline.DataMiner.Net.ReportsAndDashboards;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script

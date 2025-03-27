@@ -4,7 +4,6 @@ using RADWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.SLConfiguration;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script
