@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using EditRADParameterGroup;
-using RADWidgets;
+using RadWidgets;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -41,7 +41,7 @@ public class Script
 
 			int dataMinerID = groupNamesAndIds[0].Item1;
 			string groupName = groupNamesAndIds[0].Item2;
-			RADGroupSettings settings = null;
+			RadGroupSettings settings = null;
 			try
 			{
 				var request = new GetMADParameterGroupInfoMessage(groupName)
@@ -58,11 +58,11 @@ public class Script
 					return;
 				}
 
-				settings = new RADGroupSettings()
+				settings = new RadGroupSettings()
 				{
 					GroupName = response.GroupInfo.Name,
 					Parameters = response.GroupInfo.Parameters,
-					Options = new RADGroupOptions()
+					Options = new RadGroupOptions()
 					{
 						UpdateModel = response.GroupInfo.UpdateModel,
 						AnomalyThreshold = response.GroupInfo.AnomalyThreshold,

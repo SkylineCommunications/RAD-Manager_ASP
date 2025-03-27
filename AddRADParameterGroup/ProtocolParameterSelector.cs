@@ -1,7 +1,7 @@
 ﻿namespace AddParameterGroup
 {
 	using System;
-	using RADWidgets;
+	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 

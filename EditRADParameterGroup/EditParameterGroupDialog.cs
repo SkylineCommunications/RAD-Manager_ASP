@@ -1,23 +1,23 @@
 ﻿namespace EditRADParameterGroup
 {
 	using System;
-	using RADWidgets;
+	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class EditParameterGroupDialog : Dialog
 	{
-		private readonly RADGroupEditor groupEditor_;
+		private readonly RadGroupEditor groupEditor_;
 		private readonly Button okButton_;
 
-		public EditParameterGroupDialog(IEngine engine, RADGroupSettings groupSettings, int dataMinerID) : base(engine)
+		public EditParameterGroupDialog(IEngine engine, RadGroupSettings groupSettings, int dataMinerID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
 			OriginalGroupName = groupSettings.GroupName;
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
-			groupEditor_ = new RADGroupEditor(engine, Utils.FetchRadGroupNames(engine), groupSettings);
+			groupEditor_ = new RadGroupEditor(engine, Utils.FetchRadGroupNames(engine), groupSettings);
 			groupEditor_.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			okButton_ = new Button("Apply")
@@ -47,7 +47,7 @@
 
 		public string OriginalGroupName { get; private set; }
 
-		public RADGroupSettings GroupSettings => groupEditor_.Settings;
+		public RadGroupSettings GroupSettings => groupEditor_.Settings;
 
 		private void OnGroupEditorValidationChanged()
 		{

@@ -28,7 +28,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RelationalAnomalyScoreDataS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetrainRADModel", "RetrainRADModel\RetrainRADModel.csproj", "{D82E4480-9933-4966-997A-B19AE14ADCAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RADWidgets", "RADWidgets\RADWidgets.csproj", "{391C490F-138C-4CD1-90F2-5514F6C8315A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadWidgets", "RADWidgets\RadWidgets.csproj", "{391C490F-138C-4CD1-90F2-5514F6C8315A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EditRADParameterGroup", "EditRADParameterGroup\EditRADParameterGroup.csproj", "{120BA61E-DD71-4C88-B0F6-6A367B9EE524}"
 EndProject

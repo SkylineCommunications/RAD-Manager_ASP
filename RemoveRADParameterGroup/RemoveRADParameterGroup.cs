@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RADWidgets;
+using RadWidgets;
 using RemoveRADParameterGroup;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;

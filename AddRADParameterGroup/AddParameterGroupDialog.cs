@@ -4,8 +4,8 @@
 	using System.Collections.Generic;
 	using System.ComponentModel;
 	using System.Linq;
-	using AddRADParameterGroup;
-	using RADWidgets;
+	using AddRadParameterGroup;
+	using RadWidgets;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -21,8 +21,8 @@
 	public class AddParameterGroupDialog : Dialog
 	{
 		private readonly EnumDropDown<AddGroupType> addTypeDropDown_;
-		private readonly RADGroupEditor groupEditor_;
-		private readonly RADGroupByProtocolCreator groupByProtocolCreator_;
+		private readonly RadGroupEditor groupEditor_;
+		private readonly RadGroupByProtocolCreator groupByProtocolCreator_;
 		private readonly Button okButton_;
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
@@ -38,10 +38,10 @@
 			addTypeDropDown_.Changed += (sender, args) => OnAddTypeChanged();
 
 			var existingGroupNames = Utils.FetchRadGroupNames(engine);
-			groupEditor_ = new RADGroupEditor(engine, existingGroupNames);
+			groupEditor_ = new RadGroupEditor(engine, existingGroupNames);
 			groupEditor_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 
-			groupByProtocolCreator_ = new RADGroupByProtocolCreator(engine, existingGroupNames);
+			groupByProtocolCreator_ = new RadGroupByProtocolCreator(engine, existingGroupNames);
 			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
 			okButton_ = new Button("Add group")

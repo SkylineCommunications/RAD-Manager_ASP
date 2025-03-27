@@ -1,10 +1,10 @@
-﻿namespace AddRADParameterGroup
+﻿namespace AddRadParameterGroup
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using AddParameterGroup;
-	using RADWidgets;
+	using RadWidgets;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
@@ -25,16 +25,16 @@
 		public bool Valid => ValidInstances && ValidGroupName;
 	}
 
-	public class RADGroupByProtocolCreator : Section
+	public class RadGroupByProtocolCreator : Section
 	{
 		private readonly IEngine engine_;
 		private readonly TextBox groupPrefixTextBox_;
 		private readonly MultiParameterPerProtocolSelector parameterSelector_;
-		private readonly RADGroupOptionsEditor optionsEditor_;
+		private readonly RadGroupOptionsEditor optionsEditor_;
 		private readonly Label detailsLabel_;
 		private readonly List<string> existingGroupNames_;
 
-		public RADGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
+		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
 		{
 			engine_ = engine;
 			existingGroupNames_ = existingGroupNames;
@@ -53,7 +53,7 @@
 			};
 			parameterSelector_.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount);
+			optionsEditor_ = new RadGroupOptionsEditor(parameterSelector_.ColumnCount);
 
 			detailsLabel_ = new Label()
 			{

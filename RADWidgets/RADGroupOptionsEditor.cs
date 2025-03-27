@@ -1,9 +1,9 @@
-﻿namespace RADWidgets
+﻿namespace RadWidgets
 {
 	using System;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class RADGroupOptions
+	public class RadGroupOptions
 	{
 		public bool UpdateModel { get; set; }
 
@@ -15,7 +15,7 @@
 	/// <summary>
 	/// Editor for RAD group options.
 	/// </summary>
-	public class RADGroupOptionsEditor : Section
+	public class RadGroupOptionsEditor : Section
 	{
 		private readonly CheckBox updateModelCheckBox_;
 		private readonly CheckBox anomalyThresholdOverrideCheckBox_;
@@ -24,11 +24,11 @@
 		private readonly Time minimalDurationTime_;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RADGroupOptionsEditor"/> class.
+		/// Initializes a new instance of the <see cref="RadGroupOptionsEditor"/> class.
 		/// </summary>
 		/// <param name="columnCount">The number of columns the section should take (should be 2 or greater).</param>
 		/// <param name="options">The initial settings to display (if any).</param>
-		public RADGroupOptionsEditor(int columnCount, RADGroupOptions options = null)
+		public RadGroupOptionsEditor(int columnCount, RadGroupOptions options = null)
 		{
 			updateModelCheckBox_ = new CheckBox("Update model on new data?")
 			{
@@ -84,11 +84,11 @@
 			AddWidget(minimalDurationTime_, row, 1, 1, columnCount - 1);
 		}
 
-		public RADGroupOptions Options
+		public RadGroupOptions Options
 		{
 			get
 			{
-				return new RADGroupOptions
+				return new RadGroupOptions
 				{
 					UpdateModel = UpdateModel,
 					AnomalyThreshold = AnomalyThreshold,

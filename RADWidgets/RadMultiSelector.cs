@@ -1,4 +1,4 @@
-namespace RADWidgets
+namespace RadWidgets
 {
 	using System;
 	using System.Collections.Generic;

@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using RADWidgets;
+using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;

@@ -1,6 +1,6 @@
 ﻿namespace AddParameterGroup
 {
-	using RADWidgets;
+	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 
 	public class MultiProtocolParameterSelector : MultiSelector<ProtocolParameterSelectorInfo>

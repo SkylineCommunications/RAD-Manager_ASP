@@ -1,4 +1,4 @@
-﻿namespace RADWidgets
+﻿namespace RadWidgets
 {
 	using System;
 	using System.Collections.Generic;
@@ -7,24 +7,24 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class RADGroupSettings
+	public class RadGroupSettings
 	{
 		public string GroupName { get; set; }
 
 		public IEnumerable<ParameterKey> Parameters { get; set; }
 
-		public RADGroupOptions Options { get; set; }
+		public RadGroupOptions Options { get; set; }
 	}
 
-	public class RADGroupEditor : Section
+	public class RadGroupEditor : Section
 	{
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
-		private readonly RADGroupOptionsEditor optionsEditor_;
+		private readonly RadGroupOptionsEditor optionsEditor_;
 		private readonly List<string> existingGroupNames_;
 		private bool parameterSelectorValid_ = false;
 
-		public RADGroupEditor(IEngine engine, List<string> existingGroupNames, RADGroupSettings settings = null)
+		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, RadGroupSettings settings = null)
 		{
 			existingGroupNames_ = existingGroupNames;
 			if (settings != null) // The current group name should be accepted as valid
@@ -41,7 +41,7 @@
 			parameterSelector_ = new MultiParameterSelector(engine, settings?.Parameters);
 			parameterSelector_.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			optionsEditor_ = new RADGroupOptionsEditor(parameterSelector_.ColumnCount, settings?.Options);
+			optionsEditor_ = new RadGroupOptionsEditor(parameterSelector_.ColumnCount, settings?.Options);
 
 			OnGroupNameTextBoxChanged();
 			OnParameterSelectorChanged();
@@ -59,11 +59,11 @@
 
 		public event EventHandler<EventArgs> ValidationChanged;
 
-		public RADGroupSettings Settings
+		public RadGroupSettings Settings
 		{
 			get
 			{
-				return new RADGroupSettings
+				return new RadGroupSettings
 				{
 					GroupName = groupNameTextBox_.Text,
 					Parameters = parameterSelector_.GetSelectedParameters(),

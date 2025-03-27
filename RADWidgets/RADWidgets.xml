@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>RADWidgets</Name>
+	<Name>RadWidgets</Name>
 	<Description></Description>
 	<Type>Automation</Type>
 	<Author>Tobe Deprez</Author>
@@ -18,9 +18,9 @@
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:RADWidgets]]]></Value>
+			<Value><![CDATA[[Project:RadWidgets]]]></Value>
 			<Param type="preCompile">true</Param>
-			<Param type="libraryName">RADWidgets</Param>
+			<Param type="libraryName">RadWidgets</Param>
 		</Exe>
 	</Script>
 </DMSScript>

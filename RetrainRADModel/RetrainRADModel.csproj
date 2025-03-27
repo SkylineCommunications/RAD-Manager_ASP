@@ -22,6 +22,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RADWidgets\RADWidgets.csproj" />
+    <ProjectReference Include="..\RADWidgets\RadWidgets.csproj" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Globalization;
-	using RADWidgets;
+	using RadWidgets;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
