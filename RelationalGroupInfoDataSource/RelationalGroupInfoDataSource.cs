@@ -36,16 +36,16 @@ namespace RelationalGroupInfoDataSource
 
 		public GQIArgument[] GetInputArguments()
 		{
-			return new GQIArgument[] { GroupName };
+			return new GQIArgument[] { GroupName, DataMinerID };
 		}
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
 			if (!args.TryGetArgumentValue(GroupName, out groupName_))
-				throw new Exception("No group name provided");
+				logger_.Error("No group name provided");
 
 			if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
-				throw new Exception("No DataMiner ID provided");
+				logger_.Error("No DataMiner ID provided");
 
 			return new OnArgumentsProcessedOutputArgs();
 		}
@@ -53,7 +53,11 @@ namespace RelationalGroupInfoDataSource
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
 			if (string.IsNullOrEmpty(groupName_))
-				throw new Exception("Group name is empty");
+			{
+				logger_.Error("Group name is empty");
+				parameterKeys_ = new List<ParameterKey>();
+				return default;
+			}
 
 			try
 			{

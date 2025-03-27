@@ -42,27 +42,20 @@ namespace RelationalAnomalyScoreDataSource
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
-			try
+			if (!args.TryGetArgumentValue(GroupName, out groupName_))
+				logger_.Error("No group name provided");
+
+			if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
+				logger_.Error("No DataMiner ID provided");
+
+			if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
 			{
-				if (!args.TryGetArgumentValue(GroupName, out groupName_))
-					throw new Exception("No group name provided");
-
-				if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
-					throw new Exception("No DataMiner ID provided");
-
-				if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
-				{
-					startTime_ = startTimeValue.ToUniversalTime();
-					endTime_ = endTimeValue.ToUniversalTime();
-				}
-				else
-				{
-					throw new Exception("Unable to parse input times");
-				}
+				startTime_ = startTimeValue.ToUniversalTime();
+				endTime_ = endTimeValue.ToUniversalTime();
 			}
-			catch (Exception ex)
+			else
 			{
-				throw new Exception("Failed to parse input arguments", ex);
+				logger_.Error("Unable to parse input times");
 			}
 
 			return new OnArgumentsProcessedOutputArgs();
@@ -70,6 +63,13 @@ namespace RelationalAnomalyScoreDataSource
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
+			if (string.IsNullOrEmpty(groupName_) || startTime_ == null || endTime_ == null)
+			{
+				logger_.Error("Group name or time range is empty");
+				anomalyScoreData_.AnomalyScores.Clear();
+				return default;
+			}
+
 			if (groupName_ == anomalyScoreData_.GroupName && anomalyScoreData_.AnomalyScores.IsNotNullOrEmpty())
 			{
 				// ie we've already fetched the data for this group previously
