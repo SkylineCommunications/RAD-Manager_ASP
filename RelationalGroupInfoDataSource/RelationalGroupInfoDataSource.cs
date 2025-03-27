@@ -16,11 +16,12 @@ namespace RelationalGroupInfoDataSource
 	public class RelationalGroupInfoDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");
+		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("DataMinerID");
 		private static Connection connection_;
 		private GQIDMS dms_;
 		private IGQILogger logger_;
 		private string groupName_;
-		private string lastError_;
+		private int dataMinerID_ = -1;
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
 		private Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
 		private Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
@@ -40,27 +41,26 @@ namespace RelationalGroupInfoDataSource
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
-			if (args.TryGetArgumentValue(GroupName, out string groupName))
-			{
-				groupName_ = groupName;
-			}
+			if (!args.TryGetArgumentValue(GroupName, out groupName_))
+				throw new Exception("No group name provided");
+
+			if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
+				throw new Exception("No DataMiner ID provided");
 
 			return new OnArgumentsProcessedOutputArgs();
 		}
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
+			if (string.IsNullOrEmpty(groupName_))
+				throw new Exception("Group name is empty");
+
 			try
 			{
-				if (string.IsNullOrEmpty(groupName_))
+				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName_)
 				{
-					lastError_ = "Group name is empty";
-					return new OnPrepareFetchOutputArgs();
-				}
-
-				lastError_ = null;
-
-				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName_);
+					DataMinerID = dataMinerID_,
+				};
 				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 
 				// Fetch elementNames and protocol info
@@ -99,8 +99,7 @@ namespace RelationalGroupInfoDataSource
 			}
 			catch (Exception ex)
 			{
-				lastError_ = ex.Message;
-				return new OnPrepareFetchOutputArgs();
+				throw new Exception($"Failed to fetch group info for group {groupName_} on agent {dataMinerID_}", ex);
 			}
 		}
 
@@ -122,10 +121,6 @@ namespace RelationalGroupInfoDataSource
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
 			var rows = new List<GQIRow>();
-			if (lastError_ != null)
-			{
-				return new GQIPage(rows.ToArray());
-			}
 
 			foreach (ParameterKey pKey in parameterKeys_)
 			{
