@@ -8,6 +8,7 @@ namespace RelationalGroupInfoDataSource
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
@@ -18,18 +19,16 @@ namespace RelationalGroupInfoDataSource
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("DataMinerID");
 		private static Connection connection_;
-		private GQIDMS dms_;
+		private readonly Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
+		private readonly Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
 		private IGQILogger logger_;
 		private string groupName_ = string.Empty;
 		private int dataMinerID_ = -1;
 		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
-		private Dictionary<(int dmaId, int elementId), string> elementNames_ = new Dictionary<(int dmaId, int elementId), string>();
-		private Dictionary<(int dmaId, int elementId), ParameterInfo[]> protocolCache_ = new Dictionary<(int dmaId, int elementId), ParameterInfo[]>();
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			dms_ = args.DMS;
-			InitializeConnection(dms_);
+			InitializeConnection(args.DMS);
 			logger_ = args.Logger;
 			return default;
 		}
@@ -103,7 +102,7 @@ namespace RelationalGroupInfoDataSource
 			}
 			catch (Exception ex)
 			{
-				throw new Exception($"Failed to fetch group info for group {groupName_} on agent {dataMinerID_}", ex);
+				throw new DataMinerCommunicationException($"Failed to fetch group info for group {groupName_} on agent {dataMinerID_}", ex);
 			}
 		}
 

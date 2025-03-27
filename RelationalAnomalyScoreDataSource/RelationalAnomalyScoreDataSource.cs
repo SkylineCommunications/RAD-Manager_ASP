@@ -7,6 +7,7 @@ namespace RelationalAnomalyScoreDataSource
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Helper;
 
 	/// <summary>
@@ -102,7 +103,7 @@ namespace RelationalAnomalyScoreDataSource
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Failed to fetch MAD data", ex);
+				throw new DataMinerCommunicationException("Failed to fetch MAD data", ex);
 			}
 		}
 

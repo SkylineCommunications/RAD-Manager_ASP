@@ -16,10 +16,10 @@ namespace RelationalAnomalyGroupsDataSource
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
 		private static Connection connection_;
+		private readonly Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
 		private GQIDMS dms_;
 		private IGQILogger logger_;
 		private IEnumerator<int> dmaIDEnumerator_;
-		private Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)> cache_ = new Dictionary<(int dmaId, int elementId), (string elementName, ParameterInfo[] parameters)>();
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
