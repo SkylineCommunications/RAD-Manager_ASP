@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>AddRadParameterGroup</Name>
+	<Name>AddRADParameterGroup</Name>
 	<Description>Add a parameter group to the Relational Anomaly Detection configuration</Description>
 	<Type>Automation</Type>
 	<Author>Tobe Deprez</Author>
