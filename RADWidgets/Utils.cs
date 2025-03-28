@@ -110,9 +110,14 @@
 			var exceptionDialog = new ExceptionDialog(app.Engine, ex);
 			exceptionDialog.Title = title;
 			if (parent == null)
+			{
 				exceptionDialog.OkButton.Pressed += (s, args) => app.Engine.ExitSuccess(title);
+				exceptionDialog.ShowScriptAbortPopup = false;
+			}
 			else
+			{
 				exceptionDialog.OkButton.Pressed += (s, args) => app.ShowDialog(parent);
+			}
 
 			app.ShowDialog(exceptionDialog);
 		}
