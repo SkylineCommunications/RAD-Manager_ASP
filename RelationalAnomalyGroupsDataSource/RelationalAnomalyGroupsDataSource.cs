@@ -40,9 +40,9 @@ namespace RelationalAnomalyGroupsDataSource
 				new GQIStringColumn("Name"),
 				new GQIIntColumn("DataMiner Id"),
 				new GQIStringColumn("Parameters"),
-				new GQIStringColumn("UpdateModel"),
-				new GQIStringColumn("AnomalyThreshold"),
-				new GQIStringColumn("Minimal Anomaly Duration"),
+				new GQIStringColumn("Update Model"),
+				new GQIStringColumn("Anomaly Threshold"),
+				new GQIStringColumn("Minimum Anomaly Duration"),
 			};
 		}
 
