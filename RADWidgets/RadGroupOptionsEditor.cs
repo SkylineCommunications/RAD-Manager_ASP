@@ -50,13 +50,13 @@
 				IsEnabled = options?.AnomalyThreshold != null,
 			};
 
-			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimal anomaly duration?")
+			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimum anomaly duration?")
 			{
 				IsChecked = options?.MinimalDuration != null,
 			};
 			minimalDurationOverrideCheckBox_.Changed += (sender, args) => minimalDurationTime_.IsEnabled = (sender as CheckBox).IsChecked;
 
-			var minimalDurationLabel = new Label("Minimal anomaly duration");
+			var minimalDurationLabel = new Label("Minimum anomaly duration (in minutes)");
 			minimalDurationTime_ = new Time()
 			{
 				HasSeconds = false,
