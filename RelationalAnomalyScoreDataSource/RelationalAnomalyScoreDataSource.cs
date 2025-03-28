@@ -85,8 +85,8 @@ namespace RelationalAnomalyScoreDataSource
 					DataMinerID = dataMinerID_,
 				};
 				var madDataReponse = connection_.HandleSingleResponseMessage(msg) as GetMADDataResponseMessage;
-				logger_.Information($"Number of points: {madDataReponse.Data.Count}");
-				if (madDataReponse?.Parameters != null)
+				logger_.Information($"Number of points: {madDataReponse?.Data.Count}");
+				if (madDataReponse != null)
 				{
 					foreach (MADDataPoint point in madDataReponse.Data)
 					{
