@@ -122,6 +122,26 @@
 			app.ShowDialog(exceptionDialog);
 		}
 
+		public static List<LiteElementInfoEvent> FetchElements(IEngine engine)
+		{
+			try
+			{
+				var request = new GetLiteElementInfo()
+				{
+					IncludeHidden = true,
+					IncludePaused = true,
+					IncludeStopped = true,
+					IncludeServiceElements = true,
+				};
+				return engine.SendSLNetMessage(request).Select(r => r as LiteElementInfoEvent).Where(r => r != null).ToList();
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Could not fetch elements: {e}");
+				return null;
+			}
+		}
+
 		/// <summary>
 		/// Fetch the protocol for the given element. Returns null and logs an exception if the protocol could not be fetched.
 		/// </summary>
