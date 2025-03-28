@@ -5,10 +5,13 @@
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
+	/// <summary>
+	/// Cache for parameters.
+	/// </summary>
 	public class ParametersCache : Cache<ParameterInfo[]>
 	{
-		private IGQILogger logger_ = null;
-		private IConnection connection_ = null;
+		private readonly IGQILogger logger_ = null;
+		private readonly IConnection connection_ = null;
 
 		public ParametersCache(IConnection connection, IGQILogger logger)
 		{
@@ -16,7 +19,7 @@
 			logger_ = logger;
 		}
 
-		protected override ParameterInfo[] Fetch(int dataMinerID, int elementID)
+		protected override bool Fetch(int dataMinerID, int elementID, out ParameterInfo[] value)
 		{
 			try
 			{
@@ -26,15 +29,18 @@
 				if (protocolResponse == null)
 				{
 					logger_.Error($"Failed to fetch protocol for element {dataMinerID}/{elementID}: Received no response or response of the wrong type");
-					return null;
+					value = new ParameterInfo[0];
+					return false;
 				}
 
-				return protocolResponse?.AllParameters;
+				value = protocolResponse.AllParameters;
+				return true;
 			}
 			catch (Exception ex)
 			{
 				logger_.Error($"Failed to fetch element name for element {dataMinerID}/{elementID}: {ex.Message}");
-				return null;
+				value = new ParameterInfo[0];
+				return false;
 			}
 		}
 	}

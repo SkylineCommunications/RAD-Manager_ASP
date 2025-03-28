@@ -5,10 +5,13 @@
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
+	/// <summary>
+	/// Cache for element names.
+	/// </summary>
 	public class ElementNameCache : Cache<string>
 	{
-		private IGQILogger logger_ = null;
-		private IConnection connection_ = null;
+		private readonly IGQILogger logger_ = null;
+		private readonly IConnection connection_ = null;
 
 		public ElementNameCache(IConnection connection, IGQILogger logger)
 		{
@@ -16,7 +19,7 @@
 			logger_ = logger;
 		}
 
-		protected override string Fetch(int dataMinerID, int elementID)
+		protected override bool Fetch(int dataMinerID, int elementID, out string value)
 		{
 			try
 			{
@@ -26,15 +29,18 @@
 				if (elementResponse == null)
 				{
 					logger_.Error($"Failed to fetch element info for element {dataMinerID}/{elementID}: Received no response or response of the wrong type");
-					return null;
+					value = string.Empty;
+					return false;
 				}
 
-				return elementResponse?.Name;
+				value = elementResponse.Name;
+				return true;
 			}
 			catch (Exception ex)
 			{
 				logger_.Error($"Failed to fetch element name for element {dataMinerID}/{elementID}: {ex.Message}");
-				return null;
+				value = string.Empty;
+				return false;
 			}
 		}
 	}
