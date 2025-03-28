@@ -1,9 +1,9 @@
 using System;
-using RADWidgets;
+using System.Linq;
+using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net.SLConfiguration;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script
@@ -27,18 +27,19 @@ public class Script
 		{
 			app = new InteractiveController(engine);
 
-			string groupName = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
-			string dataMinerIDStr = Utils.NormalizeScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
-			if (string.IsNullOrEmpty(groupName) || string.IsNullOrEmpty(dataMinerIDStr))
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			if (groupNamesAndIds.Count == 0)
 			{
 				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to retrain first");
 				return;
 			}
+			else if (groupNamesAndIds.Count > 1)
+			{
+				Utils.ShowMessageDialog(app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				return;
+			}
 
-			if (!int.TryParse(dataMinerIDStr, out int dataMinerID))
-				throw new ArgumentException($"DataMinerID parameter is not a valid number, got '{dataMinerIDStr}'");
-
-			var dialog = new RetrainRADModelDialog(engine, groupName, dataMinerID);
+			var dialog = new RetrainRADModelDialog(engine, groupNamesAndIds[0].Item2, groupNamesAndIds[0].Item1);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
@@ -79,7 +80,7 @@ public class Script
 
 		try
 		{
-			var message = new RetrainMADModelMessage(dialog.GroupName, dialog.TimeRanges)
+			var message = new RetrainMADModelMessage(dialog.GroupName, dialog.GetSelectedTimeRanges().ToList())
 			{
 				DataMinerID = dialog.DataMinerID,
 			};
@@ -87,7 +88,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to retrain parameter group", ex);
+			Utils.ShowExceptionDialog(app, "Failed to retrain parameter group", ex, dialog);
 			return;
 		}
 

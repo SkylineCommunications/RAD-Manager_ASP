@@ -1,14 +1,19 @@
-﻿using RADWidgets;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
-using System.Globalization;
-
-namespace RetrainRADModel
+﻿namespace RetrainRADModel
 {
+	using System;
+	using System.Globalization;
+	using RadWidgets;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public class TimeRangeItem : MultiSelectorItem
 	{
+		public TimeRangeItem(TimeRange range)
+		{
+			this.TimeRange = range;
+		}
+
 		public TimeRange TimeRange { get; set; }
 
 		public override string GetKey()
@@ -20,17 +25,38 @@ namespace RetrainRADModel
 		{
 			return $"From {TimeRange.StartTime} to {TimeRange.EndTime}";
 		}
-
-		public TimeRangeItem(TimeRange range)
-		{
-			this.TimeRange = range;
-		}
 	}
 
 	public class TimeRangeSelector : MultiSelectorItemSelector<TimeRangeItem>
 	{
 		private DateTimePicker startTimePicker_;
 		private DateTimePicker endTimePicker_;
+
+		public TimeRangeSelector(IEngine engine)
+		{
+			var fromLabel = new Label("From");
+
+			startTimePicker_ = new DateTimePicker()
+			{
+				Maximum = DateTime.Now,
+				DateTime = DateTime.Now - TimeSpan.FromDays(30),
+			};
+			startTimePicker_.Changed += (sender, args) => OnStartTimeSelectorChanged();
+
+			var toLabel = new Label(" to ");
+
+			endTimePicker_ = new DateTimePicker()
+			{
+				Maximum = DateTime.Now,
+				DateTime = DateTime.Now,
+			};
+			endTimePicker_.Changed += (sender, args) => OnEndTimeSelectorChanged();
+
+			AddWidget(fromLabel, 0, 0);
+			AddWidget(startTimePicker_, 0, 1);
+			AddWidget(toLabel, 0, 2);
+			AddWidget(endTimePicker_, 0, 3);
+		}
 
 		public override TimeRangeItem SelectedItem
 		{
@@ -61,36 +87,12 @@ namespace RetrainRADModel
 			else
 				startTimePicker_.ValidationState = UIValidationState.Valid;
 		}
-
-		public TimeRangeSelector(IEngine engine)
-		{
-			var fromLabel = new Label("From");
-
-			startTimePicker_ = new DateTimePicker()
-			{
-				Maximum = DateTime.Now,
-				DateTime = DateTime.Now - TimeSpan.FromDays(30),
-			};
-			startTimePicker_.Changed += (sender, args) => OnStartTimeSelectorChanged();
-
-			var toLabel = new Label(" to ");
-
-			endTimePicker_ = new DateTimePicker()
-			{
-				Maximum = DateTime.Now,
-				DateTime = DateTime.Now,
-			};
-			endTimePicker_.Changed += (sender, args) => OnEndTimeSelectorChanged();
-
-			AddWidget(fromLabel, 0, 0);
-			AddWidget(startTimePicker_, 0, 1);
-			AddWidget(toLabel, 0, 2);
-			AddWidget(endTimePicker_, 0, 3);
-		}
 	}
 
 	public class MultiTimeRangeSelector : MultiSelector<TimeRangeItem>
 	{
-		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine)) { }
+		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine))
+		{
+		}
 	}
 }

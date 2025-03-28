@@ -1,192 +1,125 @@
-﻿using Skyline.DataMiner.Analytics.DataTypes;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Remoting.Channels;
-
-namespace AddParameterGroup
+﻿namespace AddParameterGroup
 {
-    public enum AddGroupType
-    {
-        [Description("Add single group")]
-        Single,
-        [Description("Add group for each element with given connector")]
-        MultipleOnProtocol
-    }
+	using System;
+	using System.Collections.Generic;
+	using System.ComponentModel;
+	using System.Linq;
+	using AddRadParameterGroup;
+	using RadWidgets;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-    public class AddParameterGroupDialog : Dialog
-    {
-        private EnumDropDown<AddGroupType> addTypeDropDown_;
-        private Label groupNameLabel_;
-        private TextBox groupNameTextBox_;
-        private MultiParameterSelector parameterSelector_;
-        private MultiParameterPerProtocolSelector parameterPerProtocolSelector_;
-        private CheckBox updateModelCheckBox_;
-        private CheckBox anomalyThresholdOverrideCheckBox_;
-        private Numeric anomalyThresholdNumeric_;
-        private CheckBox minimalDurationOverrideCheckBox_;
-        private Time minimalDurationTime_;
-        private Button okButton_;
+	public enum AddGroupType
+	{
+		[Description("Add single group")]
+		Single,
+		[Description("Add group for each element with given connector")]
+		MultipleOnProtocol,
+	}
 
-        public AddGroupType AddType => addTypeDropDown_.Selected;
-        public string GroupName => groupNameTextBox_.Text;
-        public List<ParameterSelectorInfo> Parameters => parameterSelector_.SelectedItems;
-        public string ProtocolName => parameterPerProtocolSelector_.ProtocolName;
-        public string ProtocolVersion => parameterPerProtocolSelector_.ProtocolVersion;
-        public List<ProtocolParameterSelectorInfo> ProtolParameters => parameterPerProtocolSelector_.SelectedParameters;
-        public bool UpdateModel => updateModelCheckBox_.IsChecked;
-        public double? AnomalyThreshold
-        {
-            get
-            {
-                if (anomalyThresholdOverrideCheckBox_.IsChecked)
-                    return anomalyThresholdNumeric_.Value;
-                else
-                    return null;
-            }
-        }
-        public int? MinimalDuration
-        {
-            get
-            {
-                if (minimalDurationOverrideCheckBox_.IsChecked)
-                    return (int)minimalDurationTime_.TimeSpan.TotalMinutes;
-                else
-                    return null;
-            }
-        }
-        public event EventHandler Accepted;
-        public event EventHandler Cancelled;
+	public class AddParameterGroupDialog : Dialog
+	{
+		private readonly EnumDropDown<AddGroupType> addTypeDropDown_;
+		private readonly RadGroupEditor groupEditor_;
+		private readonly RadGroupByProtocolCreator groupByProtocolCreator_;
+		private readonly Button okButton_;
 
-        private void UpdateAddGroupIsEnabled()
-        {
-            bool parametersSelected;
-            if (addTypeDropDown_.Selected == AddGroupType.Single)
-                parametersSelected = parameterSelector_.SelectedItems.Count > 0;
-            else
-                parametersSelected = parameterPerProtocolSelector_.SelectedParameters.Count > 0;
-            okButton_.IsEnabled = !string.IsNullOrEmpty(GroupName) && parametersSelected;
-        }
+		public AddParameterGroupDialog(IEngine engine) : base(engine)
+		{
+			ShowScriptAbortPopup = false;
+			Title = "Add Parameter Group";
 
-        private void OnGroupNameTextBoxChanged()
-        {
-            groupNameTextBox_.ValidationState = string.IsNullOrEmpty(groupNameTextBox_.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
-            UpdateAddGroupIsEnabled();
-        }
+			var addTypeLabel = new Label("What to add?");
+			addTypeDropDown_ = new EnumDropDown<AddGroupType>()
+			{
+				Selected = AddGroupType.Single,
+			};
+			addTypeDropDown_.Changed += (sender, args) => OnAddTypeChanged();
 
-        public AddParameterGroupDialog(IEngine engine) : base(engine)
-        {
-            Title = "Add Parameter Group";
+			var existingGroupNames = Utils.FetchRadGroupNames(engine);
+			groupEditor_ = new RadGroupEditor(engine, existingGroupNames);
+			groupEditor_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 
-            var addTypeLabel = new Label("What to add?");
-            addTypeDropDown_ = new EnumDropDown<AddGroupType>()
-            {
-                Selected = AddGroupType.Single
-            };
-            addTypeDropDown_.Changed += (sender, args) =>
-            {
-                if (args.Selected == AddGroupType.Single)
-                {
-                    parameterSelector_.IsVisible = true;
-                    parameterPerProtocolSelector_.IsVisible = false;
-                    groupNameLabel_.Text = "Group name";
-                }
-                else
-                {
-                    parameterSelector_.IsVisible = false;
-                    parameterPerProtocolSelector_.IsVisible = true;
-                    groupNameLabel_.Text = "Group name prefix";
-                }
-            };
+			groupByProtocolCreator_ = new RadGroupByProtocolCreator(engine, existingGroupNames);
+			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
-            groupNameLabel_ = new Label("Group name");
-            groupNameTextBox_ = new TextBox()
-            {
-                MinWidth = 600
-            };
-            groupNameTextBox_.ValidationState = UIValidationState.Invalid;
-            groupNameTextBox_.Changed += (sender, args) => OnGroupNameTextBoxChanged();
+			okButton_ = new Button("Add group")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
+			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
-            parameterSelector_ = new MultiParameterSelector(engine);
-            parameterSelector_.Changed += (sender, args) => UpdateAddGroupIsEnabled();
+			var cancelButton = new Button("Cancel");
+			cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
-            parameterPerProtocolSelector_ = new MultiParameterPerProtocolSelector(engine)
-            {
-                IsVisible = false
-            };
-            parameterPerProtocolSelector_.Changed += (sender, args) => UpdateAddGroupIsEnabled();
+			OnAddTypeChanged();
 
-            updateModelCheckBox_ = new CheckBox("Update model on new data?");
+			int row = 0;
+			AddWidget(addTypeLabel, row, 0);
+			AddWidget(addTypeDropDown_, row, 1, 1, groupByProtocolCreator_.ColumnCount - 1);
+			++row;
 
-            anomalyThresholdOverrideCheckBox_ = new CheckBox("Override default anomaly threshold?");
-            anomalyThresholdOverrideCheckBox_.Changed += (sender, args) => anomalyThresholdNumeric_.IsEnabled = (sender as CheckBox).IsChecked;
+			AddSection(groupEditor_, row, 0);
+			row += groupEditor_.RowCount;
 
-            var anomalyThresholdLabel = new Label("Anomaly threshold");
-            anomalyThresholdNumeric_ = new Numeric()
-            {
-                Minimum = 0,
-                Value = 3,
-                StepSize = 0.01,
-                IsEnabled = false
-            };
+			AddSection(groupByProtocolCreator_, row, 0);
+			row += groupByProtocolCreator_.RowCount;
 
-            minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimal anomaly duration?");
-            minimalDurationOverrideCheckBox_.Changed += (sender, args) => minimalDurationTime_.IsEnabled = (sender as CheckBox).IsChecked;
+			AddWidget(cancelButton, row, 0, 1, 1);
+			AddWidget(okButton_, row, 1, 1, 3);
+		}
 
-            var minimalDurationLabel = new Label("Minimal anomaly duration");
-            minimalDurationTime_ = new Time()
-            {
-                HasSeconds = false,
-                Minimum = TimeSpan.FromMinutes(5),
-                TimeSpan = TimeSpan.FromMinutes(5),
-                ClipValueToRange = true,
-                IsEnabled = false,
-            };
+		public event EventHandler Accepted;
 
-            okButton_ = new Button("Add group");
-            okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
+		public event EventHandler Cancelled;
 
-            var cancelButton = new Button("Cancel");
-            cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
+		public List<MADGroupInfo> GetGroupsToAdd()
+		{
+			if (addTypeDropDown_.Selected == AddGroupType.Single)
+			{
+				var groupInfo = new MADGroupInfo(
+					groupEditor_.Settings.GroupName,
+					groupEditor_.Settings.Parameters.ToList(),
+					groupEditor_.Settings.Options.UpdateModel,
+					groupEditor_.Settings.Options.AnomalyThreshold,
+					groupEditor_.Settings.Options.MinimalDuration);
+				return new List<MADGroupInfo>() { groupInfo };
+			}
+			else
+			{
+				return groupByProtocolCreator_.GetGroupsToAdd();
+			}
+		}
 
-            OnGroupNameTextBoxChanged();
+		private void OnEditorValidationChanged(bool isValid, string validationText)
+		{
+			if (isValid)
+			{
+				okButton_.IsEnabled = true;
+				okButton_.Tooltip = string.Empty;
+			}
+			else
+			{
+				okButton_.IsEnabled = false;
+				okButton_.Tooltip = validationText;
+			}
+		}
 
-            int row = 0;
-            AddWidget(addTypeLabel, row, 0);
-            AddWidget(addTypeDropDown_, row, 1, 1, parameterSelector_.ColumnCount - 1);
-            ++row;
-
-            AddWidget(groupNameLabel_, row, 0);
-            AddWidget(groupNameTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
-            ++row;
-
-            AddSection(parameterSelector_, row, 0);
-            row += parameterSelector_.RowCount;
-
-            AddSection(parameterPerProtocolSelector_, row, 0);
-            row += parameterPerProtocolSelector_.RowCount;
-
-            AddWidget(updateModelCheckBox_, row, 0, 1, parameterSelector_.ColumnCount);
-            ++row;
-
-            AddWidget(anomalyThresholdOverrideCheckBox_, row, 0, 1, parameterSelector_.ColumnCount);
-            ++row;
-
-            AddWidget(anomalyThresholdLabel, row, 0);
-            AddWidget(anomalyThresholdNumeric_, row, 1, 1, parameterSelector_.ColumnCount - 1);
-            ++row;
-
-            AddWidget(minimalDurationOverrideCheckBox_, row, 0, 1, parameterSelector_.ColumnCount);
-            ++row;
-
-            AddWidget(minimalDurationLabel, row, 0);
-            AddWidget(minimalDurationTime_, row, 1, 1, parameterSelector_.ColumnCount - 1);
-            ++row;
-
-            AddWidget(cancelButton, row, 0, 1, 1);
-            AddWidget(okButton_, row, 1, 1, 3);
-        }
-    }
+		private void OnAddTypeChanged()
+		{
+			if (addTypeDropDown_.Selected == AddGroupType.Single)
+			{
+				groupEditor_.IsVisible = true;
+				groupByProtocolCreator_.IsVisible = false;
+				OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
+			}
+			else
+			{
+				groupEditor_.IsVisible = false;
+				groupByProtocolCreator_.IsVisible = true;
+				OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
+			}
+		}
+	}
 }

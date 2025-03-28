@@ -1,46 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Skyline.DataMiner.Analytics.Mad;
-using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-namespace RetrainRADModel
+﻿namespace RetrainRADModel
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public class RetrainRADModelDialog : Dialog
 	{
-		private Button okButton_;
-		private MultiTimeRangeSelector timeRangeSelector_;
-
-		public event EventHandler Accepted;
-		public event EventHandler Cancelled;
-
-		public string GroupName { get; private set; }
-
-		public int DataMinerID { get; private set; }
-
-		public List<TimeRange> TimeRanges => timeRangeSelector_.SelectedItems.Select(i => i.TimeRange).ToList();
-
-		private void OnTimeRangeSelectorChanged()
-		{
-			okButton_.IsEnabled = timeRangeSelector_.SelectedItems.Count > 0;
-		}
+		private readonly Button okButton_;
+		private readonly MultiTimeRangeSelector timeRangeSelector_;
 
 		public RetrainRADModelDialog(IEngine engine, string groupName, int dataMinerID) : base(engine)
 		{
+			ShowScriptAbortPopup = false;
 			GroupName = groupName;
 			DataMinerID = dataMinerID;
 
 			Title = $"Retrain model for parameter group '{groupName}'";
 
-			var label = new Label($"Retrain the model using the following well-behaved time ranges:");
+			var label = new Label($"Retrain the model using the following time ranges with normal behavior:");
 
 			timeRangeSelector_ = new MultiTimeRangeSelector(engine);
 			timeRangeSelector_.Changed += (sender, args) => OnTimeRangeSelectorChanged();
 
-			okButton_ = new Button("Retrain");
+			okButton_ = new Button("Retrain")
+			{
+				Style = ButtonStyle.CallToAction,
+			};
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			var cancelButton = new Button("Cancel");
@@ -57,6 +45,24 @@ namespace RetrainRADModel
 
 			AddWidget(cancelButton, row, 0, 1, 2);
 			AddWidget(okButton_, row, 2, 1, timeRangeSelector_.ColumnCount - 2);
+		}
+
+		public event EventHandler Accepted;
+
+		public event EventHandler Cancelled;
+
+		public string GroupName { get; private set; }
+
+		public int DataMinerID { get; private set; }
+
+		public IEnumerable<TimeRange> GetSelectedTimeRanges()
+		{
+			return timeRangeSelector_.GetSelected().Select(i => i.TimeRange);
+		}
+
+		private void OnTimeRangeSelectorChanged()
+		{
+			okButton_.IsEnabled = timeRangeSelector_.GetSelected().Any();
 		}
 	}
 }
