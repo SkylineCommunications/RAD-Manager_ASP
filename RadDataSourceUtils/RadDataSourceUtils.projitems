@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Cache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConnectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ElementNameCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParametersCache.cs" />
   </ItemGroup>

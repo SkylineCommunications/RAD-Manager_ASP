@@ -1,4 +1,4 @@
-﻿namespace RelationalAnomalyGroupsDataSource
+﻿namespace RadDataSourceUtils
 {
 	using System;
 	using System.IO;

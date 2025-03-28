@@ -4,7 +4,6 @@ namespace RelationalGroupInfoDataSource
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadDataSourceUtils;
-	using RelationalAnomalyGroupsDataSource;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
