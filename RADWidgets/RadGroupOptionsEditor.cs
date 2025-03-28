@@ -47,7 +47,7 @@
 				Minimum = 0,
 				Value = options?.AnomalyThreshold ?? 3,
 				StepSize = 0.01,
-				IsEnabled = false,
+				IsEnabled = options?.AnomalyThreshold != null,
 			};
 
 			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimal anomaly duration?")
@@ -63,7 +63,7 @@
 				Minimum = TimeSpan.FromMinutes(5),
 				TimeSpan = TimeSpan.FromMinutes(options?.MinimalDuration ?? 5),
 				ClipValueToRange = true,
-				IsEnabled = false,
+				IsEnabled = options?.MinimalDuration != null,
 			};
 
 			int row = 0;
