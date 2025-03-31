@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadWidgets", "RADWidgets\Ra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EditRADParameterGroup", "EditRADParameterGroup\EditRADParameterGroup.csproj", "{120BA61E-DD71-4C88-B0F6-6A367B9EE524}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadDataSourceUtils", "RadDataSourceUtils\RadDataSourceUtils.shproj", "{2ADE4ECB-223A-40E2-B795-2F33A74D70D8}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadUtils", "RadDataSourceUtils\RadUtils.shproj", "{2ADE4ECB-223A-40E2-B795-2F33A74D70D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +86,7 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RadDataSourceUtils\RadDataSourceUtils.projitems*{2ade4ecb-223a-40e2-b795-2f33a74d70d8}*SharedItemsImports = 13
+		RadDataSourceUtils\RadDataSourceUtils.projitems*{391c490f-138c-4cd1-90f2-5514f6c8315a}*SharedItemsImports = 5
 		RadDataSourceUtils\RadDataSourceUtils.projitems*{6acac0ba-48d9-4827-a1c8-e16164035e67}*SharedItemsImports = 5
 		RadDataSourceUtils\RadDataSourceUtils.projitems*{c58bf363-9f7a-49f5-b2f2-045cc5b59de2}*SharedItemsImports = 5
 		RadDataSourceUtils\RadDataSourceUtils.projitems*{e209f086-6c2a-4a63-9378-7c81eef5928a}*SharedItemsImports = 5

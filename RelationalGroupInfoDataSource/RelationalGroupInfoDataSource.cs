@@ -3,7 +3,7 @@ namespace RelationalGroupInfoDataSource
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadDataSourceUtils;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -13,6 +13,7 @@ namespace RelationalGroupInfoDataSource
 	/// <summary>
 	/// The input is a group name. We return a table with the parameter keys, element names and parameter names for the selected group.
 	/// </summary>
+	[GQIMetaData(Name = "Get Relational Anomaly Group Info")]
 	public class RelationalGroupInfoDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");

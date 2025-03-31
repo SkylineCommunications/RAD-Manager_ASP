@@ -1,4 +1,4 @@
-﻿namespace RadDataSourceUtils
+﻿namespace RadUtils
 {
 	using System;
 	using System.IO;

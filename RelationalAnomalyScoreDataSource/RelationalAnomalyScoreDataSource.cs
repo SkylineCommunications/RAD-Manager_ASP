@@ -3,7 +3,7 @@ namespace RelationalAnomalyScoreDataSource
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadDataSourceUtils;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Net;
@@ -13,6 +13,7 @@ namespace RelationalAnomalyScoreDataSource
 	/// <summary>
 	/// Represents a DataMiner Automation script.
 	/// </summary>
+	[GQIMetaData(Name = "Get Relational Anomaly Score")]
 	public class RelationalAnomalyScoreDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("groupName");

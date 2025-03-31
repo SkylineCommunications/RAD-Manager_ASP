@@ -1,4 +1,4 @@
-﻿namespace RadDataSourceUtils
+﻿namespace RadUtils
 {
 	using System.Collections.Generic;
 
@@ -46,7 +46,7 @@
 		}
 
 		/// <summary>
-		/// Tries to fetches the data from the source.
+		/// Tries to fetch the data from the source.
 		/// </summary>
 		/// <param name="dataMinerID">The DataMiner ID of the element.</param>
 		/// <param name="elementID">The element ID of the element.</param>

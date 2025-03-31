@@ -3,7 +3,7 @@ namespace RelationalAnomalyGroupsDataSource
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Linq;
-	using RadDataSourceUtils;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -13,6 +13,7 @@ namespace RelationalAnomalyGroupsDataSource
 	/// <summary>
 	/// We return a table with the group names, their parameters, updateModel value and AnomalyThreshold for all configured groups.
 	/// </summary>
+	[GQIMetaData(Name = "Get Relational Anomaly Groups")]
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
 		private static Connection connection_;

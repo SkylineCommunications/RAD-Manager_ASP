@@ -13,5 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ElementNameCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParametersCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
 </Project>

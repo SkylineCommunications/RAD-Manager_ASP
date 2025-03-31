@@ -1,6 +1,7 @@
-﻿namespace RadDataSourceUtils
+﻿namespace RadUtils
 {
 	using System;
+	using System.Linq;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
@@ -33,7 +34,7 @@
 					return false;
 				}
 
-				value = protocolResponse.AllParameters;
+				value = protocolResponse.AllParameters.Where(p => p.IsRadSupported()).ToArray();
 				return true;
 			}
 			catch (Exception ex)
