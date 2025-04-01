@@ -22,4 +22,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <Import Project="..\RadDataSourceUtils\RadDataSourceUtils.projitems" Label="Shared" />
 </Project>

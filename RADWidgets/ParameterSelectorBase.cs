@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -75,16 +76,7 @@
 
 		protected virtual bool IsValidForRAD(ParameterInfo info)
 		{
-			// TODO: would be better to put this in SLNetTypes at some point
-			if (info == null)
-				return false;
-			if ((info.ID >= 64300 && info.ID < 70000) || (info.ID >= 100000 && info.ID < 1000000))
-				return false;
-			if (info.WriteType || info.IsDuplicate)
-				return false;
-			if (!info.IsTrendAnalyticsSupported)
-				return false;
-			return true;
+			return info.IsRadSupported();
 		}
 
 		protected void SetPossibleParameters(GetProtocolInfoResponseMessage protocol)
