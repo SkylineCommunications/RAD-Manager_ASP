@@ -11,6 +11,9 @@
 
 		public MultiParameterSelector(IEngine engine, IEnumerable<ParameterKey> parameters = null) : base(new ParameterSelector(engine))
 		{
+			AddButtonTooltip = "Add the instance specified on the left to the parameter group.";
+			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the parameter group.";
+
 			if (parameters != null)
 			{
 				var selection = new List<ParameterSelectorInfo>(parameters.Count());

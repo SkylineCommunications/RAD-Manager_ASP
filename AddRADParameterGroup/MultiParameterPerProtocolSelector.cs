@@ -18,21 +18,31 @@
 		{
 			engine_ = engine;
 
-			var protocolNameLabel = new Label("Connector");
+			string protocolNameTooltip = "Make a parameter group for each element that uses this connector.";
+			var protocolNameLabel = new Label("Connector")
+			{
+				Tooltip = protocolNameTooltip,
+			};
 			protocolNameDropDown_ = new DropDown<GetProtocolsResponseMessage>()
 			{
 				Options = FetchProtocols().Where(p => !p.IsExportedProtocol).Select(p => new Option<GetProtocolsResponseMessage>(p.Protocol, p)),
 				IsDisplayFilterShown = true,
 				IsSorted = true,
+				Tooltip = protocolNameTooltip,
 			};
 			protocolNameDropDown_.Changed += (sender, args) => OnSelectedProtocolChanged();
 
-			var protocolVersionLabel = new Label("Connector version");
+			string protocolVersionTooltip = "Make a parameter group for each element that uses this connector version.";
+			var protocolVersionLabel = new Label("Connector version")
+			{
+				Tooltip = protocolVersionTooltip,
+			};
 			protocolVersionDropDown_ = new DropDown<string>()
 			{
 				Options = new List<Option<string>>(),
 				IsDisplayFilterShown = true,
 				IsSorted = true,
+				Tooltip = protocolVersionTooltip,
 			};
 			protocolVersionDropDown_.Changed += (sender, args) => OnSelectedProtocolVersionChanged();
 

@@ -40,11 +40,13 @@
 		{
 			engine_ = engine;
 			existingGroupNames_ = existingGroupNames;
-			var groupPrefixLabel = new Label("Group name prefix");
 
+			string groupPrefixTooltip = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
+			var groupPrefixLabel = new Label("Group name prefix");
 			groupPrefixTextBox_ = new TextBox()
 			{
 				MinWidth = 600,
+				Tooltip = groupPrefixTooltip,
 			};
 			groupPrefixTextBox_.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
 			groupPrefixTextBox_.ValidationText = "Provide a valid prefix";
