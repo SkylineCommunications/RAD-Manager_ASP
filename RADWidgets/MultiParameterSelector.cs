@@ -13,7 +13,6 @@
 		{
 			AddButtonTooltip = "Add the instance specified on the left to the parameter group.";
 			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the parameter group.";
-			SelectedItemsViewTooltip = "The instances that will be included to the group.";
 
 			if (parameters != null)
 			{

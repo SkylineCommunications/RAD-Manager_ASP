@@ -124,7 +124,7 @@
 				groupEditor_.IsVisible = false;
 				groupByProtocolCreator_.IsVisible = true;
 				okButton_.Text = "Add group(s)";
-				addTypeDropDown_.Tooltip = "Add a parameter group with the instances and options specified below for each element using the given connection and connector version.";
+				addTypeDropDown_.Tooltip = "Add a parameter group with the instances and options specified below for each element that uses the given connection and connector version.";
 				OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 			}
 		}

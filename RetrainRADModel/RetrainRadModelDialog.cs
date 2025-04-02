@@ -28,6 +28,7 @@
 			okButton_ = new Button("Retrain")
 			{
 				Style = ButtonStyle.CallToAction,
+				Tooltip = "Train the selected parameter group using the trend data in the time ranges selected above.",
 			};
 			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 

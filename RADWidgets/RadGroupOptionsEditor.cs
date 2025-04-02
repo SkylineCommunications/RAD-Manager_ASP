@@ -79,7 +79,6 @@
 				TimeSpan = TimeSpan.FromMinutes(options?.MinimalDuration ?? 5),
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
-				Tooltip = minimalDurationTooltip,
 			};
 
 			int row = 0;

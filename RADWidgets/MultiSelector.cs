@@ -105,15 +105,6 @@ namespace RadWidgets
 		}
 
 		/// <summary>
-		/// Gets or sets the tooltip of the tree view showing the selected items.
-		/// </summary>
-		public string SelectedItemsViewTooltip
-		{
-			get => selectedItemsView_.Tooltip;
-			set => selectedItemsView_.Tooltip = value;
-		}
-
-		/// <summary>
 		/// Gets the widget to select a single item.
 		/// </summary>
 		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;

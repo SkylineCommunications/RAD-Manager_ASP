@@ -18,7 +18,7 @@
 		{
 			engine_ = engine;
 
-			string protocolNameTooltip = "Make a parameter group for each element using this connector.";
+			string protocolNameTooltip = "Make a parameter group for each element that uses this connector.";
 			var protocolNameLabel = new Label("Connector")
 			{
 				Tooltip = protocolNameTooltip,
@@ -32,7 +32,7 @@
 			};
 			protocolNameDropDown_.Changed += (sender, args) => OnSelectedProtocolChanged();
 
-			string protocolVersionTooltip = "Make a parameter group for each element using this connector version.";
+			string protocolVersionTooltip = "Make a parameter group for each element that uses this connector version.";
 			var protocolVersionLabel = new Label("Connector version")
 			{
 				Tooltip = protocolVersionTooltip,
