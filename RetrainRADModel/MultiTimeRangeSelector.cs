@@ -91,6 +91,9 @@
 	{
 		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine))
 		{
+			AddButtonTooltip = "Add the range specified on the left to the ranges with normal behavior.";
+			RemoveButtonTooltip = "Remove the range(s) selected on the left from the ranges with normal behavior.";
+			SelectedItemsViewTooltip = "Trend data from these time ranges will be used to train the RAD model.";
 		}
 	}
 }

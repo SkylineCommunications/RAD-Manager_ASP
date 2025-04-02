@@ -30,7 +30,10 @@
 			ShowScriptAbortPopup = false;
 			Title = "Add Parameter Group";
 
-			var addTypeLabel = new Label("What to add?");
+			var addTypeLabel = new Label("What to add?")
+			{
+				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
+			};
 			addTypeDropDown_ = new EnumDropDown<AddGroupType>()
 			{
 				Selected = AddGroupType.Single,
@@ -44,7 +47,7 @@
 			groupByProtocolCreator_ = new RadGroupByProtocolCreator(engine, existingGroupNames);
 			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 
-			okButton_ = new Button("Add group")
+			okButton_ = new Button()
 			{
 				Style = ButtonStyle.CallToAction,
 			};
@@ -112,12 +115,16 @@
 			{
 				groupEditor_.IsVisible = true;
 				groupByProtocolCreator_.IsVisible = false;
+				okButton_.Text = "Add group";
+				addTypeDropDown_.Tooltip = "Add the parameter group specified below.";
 				OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
 			}
 			else
 			{
 				groupEditor_.IsVisible = false;
 				groupByProtocolCreator_.IsVisible = true;
+				okButton_.Text = "Add group(s)";
+				addTypeDropDown_.Tooltip = "Add a parameter group with the instances and options specified below for each element using the given connection and connector version.";
 				OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
 			}
 		}

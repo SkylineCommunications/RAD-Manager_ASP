@@ -7,7 +7,6 @@ namespace RelationalAnomalyGroupsDataSource
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
-	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
@@ -16,7 +15,7 @@ namespace RelationalAnomalyGroupsDataSource
 	[GQIMetaData(Name = "Get Relational Anomaly Groups")]
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
-		private static Connection connection_;
+		private static Skyline.DataMiner.Net.Connection connection_;
 		private ElementNameCache elementNames_;
 		private ParametersCache parameters_;
 		private GQIDMS dms_;
@@ -49,7 +48,7 @@ namespace RelationalAnomalyGroupsDataSource
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
 			var infoMessages = dms_.SendMessages(new GetInfoMessage(InfoType.DataMinerInfo));
-			dmaIDEnumerator_ = infoMessages.Select(m => m as GetDataMinerInfoResponseMessage).Where(m => m != null).Select(m => m.ID).ToList().GetEnumerator();
+			dmaIDEnumerator_ = infoMessages.Select(m => m as GetDataMinerInfoResponseMessage).Where(m => m != null).Select(m => m.ID).ToHashSet().GetEnumerator();
 
 			return default;
 		}

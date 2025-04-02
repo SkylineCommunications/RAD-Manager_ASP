@@ -33,11 +33,16 @@
 			if (settings != null) // The current group name should be accepted as valid
 				existingGroupNames_.Remove(settings.GroupName);
 
-			var groupNameLabel = new Label("Group name");
+			var groupNameTooltip = "Provide the name of the group. This name will be used when creating suggestion events for anomalies detected on this group.";
+			var groupNameLabel = new Label("Group name")
+			{
+				Tooltip = groupNameTooltip,
+			};
 			groupNameTextBox_ = new TextBox()
 			{
 				Text = settings?.GroupName ?? string.Empty,
 				MinWidth = 600,
+				Tooltip = groupNameTooltip,
 			};
 			groupNameTextBox_.Changed += (sender, args) => OnGroupNameTextBoxChanged();
 

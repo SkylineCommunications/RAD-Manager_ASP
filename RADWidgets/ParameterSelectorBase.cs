@@ -26,8 +26,15 @@
 			};
 			parametersDropDown_.Changed += (sender, args) => OnSelectedParameterChanged();
 
-			var instanceLabel = new Label("Display key filter");
-			instanceTextBox_ = new TextBox();
+			string instanceTooltip = "Specify the display key to include specific cells from the current table column. Use * and ? as wildcards.";
+			var instanceLabel = new Label("Display key filter")
+			{
+				Tooltip = instanceTooltip,
+			};
+			instanceTextBox_ = new TextBox()
+			{
+				Tooltip = instanceTooltip,
+			};
 			instanceTextBox_.Changed += (sender, args) => OnInstanceChanged();
 
 			int parametersCol = leaveFirstColEmpty ? 1 : 0;

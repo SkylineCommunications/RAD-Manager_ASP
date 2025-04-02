@@ -33,30 +33,45 @@
 			updateModelCheckBox_ = new CheckBox("Update model on new data?")
 			{
 				IsChecked = options?.UpdateModel ?? false,
+				Tooltip = "Whether to continuously update the RAD model when new trend data is available. If not selected, the model will only be trained after " +
+				"creation and when you manually specify a training range.",
 			};
 
 			anomalyThresholdOverrideCheckBox_ = new CheckBox("Override default anomaly threshold?")
 			{
 				IsChecked = options?.AnomalyThreshold != null,
+				Tooltip = "Whether to override the default threshold for detecting anomalies. Anomalies are detected when the anomaly score exceeds this threshold. " +
+				"With a high threshold less anomalies will be detected, with a low threshold more anomalies will be detected. If checked, the threshold can be set below.",
 			};
 			anomalyThresholdOverrideCheckBox_.Changed += (sender, args) => anomalyThresholdNumeric_.IsEnabled = (sender as CheckBox).IsChecked;
 
-			var anomalyThresholdLabel = new Label("Anomaly threshold");
+			string anomalyThresholdTooltip = "The threshold for detecting anomalies.";
+			var anomalyThresholdLabel = new Label("Anomaly threshold")
+			{
+				Tooltip = anomalyThresholdTooltip,
+			};
 			anomalyThresholdNumeric_ = new Numeric()
 			{
 				Minimum = 0,
 				Value = options?.AnomalyThreshold ?? 3,
 				StepSize = 0.01,
 				IsEnabled = options?.AnomalyThreshold != null,
+				Tooltip = anomalyThresholdTooltip,
 			};
 
 			minimalDurationOverrideCheckBox_ = new CheckBox("Override default minimum anomaly duration?")
 			{
 				IsChecked = options?.MinimalDuration != null,
+				Tooltip = "Whether to override the default duration an anomaly must last before a suggestion event is generated. Note that changing this duration will also have an " +
+				"effect on the anomaly score. If checked, the duration can be set below.",
 			};
 			minimalDurationOverrideCheckBox_.Changed += (sender, args) => minimalDurationTime_.IsEnabled = (sender as CheckBox).IsChecked;
 
-			var minimalDurationLabel = new Label("Minimum anomaly duration (in minutes)");
+			string minimalDurationTooltip = "The minimum duration in minutes an anomaly must last before a suggestion event is generated.";
+			var minimalDurationLabel = new Label("Minimum anomaly duration (in minutes)")
+			{
+				Tooltip = minimalDurationTooltip,
+			};
 			minimalDurationTime_ = new Time()
 			{
 				HasSeconds = false,
@@ -64,6 +79,7 @@
 				TimeSpan = TimeSpan.FromMinutes(options?.MinimalDuration ?? 5),
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
+				Tooltip = minimalDurationTooltip,
 			};
 
 			int row = 0;

@@ -47,6 +47,8 @@ namespace RadWidgets
 		private readonly MultiSelectorItemSelector<T> itemSelector_;
 		private readonly TreeView selectedItemsView_;
 		private readonly Dictionary<string, T> selectedItems_ = new Dictionary<string, T>();
+		private readonly Button addButton_;
+		private readonly Button removeButton_;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.
@@ -64,25 +66,52 @@ namespace RadWidgets
 			};
 			SetSelected(selectedItems);
 
-			var addButton = new Button("Add");
-			addButton.Pressed += AddButton_Pressed;
+			addButton_ = new Button("Add");
+			addButton_.Pressed += AddButton_Pressed;
 
-			var removeButton = new Button("Remove");
-			removeButton.Pressed += RemoveButton_Pressed;
+			removeButton_ = new Button("Remove");
+			removeButton_.Pressed += RemoveButton_Pressed;
 
 			int row = 0;
 			AddSection(itemSelector_, row, 0);
-			AddWidget(addButton, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
+			AddWidget(addButton_, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
 			row += itemSelector_.RowCount;
 
 			AddWidget(selectedItemsView_, row, 0, 2, itemSelector_.ColumnCount);
-			AddWidget(removeButton, row, itemSelector_.ColumnCount, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(removeButton_, row, itemSelector_.ColumnCount, verticalAlignment: VerticalAlignment.Top);
 		}
 
 		/// <summary>
 		/// Emitted when an item has been added or removed
 		/// </summary>
 		public event EventHandler Changed;
+
+		/// <summary>
+		/// Gets or sets the tooltip of the add button.
+		/// </summary>
+		public string AddButtonTooltip
+		{
+			get => addButton_.Tooltip;
+			set => addButton_.Tooltip = value;
+		}
+
+		/// <summary>
+		/// Gets or sets the tooltip of the remove button.
+		/// </summary>
+		public string RemoveButtonTooltip
+		{
+			get => removeButton_.Tooltip;
+			set => removeButton_.Tooltip = value;
+		}
+
+		/// <summary>
+		/// Gets or sets the tooltip of the tree view showing the selected items.
+		/// </summary>
+		public string SelectedItemsViewTooltip
+		{
+			get => selectedItemsView_.Tooltip;
+			set => selectedItemsView_.Tooltip = value;
+		}
 
 		/// <summary>
 		/// Gets the widget to select a single item.
