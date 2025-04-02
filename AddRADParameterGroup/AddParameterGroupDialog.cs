@@ -70,7 +70,7 @@
 			row += groupByProtocolCreator_.RowCount;
 
 			AddWidget(cancelButton, row, 0, 1, 1);
-			AddWidget(okButton_, row, 1, 1, 3);
+			AddWidget(okButton_, row, 1, 1, groupByProtocolCreator_.ColumnCount - 1);
 		}
 
 		public event EventHandler Accepted;
