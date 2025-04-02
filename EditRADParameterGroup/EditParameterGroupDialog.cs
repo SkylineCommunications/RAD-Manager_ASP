@@ -54,7 +54,7 @@
 			if (groupEditor_.IsValid)
 			{
 				okButton_.IsEnabled = true;
-				okButton_.Tooltip = string.Empty;
+				okButton_.Tooltip = "Edit the selected parameter group as specified above";
 			}
 			else
 			{

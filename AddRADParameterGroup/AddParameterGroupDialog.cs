@@ -100,7 +100,14 @@
 			if (isValid)
 			{
 				okButton_.IsEnabled = true;
-				okButton_.Tooltip = string.Empty;
+				if (addTypeDropDown_.Selected == AddGroupType.Single)
+				{
+					okButton_.Tooltip = "Add the parameter group specified above to the RAD configuration";
+				}
+				else
+				{
+					okButton_.Tooltip = "Add the parameter group(s) specified above to the RAD configuration";
+				}
 			}
 			else
 			{
