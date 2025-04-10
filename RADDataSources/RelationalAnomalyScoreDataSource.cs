@@ -18,7 +18,7 @@ namespace RadDataSources
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("dataMinerID");
 		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("startTime");
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
-		private AnomalyScoreData _anomalyScoreData = new AnomalyScoreData(); //TODO: ask Dennis whether it is OK to make this non-static
+		private AnomalyScoreData _anomalyScoreData = new AnomalyScoreData();
 		private string _groupName = string.Empty;
 		private int _dataMinerID = -1;
 		private DateTime? _startTime = null;
@@ -48,7 +48,7 @@ namespace RadDataSources
 			if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
 			{
 				_startTime = startTimeValue;
-				_endTime = endTimeValue;//TODO: test that we indeed don't need universal time
+				_endTime = endTimeValue;
 			}
 			else
 			{
@@ -114,17 +114,18 @@ namespace RadDataSources
 
 			foreach (var entry in _anomalyScoreData.AnomalyScores)
 			{
-				if (entry.Key < _startTime) //TODO: test this
+				DateTime time = entry.Key.ToUniversalTime();
+				if (time < _startTime)
 				{
 					continue;
 				}
-				else if (entry.Key > _endTime)
+				else if (time > _endTime)
 				{
 					break;
 				}
 
 				GQICell[] cells = new GQICell[2];
-				cells[0] = new GQICell { Value = entry.Key };
+				cells[0] = new GQICell { Value = time };
 				cells[1] = new GQICell { Value = entry.Value };
 				rows.Add(new GQIRow(cells));
 			}
