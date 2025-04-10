@@ -10,7 +10,7 @@
 
 	internal static class ConnectionHelper
 	{
-		private const string APPLICATION_NAME = "GQI Ad hoc data source";
+		private const string APPLICATION_NAME = "GQI RAD data sources";
 		private static readonly object _connectionLock = new object();
 		private static Connection _connection = null;
 
