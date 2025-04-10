@@ -1,9 +1,9 @@
-﻿namespace RadUtils
+﻿namespace RadDataSources
 {
 	using System;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
-	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
@@ -12,11 +12,9 @@
 	public class ParametersCache : Cache<ParameterInfo[]>
 	{
 		private readonly IGQILogger logger_ = null;
-		private readonly IConnection connection_ = null;
 
-		public ParametersCache(IConnection connection, IGQILogger logger)
+		public ParametersCache(IGQILogger logger)
 		{
-			connection_ = connection;
 			logger_ = logger;
 		}
 
@@ -25,7 +23,7 @@
 			try
 			{
 				var protocolRequest = new GetElementProtocolMessage(dataMinerID, elementID);
-				var protocolResponse = connection_.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
+				var protocolResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(protocolRequest) as GetElementProtocolResponseMessage;
 
 				if (protocolResponse == null)
 				{

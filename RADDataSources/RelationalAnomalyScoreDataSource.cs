@@ -1,12 +1,10 @@
-namespace RelationalAnomalyScoreDataSource
+namespace RadDataSources
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
-	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Helper;
 
@@ -20,18 +18,17 @@ namespace RelationalAnomalyScoreDataSource
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("dataMinerID");
 		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("startTime");
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
-		private static AnomalyScoreData anomalyScoreData_ = new AnomalyScoreData();
-		private static Connection connection_;
-		private string groupName_ = string.Empty;
-		private int dataMinerID_ = -1;
-		private DateTime? startTime_ = null;
-		private DateTime? endTime_ = null;
-		private IGQILogger logger_;
+		private AnomalyScoreData _anomalyScoreData = new AnomalyScoreData();
+		private string _groupName = string.Empty;
+		private int _dataMinerID = -1;
+		private DateTime? _startTime = null;
+		private DateTime? _endTime = null;
+		private IGQILogger _logger;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			InitializeConnection(args.DMS);
-			logger_ = args.Logger;
+			ConnectionHelper.InitializeConnection(args.DMS);
+			_logger = args.Logger;
 			return default;
 		}
 
@@ -42,61 +39,61 @@ namespace RelationalAnomalyScoreDataSource
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
-			if (!args.TryGetArgumentValue(GroupName, out groupName_))
-				logger_.Error("No group name provided");
+			if (!args.TryGetArgumentValue(GroupName, out _groupName))
+				_logger.Error("No group name provided");
 
-			if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
-				logger_.Error("No DataMiner ID provided");
+			if (!args.TryGetArgumentValue(DataMinerID, out _dataMinerID))
+				_logger.Error("No DataMiner ID provided");
 
 			if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
 			{
-				startTime_ = startTimeValue.ToUniversalTime();
-				endTime_ = endTimeValue.ToUniversalTime();
+				_startTime = startTimeValue;
+				_endTime = endTimeValue;
 			}
 			else
 			{
-				logger_.Error("Unable to parse input times");
+				_logger.Error("Unable to parse input times");
 			}
 
-			return new OnArgumentsProcessedOutputArgs();
+			return default;
 		}
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
-			if (string.IsNullOrEmpty(groupName_) || startTime_ == null || endTime_ == null)
+			if (string.IsNullOrEmpty(_groupName) || _startTime == null || _endTime == null)
 			{
-				logger_.Error("Group name or time range is empty");
-				anomalyScoreData_.AnomalyScores.Clear();
+				_logger.Error("Group name or time range is empty");
+				_anomalyScoreData.AnomalyScores.Clear();
 				return default;
 			}
 
-			if (groupName_ == anomalyScoreData_.GroupName && anomalyScoreData_.AnomalyScores.IsNotNullOrEmpty())
+			if (_groupName == _anomalyScoreData.GroupName && _anomalyScoreData.AnomalyScores.IsNotNullOrEmpty())
 			{
 				// ie we've already fetched the data for this group previously
-				var lastTimestamp = anomalyScoreData_.AnomalyScores.Last().Key;
+				var lastTimestamp = _anomalyScoreData.AnomalyScores.Last().Key;
 				if ((DateTime.UtcNow - lastTimestamp).TotalMinutes <= 5)
 					return default;
 			}
 
 			try
 			{
-				anomalyScoreData_.AnomalyScores.Clear();
-				GetMADDataMessage msg = new GetMADDataMessage(groupName_, DateTime.Now.AddMonths(-1), DateTime.Now)
+				_anomalyScoreData.AnomalyScores.Clear();
+				GetMADDataMessage msg = new GetMADDataMessage(_groupName, DateTime.Now.AddMonths(-1), DateTime.Now)
 				{
-					DataMinerID = dataMinerID_,
+					DataMinerID = _dataMinerID,
 				};
-				var madDataReponse = connection_.HandleSingleResponseMessage(msg) as GetMADDataResponseMessage;
-				logger_.Information($"Number of points: {madDataReponse?.Data.Count}");
+				var madDataReponse = ConnectionHelper.Connection.HandleSingleResponseMessage(msg) as GetMADDataResponseMessage;
+				_logger.Information($"Number of points: {madDataReponse?.Data.Count}");
 				if (madDataReponse != null)
 				{
 					foreach (MADDataPoint point in madDataReponse.Data)
 					{
-						anomalyScoreData_.AnomalyScores.Add(new KeyValuePair<DateTime, double>(point.Timestamp, point.AnomalyScore));
+						_anomalyScoreData.AnomalyScores.Add(new KeyValuePair<DateTime, double>(point.Timestamp, point.AnomalyScore));
 					}
 				}
 
-				anomalyScoreData_.GroupName = groupName_;
-				anomalyScoreData_.DataMinerID = dataMinerID_;
+				_anomalyScoreData.GroupName = _groupName;
+				_anomalyScoreData.DataMinerID = _dataMinerID;
 
 				return default;
 			}
@@ -115,32 +112,25 @@ namespace RelationalAnomalyScoreDataSource
 		{
 			var rows = new List<GQIRow>();
 
-			foreach (var entry in anomalyScoreData_.AnomalyScores)
+			foreach (var entry in _anomalyScoreData.AnomalyScores)
 			{
-				if (entry.Key.ToUniversalTime() < startTime_)
+				DateTime time = entry.Key.ToUniversalTime();
+				if (time < _startTime)
 				{
 					continue;
 				}
-				else if (entry.Key.ToUniversalTime() > endTime_)
+				else if (time > _endTime)
 				{
 					break;
 				}
 
 				GQICell[] cells = new GQICell[2];
-				cells[0] = new GQICell { Value = entry.Key.ToUniversalTime() };
+				cells[0] = new GQICell { Value = time };
 				cells[1] = new GQICell { Value = entry.Value };
 				rows.Add(new GQIRow(cells));
 			}
 
 			return new GQIPage(rows.ToArray());
-		}
-
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
 		}
 	}
 

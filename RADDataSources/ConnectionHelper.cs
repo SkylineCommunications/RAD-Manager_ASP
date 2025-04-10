@@ -1,4 +1,4 @@
-﻿namespace RadUtils
+﻿namespace RadDataSources
 {
 	using System;
 	using System.IO;
@@ -10,24 +10,39 @@
 
 	internal static class ConnectionHelper
 	{
-		private const string APPLICATION_NAME = "GQI Ad hoc data source";
+		private const string APPLICATION_NAME = "GQI RAD data sources";
+		private static readonly object _connectionLock = new object();
+		private static Connection _connection = null;
 
-		internal static Connection CreateConnection(GQIDMS dms)
+		/// <summary>
+		/// Gets the connection to the DataMiner Agent.
+		/// </summary>
+		public static Connection Connection
 		{
-			if (dms == null)
-				throw new ArgumentNullException(nameof(dms));
+			get => _connection;
+		}
 
-			var attributes = ConnectionAttributes.AllowMessageThrottling;
-			try
+		public static void InitializeConnection(GQIDMS dms)
+		{
+			lock (_connectionLock)
 			{
-				var connection = ConnectionSettings.GetConnection("localhost", attributes);
-				connection.ClientApplicationName = APPLICATION_NAME;
-				connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
-				return connection;
-			}
-			catch (Exception ex)
-			{
-				throw new InvalidOperationException("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
+				if (_connection?.IsShuttingDown == false)
+					return;
+
+				if (dms == null)
+					throw new ArgumentNullException(nameof(dms));
+
+				var attributes = ConnectionAttributes.AllowMessageThrottling;
+				try
+				{
+					_connection = ConnectionSettings.GetConnection("localhost", attributes);
+					_connection.ClientApplicationName = APPLICATION_NAME;
+					_connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
+				}
+				catch (Exception ex)
+				{
+					throw new InvalidOperationException("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
+				}
 			}
 		}
 
