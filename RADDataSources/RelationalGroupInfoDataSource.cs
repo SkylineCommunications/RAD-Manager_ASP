@@ -18,20 +18,17 @@ namespace RelationalGroupInfoDataSource
 	{
 		private static readonly GQIStringArgument GroupName = new GQIStringArgument("GroupName");
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("DataMinerID");
-		private static Connection connection_;
-		private ElementNameCache elementNames_;
-		private ParametersCache parameters_;
-		private IGQILogger logger_;
-		private string groupName_ = string.Empty;
-		private int dataMinerID_ = -1;
-		private List<ParameterKey> parameterKeys_ = new List<ParameterKey>();
+		private ElementNameCache _elementNames;
+		private ParametersCache _parameters;
+		private IGQILogger _logger;
+		private string _groupName = string.Empty;
+		private int _dataMinerID = -1;
+		private List<ParameterKey> _parameterKeys = new List<ParameterKey>();
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			InitializeConnection(args.DMS);
-			logger_ = args.Logger;
-			elementNames_ = new ElementNameCache(connection_, logger_);
-			parameters_ = new ParametersCache(connection_, logger_);
+			ConnectionHelper.InitializeConnection(args.DMS);
+			_logger = args.Logger;
 			return default;
 		}
 
@@ -42,44 +39,47 @@ namespace RelationalGroupInfoDataSource
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
-			if (!args.TryGetArgumentValue(GroupName, out groupName_))
-				logger_.Error("No group name provided");
+			if (!args.TryGetArgumentValue(GroupName, out _groupName))
+				_logger.Error("No group name provided");
 
-			if (!args.TryGetArgumentValue(DataMinerID, out dataMinerID_))
-				logger_.Error("No DataMiner ID provided");
+			if (!args.TryGetArgumentValue(DataMinerID, out _dataMinerID))
+				_logger.Error("No DataMiner ID provided");
 
-			return new OnArgumentsProcessedOutputArgs();
+			return default;
 		}
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
-			if (string.IsNullOrEmpty(groupName_))
+			_elementNames = new ElementNameCache(_logger);
+			_parameters = new ParametersCache(_logger);
+
+			if (string.IsNullOrEmpty(_groupName))
 			{
-				logger_.Error("Group name is empty");
-				parameterKeys_ = new List<ParameterKey>();
+				_logger.Error("Group name is empty");
+				_parameterKeys = new List<ParameterKey>();
 				return default;
 			}
 
 			try
 			{
-				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName_)
+				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(_groupName)
 				{
-					DataMinerID = dataMinerID_,
+					DataMinerID = _dataMinerID,
 				};
-				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
+				var groupInfoResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 				if (groupInfoResponse?.GroupInfo != null)
-					parameterKeys_ = groupInfoResponse.GroupInfo.Parameters;
+					_parameterKeys = groupInfoResponse.GroupInfo.Parameters;
 			}
 			catch (Exception ex)
 			{
-				throw new DataMinerCommunicationException($"Failed to fetch group info for group {groupName_} on agent {dataMinerID_}", ex);
+				throw new DataMinerCommunicationException($"Failed to fetch group info for group {_groupName} on agent {_dataMinerID}", ex);
 			}
 
 			// Fetch and cache elementNames and protocol info
-			foreach (ParameterKey paramKey in parameterKeys_)
+			foreach (ParameterKey paramKey in _parameterKeys)
 			{
-				elementNames_.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
-				parameters_.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
+				_elementNames.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
+				_parameters.TryGet(paramKey.DataMinerID, paramKey.ElementID, out var _);
 			}
 
 			return default;
@@ -104,7 +104,7 @@ namespace RelationalGroupInfoDataSource
 		{
 			var rows = new List<GQIRow>();
 
-			foreach (ParameterKey pKey in parameterKeys_)
+			foreach (ParameterKey pKey in _parameterKeys)
 			{
 				var paramID = new ParamID(pKey.DataMinerID, pKey.ElementID, pKey.ParameterID, pKey.Instance);
 				var key = paramID.ToString();
@@ -127,19 +127,11 @@ namespace RelationalGroupInfoDataSource
 			return new GQIPage(rows.ToArray());
 		}
 
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
-		}
-
 		#region Helper Methods
 
 		private string GetElementName(ParameterKey paramKey)
 		{
-			if (elementNames_.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out string name))
+			if (_elementNames.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out string name))
 				return name;
 			else
 				return "Unknown Element";
@@ -147,7 +139,7 @@ namespace RelationalGroupInfoDataSource
 
 		private string GetParameterName(ParameterKey paramKey)
 		{
-			if (!parameters_.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out var parameterInfos))
+			if (!_parameters.TryGetFromCache(paramKey.DataMinerID, paramKey.ElementID, out var parameterInfos))
 				return "Unknown Parameter";
 
 			var paramInfo = parameterInfos?.FirstOrDefault(p => p.ID == paramKey.ParameterID);

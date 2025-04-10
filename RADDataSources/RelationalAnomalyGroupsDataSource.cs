@@ -1,7 +1,7 @@
 namespace RelationalAnomalyGroupsDataSource
 {
+	using System;
 	using System.Collections.Generic;
-	using System.Globalization;
 	using System.Linq;
 	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
@@ -15,20 +15,17 @@ namespace RelationalAnomalyGroupsDataSource
 	[GQIMetaData(Name = "Get Relational Anomaly Groups")]
 	public class RelationalAnomalyGroupsDataSource : IGQIDataSource, IGQIOnInit, IGQIOnPrepareFetch
 	{
-		private static Skyline.DataMiner.Net.Connection connection_;
-		private ElementNameCache elementNames_;
-		private ParametersCache parameters_;
-		private GQIDMS dms_;
-		private IGQILogger logger_;
-		private IEnumerator<int> dmaIDEnumerator_;
+		private ElementNameCache _elementNames;
+		private ParametersCache _parameters;
+		private GQIDMS _dms;
+		private IGQILogger _logger;
+		private IEnumerator<int> _dmaIDEnumerator;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			dms_ = args.DMS;
-			logger_ = args.Logger;
-			InitializeConnection(dms_);
-			elementNames_ = new ElementNameCache(connection_, logger_);
-			parameters_ = new ParametersCache(connection_, logger_);
+			_dms = args.DMS;
+			_logger = args.Logger;
+			ConnectionHelper.InitializeConnection(_dms);
 			return default;
 		}
 
@@ -39,34 +36,41 @@ namespace RelationalAnomalyGroupsDataSource
 				new GQIStringColumn("Name"),
 				new GQIIntColumn("DataMiner Id"),
 				new GQIStringColumn("Parameters"),
-				new GQIStringColumn("Update Model"),
-				new GQIStringColumn("Anomaly Threshold"),
-				new GQIStringColumn("Minimum Anomaly Duration"),
+				new GQIBooleanColumn("Update Model"),
+				new GQIDoubleColumn("Anomaly Threshold"),
+				new GQITimeSpanColumn("Minimum Anomaly Duration"),
 			};
 		}
 
 		public OnPrepareFetchOutputArgs OnPrepareFetch(OnPrepareFetchInputArgs args)
 		{
-			var infoMessages = dms_.SendMessages(new GetInfoMessage(InfoType.DataMinerInfo));
-			dmaIDEnumerator_ = infoMessages.Select(m => m as GetDataMinerInfoResponseMessage).Where(m => m != null).Select(m => m.ID).ToHashSet().GetEnumerator();
+			var infoMessages = _dms.SendMessages(new GetInfoMessage(InfoType.DataMinerInfo));
+			_dmaIDEnumerator = infoMessages
+				.OfType<GetDataMinerInfoResponseMessage>()
+				.Select(m => m.ID)
+				.Distinct()
+				.GetEnumerator();
+
+			_elementNames = new ElementNameCache(_logger);
+			_parameters = new ParametersCache(_logger);
 
 			return default;
 		}
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			if (!dmaIDEnumerator_.MoveNext())
-				return new GQIPage(new GQIRow[0]);
+			if (!_dmaIDEnumerator.MoveNext())
+				return new GQIPage(Array.Empty<GQIRow>());
 
-			int dataMinerID = dmaIDEnumerator_.Current;
+			int dataMinerID = _dmaIDEnumerator.Current;
 			GetMADParameterGroupsMessage request = new GetMADParameterGroupsMessage()
 			{
 				DataMinerID = dataMinerID,
 			};
-			var response = connection_.HandleSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
+			var response = ConnectionHelper.Connection.HandleSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
 			if (response == null)
 			{
-				logger_.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
+				_logger.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
 				return new GQIPage(new GQIRow[0]) { HasNextPage = true };
 			}
 
@@ -77,10 +81,10 @@ namespace RelationalAnomalyGroupsDataSource
 				{
 					DataMinerID = dataMinerID,
 				};
-				var groupInfoResponse = connection_.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
+				var groupInfoResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
 				if (groupInfoResponse?.GroupInfo == null)
 				{
-					logger_.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
+					_logger.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
 					continue;
 				}
 
@@ -92,9 +96,9 @@ namespace RelationalAnomalyGroupsDataSource
 						new GQICell() { Value = groupName },
 						new GQICell() { Value = dataMinerID },
 						new GQICell() { Value = $"[{string.Join(", ", parameterStr)}]" },
-						new GQICell() { Value = groupInfo.UpdateModel.ToString() },
-						new GQICell() { Value = groupInfo.AnomalyThreshold?.ToString(CultureInfo.InvariantCulture) ?? "3" },
-						new GQICell() { Value = (groupInfo.MinimumAnomalyDuration?.ToString(CultureInfo.InvariantCulture) ?? "5") + " min" },
+						new GQICell() { Value = groupInfo.UpdateModel },//TODO: test this out (and maybe ask Dennis)
+						new GQICell() { Value = groupInfo.AnomalyThreshold ?? 3.0 },
+						new GQICell() { Value = TimeSpan.FromMinutes(groupInfo.MinimumAnomalyDuration ?? 5) },//TODO: this or in minutes?
 					}));
 			}
 
@@ -104,21 +108,13 @@ namespace RelationalAnomalyGroupsDataSource
 			};
 		}
 
-		private static void InitializeConnection(GQIDMS dms)
-		{
-			if (connection_ == null)
-			{
-				connection_ = ConnectionHelper.CreateConnection(dms);
-			}
-		}
-
 		private string ParameterKeyToString(ParameterKey pKey)
 		{
 			string elementName;
-			if (!elementNames_.TryGet(pKey.DataMinerID, pKey.ElementID, out elementName))
+			if (!_elementNames.TryGet(pKey.DataMinerID, pKey.ElementID, out elementName))
 				elementName = $"{pKey.DataMinerID}/{pKey.ElementID}";
 
-			parameters_.TryGet(pKey.DataMinerID, pKey.ElementID, out ParameterInfo[] parameters);
+			_parameters.TryGet(pKey.DataMinerID, pKey.ElementID, out ParameterInfo[] parameters);
 			var parameter = parameters?.FirstOrDefault(p => p.ID == pKey.ParameterID);
 			var parameterName = parameter?.DisplayName ?? pKey.ParameterID.ToString();
 

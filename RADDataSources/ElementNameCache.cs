@@ -2,7 +2,6 @@
 {
 	using System;
 	using Skyline.DataMiner.Analytics.GenericInterface;
-	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
@@ -11,11 +10,9 @@
 	public class ElementNameCache : Cache<string>
 	{
 		private readonly IGQILogger logger_ = null;
-		private readonly IConnection connection_ = null;
 
-		public ElementNameCache(IConnection connection, IGQILogger logger)
+		public ElementNameCache(IGQILogger logger)
 		{
-			connection_ = connection;
 			logger_ = logger;
 		}
 
@@ -24,7 +21,7 @@
 			try
 			{
 				var elementRequest = new GetElementByIDMessage(dataMinerID, elementID);
-				var elementResponse = connection_.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
+				var elementResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(elementRequest) as ElementInfoEventMessage;
 
 				if (elementResponse == null)
 				{

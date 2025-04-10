@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>RelationalGroupInfoDataSource</Name>
+	<Name>RADDataSources</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author>DDR</Author>
+	<Author>Tobe Deprez</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>DataMiner Catalog/RAD Manager</Folder>
 
@@ -18,10 +18,10 @@
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:RelationalGroupInfoDataSource]]]></Value>
+			<Value><![CDATA[[Project:RADDataSources]]]></Value>
 			<!--<Param type="debug">true</Param>-->
 			<Param type="preCompile">true</Param>
-			<Param type="libraryName">RelationalGroupInfoDataSource</Param>
+			<Param type="libraryName">RADDataSources</Param>
 			<Message></Message>
 		</Exe>
 	</Script>
