@@ -1,9 +1,9 @@
-﻿namespace RadUtils
+﻿namespace RadDataSources
 {
 	using System;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
-	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
