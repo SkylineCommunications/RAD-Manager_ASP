@@ -24,10 +24,9 @@
 
 		public static void InitializeConnection(GQIDMS dms)
 		{
-			//TODO: recover the connection if it is lost
 			lock (_connectionLock)
 			{
-				if (_connection != null)
+				if (_connection?.IsShuttingDown == false)
 					return;
 
 				if (dms == null)
