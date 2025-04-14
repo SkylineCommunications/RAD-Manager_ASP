@@ -13,6 +13,7 @@
 		private readonly DropDown<GetProtocolsResponseMessage> protocolNameDropDown_;
 		private readonly DropDown<string> protocolVersionDropDown_;
 		private readonly MultiProtocolParameterSelector parameterSelector_;
+		private bool isVisible_ = true;
 
 		public MultiParameterPerProtocolSelector(IEngine engine) : base()
 		{
@@ -64,6 +65,23 @@
 		public string ProtocolName => protocolNameDropDown_.Selected?.Protocol;
 
 		public string ProtocolVersion => protocolVersionDropDown_.Selected;
+
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
+			get => isVisible_;
+			set
+			{
+				if (isVisible_ == value)
+					return;
+
+				isVisible_ = value;
+
+				protocolNameDropDown_.IsVisible = value;
+				protocolVersionDropDown_.IsVisible = value;
+				parameterSelector_.IsVisible = value;
+			}
+		}
 
 		public IEnumerable<ProtocolParameterSelectorInfo> GetSelectedParameters()
 		{

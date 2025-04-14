@@ -89,7 +89,7 @@
 
 	public class MultiTimeRangeSelector : MultiSelector<TimeRangeItem>
 	{
-		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine))
+		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine), null, "No time ranges selected")
 		{
 			AddButtonTooltip = "Add the range specified on the left to the ranges with normal behavior.";
 			RemoveButtonTooltip = "Remove the range(s) selected on the left from the ranges with normal behavior.";

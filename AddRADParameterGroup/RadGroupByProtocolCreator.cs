@@ -30,11 +30,13 @@
 	public class RadGroupByProtocolCreator : Section
 	{
 		private readonly IEngine engine_;
+		private readonly Label groupPrefixLabel_;
 		private readonly TextBox groupPrefixTextBox_;
 		private readonly MultiParameterPerProtocolSelector parameterSelector_;
 		private readonly RadGroupOptionsEditor optionsEditor_;
 		private readonly Label detailsLabel_;
 		private readonly List<string> existingGroupNames_;
+		private bool isVisible_ = true;
 
 		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
 		{
@@ -42,7 +44,7 @@
 			existingGroupNames_ = existingGroupNames;
 
 			string groupPrefixTooltip = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
-			var groupPrefixLabel = new Label("Group name prefix");
+			groupPrefixLabel_ = new Label("Group name prefix");
 			groupPrefixTextBox_ = new TextBox()
 			{
 				MinWidth = 600,
@@ -67,7 +69,7 @@
 			OnGroupPrefixTextBoxChanged();
 
 			int row = 0;
-			AddWidget(groupPrefixLabel, row, 0);
+			AddWidget(groupPrefixLabel_, row, 0);
 			AddWidget(groupPrefixTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
 			++row;
 
@@ -85,6 +87,26 @@
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		/// <inheritdoc />
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
+			get => isVisible_;
+			set
+			{
+				if (isVisible_ == value)
+					return;
+
+				isVisible_ = value;
+
+				groupPrefixLabel_.IsVisible = value;
+				groupPrefixTextBox_.IsVisible = value;
+				parameterSelector_.IsVisible = value;
+				optionsEditor_.IsVisible = value;
+				UpdateDetailsLabelVisibility();
+			}
+		}
 
 		public List<MADGroupInfo> GetGroupsToAdd()
 		{
@@ -169,9 +191,14 @@
 			return groups;
 		}
 
+		private void UpdateDetailsLabelVisibility()
+		{
+			detailsLabel_.IsVisible = isVisible_ && groupPrefixTextBox_.ValidationState == UIValidationState.Valid;
+		}
+
 		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)
 		{
-			detailsLabel_.IsVisible = groupPrefixTextBox_.ValidationState == UIValidationState.Valid;
+			UpdateDetailsLabelVisibility();
 			if (!detailsLabel_.IsVisible)
 				return;
 

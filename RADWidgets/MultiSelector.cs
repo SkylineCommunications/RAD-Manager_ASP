@@ -45,19 +45,27 @@ namespace RadWidgets
 	public abstract class MultiSelector<T> : Section where T : MultiSelectorItem
 	{
 		private readonly MultiSelectorItemSelector<T> itemSelector_;
+		private readonly Label noItemsSelectedLabel_;
 		private readonly TreeView selectedItemsView_;
 		private readonly Dictionary<string, T> selectedItems_ = new Dictionary<string, T>();
 		private readonly Button addButton_;
 		private readonly Button removeButton_;
+		private bool isVisible_ = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.
 		/// </summary>
 		/// <param name="itemSelector">The widget to select a single item.</param>
+		/// <param name="noItemsSelectedText">Text to show when no items are selected.</param>
 		/// <param name="selectedItems">The initially selected items, or null.</param>
-		protected MultiSelector(MultiSelectorItemSelector<T> itemSelector, List<T> selectedItems = null) : base()
+		protected MultiSelector(MultiSelectorItemSelector<T> itemSelector, List<T> selectedItems = null, string noItemsSelectedText = "") : base()
 		{
 			itemSelector_ = itemSelector;
+
+			noItemsSelectedLabel_ = new Label(noItemsSelectedText)
+			{
+				MinHeight = 100,
+			};
 
 			selectedItemsView_ = new TreeView(new List<TreeViewItem>())
 			{
@@ -65,6 +73,9 @@ namespace RadWidgets
 				MinHeight = 100,
 			};
 			SetSelected(selectedItems);
+
+			Changed += (sender, args) => UpdateTreeViewVisibility();
+			UpdateTreeViewVisibility();
 
 			addButton_ = new Button("Add");
 			addButton_.Pressed += AddButton_Pressed;
@@ -77,8 +88,9 @@ namespace RadWidgets
 			AddWidget(addButton_, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
 			row += itemSelector_.RowCount;
 
-			AddWidget(selectedItemsView_, row, 0, 2, itemSelector_.ColumnCount);
-			AddWidget(removeButton_, row, itemSelector_.ColumnCount, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(noItemsSelectedLabel_, row, 0, 1, itemSelector_.ColumnCount);
+			AddWidget(selectedItemsView_, row + 1, 0, 2, itemSelector_.ColumnCount);
+			AddWidget(removeButton_, row, itemSelector_.ColumnCount, 2, 1, verticalAlignment: VerticalAlignment.Top);
 		}
 
 		/// <summary>
@@ -102,6 +114,37 @@ namespace RadWidgets
 		{
 			get => removeButton_.Tooltip;
 			set => removeButton_.Tooltip = value;
+		}
+
+		/// <summary>
+		/// Gets or sets the text shown when no items are selected.
+		/// </summary>
+		public string NoItemsSelectedText
+		{
+			get => noItemsSelectedLabel_.Text;
+			set
+			{
+				noItemsSelectedLabel_.Text = value;
+			}
+		}
+
+		/// <inheritdoc />
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise all child widgets are made visible when this is set to true.
+			get => isVisible_;
+			set
+			{
+				if (value == isVisible_)
+					return;
+
+				isVisible_ = value;
+
+				itemSelector_.IsVisible = value;
+				addButton_.IsVisible = value;
+				removeButton_.IsVisible = value;
+				UpdateTreeViewVisibility();
+			}
 		}
 
 		/// <summary>
@@ -156,6 +199,25 @@ namespace RadWidgets
 			Changed?.Invoke(this, EventArgs.Empty);
 
 			return true;
+		}
+
+		private void UpdateTreeViewVisibility()
+		{
+			if (!isVisible_)
+			{
+				noItemsSelectedLabel_.IsVisible = false;
+				selectedItemsView_.IsVisible = false;
+			}
+			else if (selectedItems_.Count == 0)
+			{
+				noItemsSelectedLabel_.IsVisible = true;
+				selectedItemsView_.IsVisible = false;
+			}
+			else
+			{
+				noItemsSelectedLabel_.IsVisible = false;
+				selectedItemsView_.IsVisible = true;
+			}
 		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)

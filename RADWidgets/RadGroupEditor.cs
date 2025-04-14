@@ -20,12 +20,14 @@
 	{
 		public const int MIN_PARAMETERS = 2;
 		public const int MAX_PARAMETERS = 100;
+		private readonly Label groupNameLabel_;
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
 		private readonly RadGroupOptionsEditor optionsEditor_;
 		private readonly List<string> existingGroupNames_;
 		private bool moreThanMinParametersSelected_ = false;
 		private bool lessThanMaxParametersSelected_ = false;
+		private bool isVisible_ = true;
 
 		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, RadGroupSettings settings = null)
 		{
@@ -34,7 +36,7 @@
 				existingGroupNames_.Remove(settings.GroupName);
 
 			var groupNameTooltip = "Provide the name of the group. This name will be used when creating suggestion events for anomalies detected on this group.";
-			var groupNameLabel = new Label("Group name")
+			groupNameLabel_ = new Label("Group name")
 			{
 				Tooltip = groupNameTooltip,
 			};
@@ -55,7 +57,7 @@
 			OnParameterSelectorChanged();
 
 			int row = 0;
-			AddWidget(groupNameLabel, row, 0);
+			AddWidget(groupNameLabel_, row, 0);
 			AddWidget(groupNameTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
 			++row;
 
@@ -77,6 +79,25 @@
 					Parameters = parameterSelector_.GetSelectedParameters(),
 					Options = optionsEditor_.Options,
 				};
+			}
+		}
+
+		/// <inheritdoc />
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
+			get => isVisible_;
+			set
+			{
+				if (isVisible_ == value)
+					return;
+
+				isVisible_ = value;
+
+				groupNameLabel_.IsVisible = value;
+				groupNameTextBox_.IsVisible = value;
+				parameterSelector_.IsVisible = value;
+				optionsEditor_.IsVisible = value;
 			}
 		}
 
