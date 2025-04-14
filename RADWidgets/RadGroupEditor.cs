@@ -24,6 +24,7 @@
 		private readonly TextBox groupNameTextBox_;
 		private readonly MultiParameterSelector parameterSelector_;
 		private readonly RadGroupOptionsEditor optionsEditor_;
+		private readonly Label detailsLabel_;
 		private readonly List<string> existingGroupNames_;
 		private bool moreThanMinParametersSelected_ = false;
 		private bool lessThanMaxParametersSelected_ = false;
@@ -53,6 +54,8 @@
 
 			optionsEditor_ = new RadGroupOptionsEditor(parameterSelector_.ColumnCount, settings?.Options);
 
+			detailsLabel_ = new Label();
+
 			OnGroupNameTextBoxChanged();
 			OnParameterSelectorChanged();
 
@@ -65,6 +68,9 @@
 			row += parameterSelector_.RowCount;
 
 			AddSection(optionsEditor_, row, 0);
+			row += optionsEditor_.RowCount;
+
+			AddWidget(detailsLabel_, row, 0, 1, parameterSelector_.ColumnCount);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
@@ -98,6 +104,7 @@
 				groupNameTextBox_.IsVisible = value;
 				parameterSelector_.IsVisible = value;
 				optionsEditor_.IsVisible = value;
+				UpdateDetailsLabelVisibility();
 			}
 		}
 
@@ -112,13 +119,28 @@
 			List<string> validationTexts = new List<string>(2);
 			if (groupNameTextBox_.ValidationState == UIValidationState.Invalid && !moreThanMinParametersSelected_)
 				validationTexts.Add("provide a valid group name");
-			if (!moreThanMinParametersSelected_)
-				validationTexts.Add("select at least two instances");
-			else if (!lessThanMaxParametersSelected_)
-				validationTexts.Add($"select at most {MAX_PARAMETERS} instances");
+			if (!moreThanMinParametersSelected_ || !lessThanMaxParametersSelected_)
+				validationTexts.Add("make a valid selection of instances");
 
 			ValidationText = validationTexts.HumanReadableJoin().Capitalize();
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void UpdateDetailsLabelVisibility()
+		{
+			detailsLabel_.IsVisible = isVisible_ && groupNameTextBox_.ValidationState == UIValidationState.Valid && (!moreThanMinParametersSelected_ || !lessThanMaxParametersSelected_);
+		}
+
+		private void UpdateDetailsLabel()
+		{
+			UpdateDetailsLabelVisibility();
+
+			if (!moreThanMinParametersSelected_)
+				detailsLabel_.Text = "Select at least two instances.";
+			else if (!lessThanMaxParametersSelected_)
+				detailsLabel_.Text = $"Select at most {MAX_PARAMETERS} instances.";
+			else
+				detailsLabel_.Text = string.Empty;
 		}
 
 		private void OnParameterSelectorChanged()
@@ -130,6 +152,7 @@
 			{
 				moreThanMinParametersSelected_ = newMinParametersState;
 				lessThanMaxParametersSelected_ = newMaxParametersState;
+				UpdateDetailsLabel();
 				UpdateIsValid();
 			}
 		}
@@ -152,6 +175,7 @@
 				groupNameTextBox_.ValidationText = string.Empty;
 			}
 
+			UpdateDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 	}
