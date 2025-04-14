@@ -17,6 +17,8 @@
 	/// </summary>
 	public class RadGroupOptionsEditor : Section
 	{
+		private const int DefaultAnomalyThreshold_ = 3;
+		private static readonly TimeSpan DefaultMinimalDuration_ = TimeSpan.FromMinutes(5);
 		private readonly CheckBox updateModelCheckBox_;
 		private readonly CheckBox anomalyThresholdOverrideCheckBox_;
 		private readonly Numeric anomalyThresholdNumeric_;
@@ -43,7 +45,7 @@
 				Tooltip = "Whether to override the default threshold for detecting anomalies. Anomalies are detected when the anomaly score exceeds this threshold. " +
 				"With a high threshold less anomalies will be detected, with a low threshold more anomalies will be detected. If checked, the threshold can be set below.",
 			};
-			anomalyThresholdOverrideCheckBox_.Changed += (sender, args) => anomalyThresholdNumeric_.IsEnabled = (sender as CheckBox).IsChecked;
+			anomalyThresholdOverrideCheckBox_.Changed += (sender, args) => OnAnomalyThresholdOverrideCheckBoxChanged();
 
 			string anomalyThresholdTooltip = "The threshold for detecting anomalies.";
 			var anomalyThresholdLabel = new Label("Anomaly threshold")
@@ -53,7 +55,7 @@
 			anomalyThresholdNumeric_ = new Numeric()
 			{
 				Minimum = 0,
-				Value = options?.AnomalyThreshold ?? 3,
+				Value = options?.AnomalyThreshold ?? DefaultAnomalyThreshold_,
 				StepSize = 0.01,
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
@@ -65,7 +67,7 @@
 				Tooltip = "Whether to override the default duration an anomaly must last before a suggestion event is generated. Note that changing this duration will also have an " +
 				"effect on the anomaly score. If checked, the duration can be set below.",
 			};
-			minimalDurationOverrideCheckBox_.Changed += (sender, args) => minimalDurationTime_.IsEnabled = (sender as CheckBox).IsChecked;
+			minimalDurationOverrideCheckBox_.Changed += (sender, args) => OnMinimalDurationOverrideCheckBoxChanged();
 
 			string minimalDurationTooltip = "The minimum duration in minutes an anomaly must last before a suggestion event is generated.";
 			var minimalDurationLabel = new Label("Minimum anomaly duration (in minutes)")
@@ -76,7 +78,7 @@
 			{
 				HasSeconds = false,
 				Minimum = TimeSpan.FromMinutes(5),
-				TimeSpan = TimeSpan.FromMinutes(options?.MinimalDuration ?? 5),
+				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : DefaultMinimalDuration_,
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
 			};
@@ -134,6 +136,20 @@
 				else
 					return null;
 			}
+		}
+
+		private void OnAnomalyThresholdOverrideCheckBoxChanged()
+		{
+			anomalyThresholdNumeric_.IsEnabled = anomalyThresholdOverrideCheckBox_.IsChecked;
+			if (!anomalyThresholdOverrideCheckBox_.IsChecked)
+				anomalyThresholdNumeric_.Value = DefaultAnomalyThreshold_;
+		}
+
+		private void OnMinimalDurationOverrideCheckBoxChanged()
+		{
+			minimalDurationTime_.IsEnabled = minimalDurationOverrideCheckBox_.IsChecked;
+			if (!minimalDurationOverrideCheckBox_.IsChecked)
+				minimalDurationTime_.TimeSpan = DefaultMinimalDuration_;
 		}
 	}
 }
