@@ -7,7 +7,7 @@
 
 	public class MultiParameterSelector : MultiSelector<ParameterSelectorInfo>
 	{
-		private bool parameterAlreadySelected_ = false;
+		private bool _parameterAlreadySelected = false;
 
 		public MultiParameterSelector(IEngine engine, IEnumerable<ParameterKey> parameters = null) : base(new ParameterSelector(engine), null, "No parameters selected")
 		{
@@ -56,7 +56,7 @@
 				var selector = ItemSelector as ParameterSelector;
 				selector.ValidationState = UIValidationState.Invalid;
 				selector.ValidationText = newParameters.Count > 1 ? "Parameters already selected" : "Parameter already selected";
-				parameterAlreadySelected_ = true;
+				_parameterAlreadySelected = true;
 				return false;
 			}
 
@@ -65,12 +65,12 @@
 
 		private void OnChanged()
 		{
-			if (parameterAlreadySelected_)
+			if (_parameterAlreadySelected)
 			{
 				// If an item has been added or removed, then the validation state of the selector should be reset
 				var selector = ItemSelector as ParameterSelector;
 				selector.ValidationState = UIValidationState.Valid;
-				parameterAlreadySelected_ = false;
+				_parameterAlreadySelected = false;
 			}
 		}
 	}

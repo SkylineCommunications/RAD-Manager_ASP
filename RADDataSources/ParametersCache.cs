@@ -11,11 +11,11 @@
 	/// </summary>
 	public class ParametersCache : Cache<ParameterInfo[]>
 	{
-		private readonly IGQILogger logger_ = null;
+		private readonly IGQILogger _logger = null;
 
 		public ParametersCache(IGQILogger logger)
 		{
-			logger_ = logger;
+			_logger = logger;
 		}
 
 		protected override bool Fetch(int dataMinerID, int elementID, out ParameterInfo[] value)
@@ -27,7 +27,7 @@
 
 				if (protocolResponse == null)
 				{
-					logger_.Error($"Failed to fetch protocol for element {dataMinerID}/{elementID}: Received no response or response of the wrong type");
+					_logger.Error($"Failed to fetch protocol for element {dataMinerID}/{elementID}: Received no response or response of the wrong type");
 					value = new ParameterInfo[0];
 					return false;
 				}
@@ -37,7 +37,7 @@
 			}
 			catch (Exception ex)
 			{
-				logger_.Error($"Failed to fetch element name for element {dataMinerID}/{elementID}: {ex.Message}");
+				_logger.Error($"Failed to fetch element name for element {dataMinerID}/{elementID}: {ex.Message}");
 				value = new ParameterInfo[0];
 				return false;
 			}

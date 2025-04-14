@@ -44,13 +44,13 @@ namespace RadWidgets
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
 	public abstract class MultiSelector<T> : Section where T : MultiSelectorItem
 	{
-		private readonly MultiSelectorItemSelector<T> itemSelector_;
-		private readonly Label noItemsSelectedLabel_;
-		private readonly TreeView selectedItemsView_;
-		private readonly Dictionary<string, T> selectedItems_ = new Dictionary<string, T>();
-		private readonly Button addButton_;
-		private readonly Button removeButton_;
-		private bool isVisible_ = true;
+		private readonly MultiSelectorItemSelector<T> _itemSelector;
+		private readonly Label _noItemsSelectedLabel;
+		private readonly TreeView _selectedItemsView;
+		private readonly Dictionary<string, T> _selectedItems = new Dictionary<string, T>();
+		private readonly Button _addButton;
+		private readonly Button _removeButton;
+		private bool _isVisible = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.
@@ -60,37 +60,37 @@ namespace RadWidgets
 		/// <param name="selectedItems">The initially selected items, or null.</param>
 		protected MultiSelector(MultiSelectorItemSelector<T> itemSelector, List<T> selectedItems = null, string noItemsSelectedText = "") : base()
 		{
-			itemSelector_ = itemSelector;
+			_itemSelector = itemSelector;
 
-			noItemsSelectedLabel_ = new Label(noItemsSelectedText)
+			_noItemsSelectedLabel = new Label(noItemsSelectedText)
 			{
 				MinHeight = 100,
 			};
 
-			selectedItemsView_ = new TreeView(new List<TreeViewItem>())
+			_selectedItemsView = new TreeView(new List<TreeViewItem>())
 			{
 				IsReadOnly = false,
 				MinHeight = 100,
 			};
 			SetSelected(selectedItems);
 
-			addButton_ = new Button("Add");
-			addButton_.Pressed += AddButton_Pressed;
+			_addButton = new Button("Add");
+			_addButton.Pressed += AddButton_Pressed;
 
-			removeButton_ = new Button("Remove");
-			removeButton_.Pressed += RemoveButton_Pressed;
+			_removeButton = new Button("Remove");
+			_removeButton.Pressed += RemoveButton_Pressed;
 
 			Changed += (sender, args) => OnChanged();
 			OnChanged();
 
 			int row = 0;
-			AddSection(itemSelector_, row, 0);
-			AddWidget(addButton_, row + itemSelector_.RowCount - 1, itemSelector_.ColumnCount);
-			row += itemSelector_.RowCount;
+			AddSection(_itemSelector, row, 0);
+			AddWidget(_addButton, row + _itemSelector.RowCount - 1, _itemSelector.ColumnCount);
+			row += _itemSelector.RowCount;
 
-			AddWidget(noItemsSelectedLabel_, row, 0, 1, itemSelector_.ColumnCount);
-			AddWidget(selectedItemsView_, row + 1, 0, 2, itemSelector_.ColumnCount);
-			AddWidget(removeButton_, row, itemSelector_.ColumnCount, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_noItemsSelectedLabel, row, 0, 1, _itemSelector.ColumnCount);
+			AddWidget(_selectedItemsView, row + 1, 0, 2, _itemSelector.ColumnCount);
+			AddWidget(_removeButton, row, _itemSelector.ColumnCount, 2, 1, verticalAlignment: VerticalAlignment.Top);
 		}
 
 		/// <summary>
@@ -103,8 +103,8 @@ namespace RadWidgets
 		/// </summary>
 		public string AddButtonTooltip
 		{
-			get => addButton_.Tooltip;
-			set => addButton_.Tooltip = value;
+			get => _addButton.Tooltip;
+			set => _addButton.Tooltip = value;
 		}
 
 		/// <summary>
@@ -112,8 +112,8 @@ namespace RadWidgets
 		/// </summary>
 		public string RemoveButtonTooltip
 		{
-			get => removeButton_.Tooltip;
-			set => removeButton_.Tooltip = value;
+			get => _removeButton.Tooltip;
+			set => _removeButton.Tooltip = value;
 		}
 
 		/// <summary>
@@ -121,10 +121,10 @@ namespace RadWidgets
 		/// </summary>
 		public string NoItemsSelectedText
 		{
-			get => noItemsSelectedLabel_.Text;
+			get => _noItemsSelectedLabel.Text;
 			set
 			{
-				noItemsSelectedLabel_.Text = value;
+				_noItemsSelectedLabel.Text = value;
 			}
 		}
 
@@ -132,17 +132,17 @@ namespace RadWidgets
 		public override bool IsVisible
 		{
 			// Note: we had to override this, since otherwise all child widgets are made visible when this is set to true.
-			get => isVisible_;
+			get => _isVisible;
 			set
 			{
-				if (value == isVisible_)
+				if (value == _isVisible)
 					return;
 
-				isVisible_ = value;
+				_isVisible = value;
 
-				itemSelector_.IsVisible = value;
-				addButton_.IsVisible = value;
-				removeButton_.IsVisible = value;
+				_itemSelector.IsVisible = value;
+				_addButton.IsVisible = value;
+				_removeButton.IsVisible = value;
 				UpdateTreeViewVisibility();
 			}
 		}
@@ -150,7 +150,7 @@ namespace RadWidgets
 		/// <summary>
 		/// Gets the widget to select a single item.
 		/// </summary>
-		protected MultiSelectorItemSelector<T> ItemSelector => itemSelector_;
+		protected MultiSelectorItemSelector<T> ItemSelector => _itemSelector;
 
 		/// <summary>
 		/// Get the currently selected items.
@@ -158,7 +158,7 @@ namespace RadWidgets
 		/// <returns>The currently selected items.</returns>
 		public IEnumerable<T> GetSelected()
 		{
-			return selectedItems_.Values;
+			return _selectedItems.Values;
 		}
 
 		/// <summary>
@@ -167,11 +167,11 @@ namespace RadWidgets
 		/// <param name="selected">The new selected items (empty or null if none are selected).</param>
 		public void SetSelected(IEnumerable<T> selected)
 		{
-			selectedItems_.Clear();
+			_selectedItems.Clear();
 
 			if (selected == null)
 			{
-				selectedItemsView_.Items = new List<TreeViewItem>();
+				_selectedItemsView.Items = new List<TreeViewItem>();
 				Changed?.Invoke(this, EventArgs.Empty);
 				return;
 			}
@@ -179,23 +179,23 @@ namespace RadWidgets
 			foreach (var item in selected)
 			{
 				var key = item.GetKey();
-				if (!selectedItems_.ContainsKey(key))
-					selectedItems_.Add(key, item);
+				if (!_selectedItems.ContainsKey(key))
+					_selectedItems.Add(key, item);
 			}
 
-			selectedItemsView_.Items = selectedItems_.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
+			_selectedItemsView.Items = _selectedItems.Select(p => new TreeViewItem(p.Value.GetDisplayValue(), p.Key)).ToList();
 			Changed?.Invoke(this, EventArgs.Empty);
 		}
 
 		protected virtual bool AddItem(T item)
 		{
 			string key = item.GetKey();
-			if (selectedItems_.ContainsKey(key))
+			if (_selectedItems.ContainsKey(key))
 				return false;
 
-			selectedItems_.Add(key, item);
+			_selectedItems.Add(key, item);
 			var treeViewItem = new TreeViewItem(item.GetDisplayValue(), key);
-			selectedItemsView_.Items = selectedItemsView_.Items.Concat(new List<TreeViewItem>() { treeViewItem }).ToList();
+			_selectedItemsView.Items = _selectedItemsView.Items.Concat(new List<TreeViewItem>() { treeViewItem }).ToList();
 			Changed?.Invoke(this, EventArgs.Empty);
 
 			return true;
@@ -203,32 +203,32 @@ namespace RadWidgets
 
 		private void UpdateTreeViewVisibility()
 		{
-			if (!isVisible_)
+			if (!_isVisible)
 			{
-				noItemsSelectedLabel_.IsVisible = false;
-				selectedItemsView_.IsVisible = false;
+				_noItemsSelectedLabel.IsVisible = false;
+				_selectedItemsView.IsVisible = false;
 			}
-			else if (selectedItems_.Count == 0)
+			else if (_selectedItems.Count == 0)
 			{
-				noItemsSelectedLabel_.IsVisible = true;
-				selectedItemsView_.IsVisible = false;
+				_noItemsSelectedLabel.IsVisible = true;
+				_selectedItemsView.IsVisible = false;
 			}
 			else
 			{
-				noItemsSelectedLabel_.IsVisible = false;
-				selectedItemsView_.IsVisible = true;
+				_noItemsSelectedLabel.IsVisible = false;
+				_selectedItemsView.IsVisible = true;
 			}
 		}
 
 		private void OnChanged()
 		{
 			UpdateTreeViewVisibility();
-			removeButton_.IsEnabled = selectedItems_.Count > 0;
+			_removeButton.IsEnabled = _selectedItems.Count > 0;
 		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)
 		{
-			var selectedItem = itemSelector_.SelectedItem;
+			var selectedItem = _itemSelector.SelectedItem;
 			if (selectedItem == null)
 				return;
 
@@ -237,13 +237,13 @@ namespace RadWidgets
 
 		private void RemoveButton_Pressed(object sender, EventArgs e)
 		{
-			var newItems = selectedItemsView_.Items.Where(i => !i.IsChecked).ToList();
-			if (selectedItemsView_.Items.Count() != newItems.Count)
+			var newItems = _selectedItemsView.Items.Where(i => !i.IsChecked).ToList();
+			if (_selectedItemsView.Items.Count() != newItems.Count)
 			{
-				foreach (var item in selectedItemsView_.Items.Where(i => i.IsChecked))
-					selectedItems_.Remove(item.KeyValue);
+				foreach (var item in _selectedItemsView.Items.Where(i => i.IsChecked))
+					_selectedItems.Remove(item.KeyValue);
 
-				selectedItemsView_.Items = newItems;
+				_selectedItemsView.Items = newItems;
 				Changed?.Invoke(this, EventArgs.Empty);
 			}
 		}

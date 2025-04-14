@@ -9,7 +9,7 @@ using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script
 {
-	private InteractiveController app;
+	private InteractiveController _app;
 
 	/// <summary>
 	/// The Script entry point.
@@ -26,13 +26,13 @@ public class Script
 
 		try
 		{
-			app = new InteractiveController(engine);
+			_app = new InteractiveController(engine);
 
 			var dialog = new AddParameterGroupDialog(engine);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
-			app.ShowDialog(dialog);
+			_app.ShowDialog(dialog);
 		}
 		catch (ScriptAbortException)
 		{
@@ -58,7 +58,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		app.Engine.ExitSuccess("Adding parameter group cancelled");
+		_app.Engine.ExitSuccess("Adding parameter group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -74,11 +74,11 @@ public class Script
 			try
 			{
 				var message = new AddMADParameterGroupMessage(group);
-				app.Engine.SendSLNetSingleResponseMessage(message);
+				_app.Engine.SendSLNetSingleResponseMessage(message);
 			}
 			catch (Exception ex)
 			{
-				app.Engine.GenerateInformation($"Failed to add parameter group '{group.Name}': {ex}");
+				_app.Engine.GenerateInformation($"Failed to add parameter group '{group.Name}': {ex}");
 				failedGroups.Add(Tuple.Create(group.Name, ex));
 			}
 		}
@@ -86,11 +86,11 @@ public class Script
 		if (failedGroups.Count > 0)
 		{
 			var ex = new AggregateException("Failed to add parameter group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
-			Utils.ShowExceptionDialog(app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
+			Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
 
 			return;
 		}
 
-		app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
 	}
 }

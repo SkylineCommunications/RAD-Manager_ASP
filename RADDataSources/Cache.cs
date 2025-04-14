@@ -8,7 +8,7 @@
 	/// <typeparam name="T">The value to be cached.</typeparam>
 	public abstract class Cache<T>
 	{
-		private readonly Dictionary<ElementKey, T> cache_ = new Dictionary<ElementKey, T>();
+		private readonly Dictionary<ElementKey, T> _cache = new Dictionary<ElementKey, T>();
 
 		/// <summary>
 		/// Tries to get the value from the cache, or by fetching the data. If the data could be fetched, it will be stored in the cache.
@@ -20,12 +20,12 @@
 		public bool TryGet(int dataMinerID, int elementID, out T value)
 		{
 			var key = new ElementKey { DataMinerID = dataMinerID, ElementID = elementID };
-			if (cache_.TryGetValue(key, out value))
+			if (_cache.TryGetValue(key, out value))
 				return true;
 
 			if (Fetch(dataMinerID, elementID, out value))
 			{
-				cache_[key] = value;
+				_cache[key] = value;
 				return true;
 			}
 
@@ -42,7 +42,7 @@
 		public bool TryGetFromCache(int dataMinerID, int elementID, out T value)
 		{
 			var key = new ElementKey { DataMinerID = dataMinerID, ElementID = elementID };
-			return cache_.TryGetValue(key, out value);
+			return _cache.TryGetValue(key, out value);
 		}
 
 		/// <summary>
