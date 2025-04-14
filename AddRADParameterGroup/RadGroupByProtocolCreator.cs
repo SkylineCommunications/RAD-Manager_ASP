@@ -251,6 +251,7 @@
 			if (newState != groupPrefixTextBox_.ValidationState)
 				groupPrefixTextBox_.ValidationState = newState;
 
+			UpdateDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 	}
