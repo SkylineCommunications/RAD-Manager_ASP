@@ -74,14 +74,14 @@ namespace RadWidgets
 			};
 			SetSelected(selectedItems);
 
-			Changed += (sender, args) => UpdateTreeViewVisibility();
-			UpdateTreeViewVisibility();
-
 			addButton_ = new Button("Add");
 			addButton_.Pressed += AddButton_Pressed;
 
 			removeButton_ = new Button("Remove");
 			removeButton_.Pressed += RemoveButton_Pressed;
+
+			Changed += (sender, args) => OnChanged();
+			OnChanged();
 
 			int row = 0;
 			AddSection(itemSelector_, row, 0);
@@ -218,6 +218,12 @@ namespace RadWidgets
 				noItemsSelectedLabel_.IsVisible = false;
 				selectedItemsView_.IsVisible = true;
 			}
+		}
+
+		private void OnChanged()
+		{
+			UpdateTreeViewVisibility();
+			removeButton_.IsEnabled = selectedItems_.Count > 0;
 		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)
