@@ -9,6 +9,8 @@
     <Import_RootNamespace>RadDataSourceUtils</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Cache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParametersCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
 </Project>

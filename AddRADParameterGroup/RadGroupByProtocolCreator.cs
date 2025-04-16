@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using AddParameterGroup;
+	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -37,11 +38,13 @@
 		private readonly Label _detailsLabel;
 		private readonly List<string> _existingGroupNames;
 		private bool _isVisible = true;
+		private ParametersCache _parametersCache;
 
 		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
 		{
 			_engine = engine;
 			_existingGroupNames = existingGroupNames;
+			_parametersCache = new ParametersCache(engine);
 
 			string groupPrefixTooltip = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
 			_groupPrefixLabel = new Label("Group name prefix");
@@ -164,16 +167,32 @@
 			var groups = new List<GroupByProtocolInfo>();
 			foreach (var element in elements)
 			{
+				if (!_parametersCache.TryGet(element.DmaId, element.ElementId, out var parametersOnElement))
+				{
+					_engine.Log($"Could not find parameters for element {element.ElementName} ({element.DmaId}/{element.ElementId})");
+					continue;
+				}
+
 				var pKeys = new List<ParameterKey>();
 				foreach (var parameter in _parameterSelector.GetSelectedParameters())
 				{
+					var paramInfo = parametersOnElement.FirstOrDefault(p => p.ID == parameter.ParameterID);
+					if (paramInfo == null)
+					{
+						_engine.Log($"Could not find parameter {parameter.ParameterID} on element {element.ElementName} ({element.DmaId}/{element.ElementId})");
+						continue;
+					}
+
+					if (!paramInfo.HasTrending())
+						continue;
+
 					if (parameter.ParentTableID == null)
 					{
 						pKeys.Add(new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID));
 					}
 					else
 					{
-						var matchingInstances = Utils.FetchMatchingInstances(_engine, element.DmaId, element.ElementId, parameter.ParentTableID.Value, parameter.DisplayKeyFilter);
+						var matchingInstances = RadWidgets.Utils.FetchMatchingInstancesWithTrending(_engine, element.DmaId, element.ElementId, paramInfo, parameter.DisplayKeyFilter);
 						pKeys.AddRange(matchingInstances.Select(i => new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID, i)));
 					}
 				}

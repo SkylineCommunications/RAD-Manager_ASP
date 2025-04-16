@@ -1,4 +1,4 @@
-﻿namespace RadDataSources
+﻿namespace RadUtils
 {
 	using System.Collections.Generic;
 

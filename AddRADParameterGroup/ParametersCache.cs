@@ -1,6 +1,6 @@
-﻿namespace RadDataSources
+﻿namespace AddRadParameterGroup
 {
-	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 
 	/// <summary>
@@ -8,21 +8,21 @@
 	/// </summary>
 	public class ParametersCache : RadUtils.ParametersCache
 	{
-		private readonly IGQILogger _logger = null;
+		private IEngine _engine;
 
-		public ParametersCache(IGQILogger logger)
+		public ParametersCache(IEngine engine)
 		{
-			_logger = logger;
+			_engine = engine;
 		}
 
 		protected override void LogError(string message)
 		{
-			_logger.Error(message);
+			_engine.Log(message);
 		}
 
 		protected override DMSMessage SendSingleResponseMessage(DMSMessage request)
 		{
-			return ConnectionHelper.Connection.HandleSingleResponseMessage(request);
+			return _engine.SendSLNetSingleResponseMessage(request);
 		}
 	}
 }

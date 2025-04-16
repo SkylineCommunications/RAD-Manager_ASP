@@ -16,5 +16,10 @@
 				return false;
 			return true;
 		}
+
+		public static bool HasTrending(this ParameterInfo info)
+		{
+			return info.RealTimeTrending || info.AverageTrending;
+		}
 	}
 }

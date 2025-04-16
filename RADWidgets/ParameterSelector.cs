@@ -2,6 +2,7 @@
 {
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
@@ -106,7 +107,7 @@
 				var matchingInstances = new List<string>();
 				if (parameter.IsTableColumn && parameter.ParentTable != null)
 				{
-					matchingInstances = Utils.FetchMatchingInstances(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();
+					matchingInstances = Utils.FetchMatchingInstancesWithTrending(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();
 					if (matchingInstances.Count == 0)
 					{
 						ValidationState = UIValidationState.Invalid;
@@ -131,7 +132,7 @@
 
 		protected override bool IsValidForRAD(ParameterInfo info)
 		{
-			return base.IsValidForRAD(info) && (info.RealTimeTrending || info.AverageTrending);
+			return base.IsValidForRAD(info) && info.HasTrending();
 		}
 
 		private void OnSelectedElementChanged()
