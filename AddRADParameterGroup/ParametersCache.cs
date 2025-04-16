@@ -8,7 +8,7 @@
 	/// </summary>
 	public class ParametersCache : RadUtils.ParametersCache
 	{
-		private IEngine _engine;
+		private readonly IEngine _engine;
 
 		public ParametersCache(IEngine engine)
 		{

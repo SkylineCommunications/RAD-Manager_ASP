@@ -18,7 +18,7 @@ namespace RadDataSources
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("dataMinerID");
 		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("startTime");
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
-		private AnomalyScoreData _anomalyScoreData = new AnomalyScoreData();
+		private readonly AnomalyScoreData _anomalyScoreData = new AnomalyScoreData();
 		private string _groupName = string.Empty;
 		private int _dataMinerID = -1;
 		private DateTime? _startTime = null;
