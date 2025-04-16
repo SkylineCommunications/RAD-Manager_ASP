@@ -4,6 +4,7 @@
 	using System.Linq;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Messages;
 
 	public class MultiParameterSelector : MultiSelector<ParameterSelectorInfo>
 	{
@@ -30,7 +31,7 @@
 						ElementID = parameter.ElementID,
 						ParameterID = parameter.ParameterID,
 						DisplayKeyFilter = parameter.DisplayInstance,
-						MatchingInstances = new List<string>() { parameter.Instance },
+						MatchingInstances = new List<DynamicTableIndex>() { new DynamicTableIndex(parameter.Instance, parameter.DisplayInstance) },
 						IsTableColumn = paramInfo?.IsTableColumn ?? false,
 					});
 				}

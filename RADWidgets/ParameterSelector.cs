@@ -1,5 +1,6 @@
 ﻿namespace RadWidgets
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadUtils;
@@ -28,7 +29,7 @@
 		/// <summary>
 		/// Gets or sets a list of instance primary keys for which the display key matches the provided filter.
 		/// </summary>
-		public List<string> MatchingInstances { get; set; }
+		public List<DynamicTableIndex> MatchingInstances { get; set; }
 
 		public override string GetKey()
 		{
@@ -42,7 +43,7 @@
 		{
 			if (IsTableColumn)
 			{
-				if (MatchingInstances.Count != 1)
+				if (MatchingInstances.Count != 1 || !string.Equals(MatchingInstances[0].DisplayValue, DisplayKeyFilter, StringComparison.OrdinalIgnoreCase))
 					return $"{ElementName}/{ParameterName}/{DisplayKeyFilter} ({MatchingInstances.Count} matching instances)";
 				else
 					return $"{ElementName}/{ParameterName}/{DisplayKeyFilter}";
@@ -56,7 +57,7 @@
 		public IEnumerable<ParameterKey> GetParameterKeys()
 		{
 			if (MatchingInstances?.Count > 0)
-				return MatchingInstances.Select(i => new ParameterKey(DataMinerID, ElementID, ParameterID, i)).ToList();
+				return MatchingInstances.Select(i => new ParameterKey(DataMinerID, ElementID, ParameterID, i.IndexValue)).ToList();
 			else
 				return new List<ParameterKey> { new ParameterKey(DataMinerID, ElementID, ParameterID) };
 		}
@@ -104,7 +105,7 @@
 					return null;
 				}
 
-				var matchingInstances = new List<string>();
+				var matchingInstances = new List<DynamicTableIndex>();
 				if (parameter.IsTableColumn && parameter.ParentTable != null)
 				{
 					matchingInstances = Utils.FetchMatchingInstancesWithTrending(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();

@@ -163,11 +163,10 @@
 			}
 		}
 
-		public static IEnumerable<string> FetchMatchingInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
+		public static IEnumerable<DynamicTableIndex> FetchMatchingInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
 		{
 			return FetchMatchingInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter)
-				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue))
-				.Select(i => i.IndexValue);
+				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue));
 		}
 
 		public static List<string> FetchRadGroupNames(IEngine engine)
