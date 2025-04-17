@@ -254,7 +254,7 @@
 
 			if (groupsWithTooFewInstances.Count > 0)
 			{
-				lines.Add($"Too few instances have been selected for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.Add($"Too few instances have been selected, or instances are not trended for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
 			}
 
 			if (groupsWithTooManyInstances.Count > 0)
