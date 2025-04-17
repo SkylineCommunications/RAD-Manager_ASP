@@ -29,67 +29,67 @@
 
 	public class TimeRangeSelector : MultiSelectorItemSelector<TimeRangeItem>
 	{
-		private readonly DateTimePicker startTimePicker_;
-		private readonly DateTimePicker endTimePicker_;
+		private readonly DateTimePicker _startTimePicker;
+		private readonly DateTimePicker _endTimePicker;
 
 		public TimeRangeSelector(IEngine engine)
 		{
 			var fromLabel = new Label("From");
 
-			startTimePicker_ = new DateTimePicker()
+			_startTimePicker = new DateTimePicker()
 			{
 				Maximum = DateTime.Now,
 				DateTime = DateTime.Now - TimeSpan.FromDays(30),
 			};
-			startTimePicker_.Changed += (sender, args) => OnStartTimeSelectorChanged();
+			_startTimePicker.Changed += (sender, args) => OnStartTimeSelectorChanged();
 
 			var toLabel = new Label(" to ");
 
-			endTimePicker_ = new DateTimePicker()
+			_endTimePicker = new DateTimePicker()
 			{
 				Maximum = DateTime.Now,
 				DateTime = DateTime.Now,
 			};
-			endTimePicker_.Changed += (sender, args) => OnEndTimeSelectorChanged();
+			_endTimePicker.Changed += (sender, args) => OnEndTimeSelectorChanged();
 
 			AddWidget(fromLabel, 0, 0);
-			AddWidget(startTimePicker_, 0, 1);
+			AddWidget(_startTimePicker, 0, 1);
 			AddWidget(toLabel, 0, 2);
-			AddWidget(endTimePicker_, 0, 3);
+			AddWidget(_endTimePicker, 0, 3);
 		}
 
 		public override TimeRangeItem SelectedItem
 		{
 			get
 			{
-				if (startTimePicker_.DateTime >= endTimePicker_.DateTime)
+				if (_startTimePicker.DateTime >= _endTimePicker.DateTime)
 					return null;
-				return new TimeRangeItem(new TimeRange(startTimePicker_.DateTime, endTimePicker_.DateTime));
+				return new TimeRangeItem(new TimeRange(_startTimePicker.DateTime, _endTimePicker.DateTime));
 			}
 		}
 
 		private void OnStartTimeSelectorChanged()
 		{
-			startTimePicker_.ValidationState = UIValidationState.Valid;
-			if (endTimePicker_.DateTime <= startTimePicker_.DateTime)
-				endTimePicker_.ValidationState = UIValidationState.Invalid;
+			_startTimePicker.ValidationState = UIValidationState.Valid;
+			if (_endTimePicker.DateTime <= _startTimePicker.DateTime)
+				_endTimePicker.ValidationState = UIValidationState.Invalid;
 			else
-				endTimePicker_.ValidationState = UIValidationState.Valid;
+				_endTimePicker.ValidationState = UIValidationState.Valid;
 		}
 
 		private void OnEndTimeSelectorChanged()
 		{
-			endTimePicker_.ValidationState = UIValidationState.Valid;
-			if (endTimePicker_.DateTime <= startTimePicker_.DateTime)
-				startTimePicker_.ValidationState = UIValidationState.Invalid;
+			_endTimePicker.ValidationState = UIValidationState.Valid;
+			if (_endTimePicker.DateTime <= _startTimePicker.DateTime)
+				_startTimePicker.ValidationState = UIValidationState.Invalid;
 			else
-				startTimePicker_.ValidationState = UIValidationState.Valid;
+				_startTimePicker.ValidationState = UIValidationState.Valid;
 		}
 	}
 
 	public class MultiTimeRangeSelector : MultiSelector<TimeRangeItem>
 	{
-		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine))
+		public MultiTimeRangeSelector(IEngine engine) : base(new TimeRangeSelector(engine), null, "No time ranges selected")
 		{
 			AddButtonTooltip = "Add the range specified on the left to the ranges with normal behavior.";
 			RemoveButtonTooltip = "Remove the range(s) selected on the left from the ranges with normal behavior.";

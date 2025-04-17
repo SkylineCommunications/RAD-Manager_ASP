@@ -20,10 +20,10 @@
 
 	public class AddParameterGroupDialog : Dialog
 	{
-		private readonly EnumDropDown<AddGroupType> addTypeDropDown_;
-		private readonly RadGroupEditor groupEditor_;
-		private readonly RadGroupByProtocolCreator groupByProtocolCreator_;
-		private readonly Button okButton_;
+		private readonly EnumDropDown<AddGroupType> _addTypeDropDown;
+		private readonly RadGroupEditor _groupEditor;
+		private readonly RadGroupByProtocolCreator _groupByProtocolCreator;
+		private readonly Button _okButton;
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{
@@ -34,24 +34,24 @@
 			{
 				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
 			};
-			addTypeDropDown_ = new EnumDropDown<AddGroupType>()
+			_addTypeDropDown = new EnumDropDown<AddGroupType>()
 			{
 				Selected = AddGroupType.Single,
 			};
-			addTypeDropDown_.Changed += (sender, args) => OnAddTypeChanged();
+			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
 			var existingGroupNames = Utils.FetchRadGroupNames(engine);
-			groupEditor_ = new RadGroupEditor(engine, existingGroupNames);
-			groupEditor_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
+			_groupEditor = new RadGroupEditor(engine, existingGroupNames);
+			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
-			groupByProtocolCreator_ = new RadGroupByProtocolCreator(engine, existingGroupNames);
-			groupByProtocolCreator_.ValidationChanged += (sender, args) => OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
+			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames);
+			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
-			okButton_ = new Button()
+			_okButton = new Button()
 			{
 				Style = ButtonStyle.CallToAction,
 			};
-			okButton_.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
+			_okButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			var cancelButton = new Button("Cancel");
 			cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
@@ -60,17 +60,17 @@
 
 			int row = 0;
 			AddWidget(addTypeLabel, row, 0);
-			AddWidget(addTypeDropDown_, row, 1, 1, groupByProtocolCreator_.ColumnCount - 1);
+			AddWidget(_addTypeDropDown, row, 1, 1, _groupByProtocolCreator.ColumnCount - 1);
 			++row;
 
-			AddSection(groupEditor_, row, 0);
-			row += groupEditor_.RowCount;
+			AddSection(_groupEditor, row, 0);
+			row += _groupEditor.RowCount;
 
-			AddSection(groupByProtocolCreator_, row, 0);
-			row += groupByProtocolCreator_.RowCount;
+			AddSection(_groupByProtocolCreator, row, 0);
+			row += _groupByProtocolCreator.RowCount;
 
 			AddWidget(cancelButton, row, 0, 1, 1);
-			AddWidget(okButton_, row, 1, 1, groupByProtocolCreator_.ColumnCount - 1);
+			AddWidget(_okButton, row, 1, 1, _groupByProtocolCreator.ColumnCount - 1);
 		}
 
 		public event EventHandler Accepted;
@@ -79,19 +79,19 @@
 
 		public List<MADGroupInfo> GetGroupsToAdd()
 		{
-			if (addTypeDropDown_.Selected == AddGroupType.Single)
+			if (_addTypeDropDown.Selected == AddGroupType.Single)
 			{
 				var groupInfo = new MADGroupInfo(
-					groupEditor_.Settings.GroupName,
-					groupEditor_.Settings.Parameters.ToList(),
-					groupEditor_.Settings.Options.UpdateModel,
-					groupEditor_.Settings.Options.AnomalyThreshold,
-					groupEditor_.Settings.Options.MinimalDuration);
+					_groupEditor.Settings.GroupName,
+					_groupEditor.Settings.Parameters.ToList(),
+					_groupEditor.Settings.Options.UpdateModel,
+					_groupEditor.Settings.Options.AnomalyThreshold,
+					_groupEditor.Settings.Options.MinimalDuration);
 				return new List<MADGroupInfo>() { groupInfo };
 			}
 			else
 			{
-				return groupByProtocolCreator_.GetGroupsToAdd();
+				return _groupByProtocolCreator.GetGroupsToAdd();
 			}
 		}
 
@@ -99,40 +99,40 @@
 		{
 			if (isValid)
 			{
-				okButton_.IsEnabled = true;
-				if (addTypeDropDown_.Selected == AddGroupType.Single)
+				_okButton.IsEnabled = true;
+				if (_addTypeDropDown.Selected == AddGroupType.Single)
 				{
-					okButton_.Tooltip = "Add the parameter group specified above to the RAD configuration";
+					_okButton.Tooltip = "Add the parameter group specified above to the RAD configuration";
 				}
 				else
 				{
-					okButton_.Tooltip = "Add the parameter group(s) specified above to the RAD configuration";
+					_okButton.Tooltip = "Add the parameter group(s) specified above to the RAD configuration";
 				}
 			}
 			else
 			{
-				okButton_.IsEnabled = false;
-				okButton_.Tooltip = validationText;
+				_okButton.IsEnabled = false;
+				_okButton.Tooltip = validationText;
 			}
 		}
 
 		private void OnAddTypeChanged()
 		{
-			if (addTypeDropDown_.Selected == AddGroupType.Single)
+			if (_addTypeDropDown.Selected == AddGroupType.Single)
 			{
-				groupEditor_.IsVisible = true;
-				groupByProtocolCreator_.IsVisible = false;
-				okButton_.Text = "Add group";
-				addTypeDropDown_.Tooltip = "Add the parameter group specified below.";
-				OnEditorValidationChanged(groupEditor_.IsValid, groupEditor_.ValidationText);
+				_groupEditor.IsVisible = true;
+				_groupByProtocolCreator.IsVisible = false;
+				_okButton.Text = "Add group";
+				_addTypeDropDown.Tooltip = "Add the parameter group specified below.";
+				OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 			}
 			else
 			{
-				groupEditor_.IsVisible = false;
-				groupByProtocolCreator_.IsVisible = true;
-				okButton_.Text = "Add group(s)";
-				addTypeDropDown_.Tooltip = "Add a parameter group with the instances and options specified below for each element that uses the given connection and connector version.";
-				OnEditorValidationChanged(groupByProtocolCreator_.IsValid, groupByProtocolCreator_.ValidationText);
+				_groupEditor.IsVisible = false;
+				_groupByProtocolCreator.IsVisible = true;
+				_okButton.Text = "Add group(s)";
+				_addTypeDropDown.Tooltip = "Add a parameter group with the instances and options specified below for each element that uses the given connection and connector version.";
+				OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 			}
 		}
 	}

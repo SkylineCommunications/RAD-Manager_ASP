@@ -163,38 +163,10 @@
 			}
 		}
 
-		public static IEnumerable<string> FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
+		public static IEnumerable<DynamicTableIndex> FetchMatchingInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
 		{
-			return FetchMatchingInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter);
-		}
-
-		public static IEnumerable<string> FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter)
-		{
-			try
-			{
-				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, tableParameterID)
-				{
-					KeyFilter = displayKeyFilter,
-					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
-				};
-				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
-				if (indicesResponse == null)
-				{
-					engine.Log(
-						$"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: " +
-						$"no response, or response of the wrong type received",
-						LogType.Error,
-						5);
-					return new List<string> { };
-				}
-
-				return indicesResponse.Indices.Select(i => i.IndexValue);
-			}
-			catch (Exception e)
-			{
-				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
-				return new List<string> { };
-			}
+			return FetchMatchingInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter)
+				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue));
 		}
 
 		public static List<string> FetchRadGroupNames(IEngine engine)
@@ -272,6 +244,35 @@
 			if (string.IsNullOrEmpty(s))
 				return s;
 			return char.ToUpper(s[0]) + s.Substring(1);
+		}
+
+		private static DynamicTableIndex[] FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter)
+		{
+			try
+			{
+				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, tableParameterID)
+				{
+					KeyFilter = displayKeyFilter,
+					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
+				};
+				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
+				if (indicesResponse == null)
+				{
+					engine.Log(
+						$"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: " +
+						$"no response, or response of the wrong type received",
+						LogType.Error,
+						5);
+					return Array.Empty<DynamicTableIndex>();
+				}
+
+				return indicesResponse.Indices;
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
+				return Array.Empty<DynamicTableIndex>();
+			}
 		}
 	}
 }

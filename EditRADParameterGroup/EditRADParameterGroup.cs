@@ -8,7 +8,7 @@ using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script
 {
-	private InteractiveController app;
+	private InteractiveController _app;
 
 	/// <summary>
 	/// The Script entry point.
@@ -25,17 +25,17 @@ public class Script
 
 		try
 		{
-			app = new InteractiveController(engine);
+			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to edit first");
+				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
 				return;
 			}
 			else if (groupNamesAndIds.Count > 1)
 			{
-				Utils.ShowMessageDialog(app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
+				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
 				return;
 			}
 
@@ -48,11 +48,11 @@ public class Script
 				{
 					DataMinerID = dataMinerID,
 				};
-				var response = app.Engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupInfoResponseMessage;
+				var response = _app.Engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupInfoResponseMessage;
 				if (response?.GroupInfo == null)
 				{
 					Utils.ShowMessageDialog(
-						app,
+						_app,
 						"Failed to fetch parameter group information",
 						"Failed to fetch parameter group information: no response or a response of the wrong type received");
 					return;
@@ -72,7 +72,7 @@ public class Script
 			}
 			catch (Exception ex)
 			{
-				Utils.ShowExceptionDialog(app, "Failed to fetch parameter group information", ex);
+				Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
 				return;
 			}
 
@@ -80,7 +80,7 @@ public class Script
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
-			app.ShowDialog(dialog);
+			_app.ShowDialog(dialog);
 		}
 		catch (ScriptAbortException)
 		{
@@ -106,7 +106,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		app.Engine.ExitSuccess("Adding parameter group cancelled");
+		_app.Engine.ExitSuccess("Adding parameter group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -121,20 +121,20 @@ public class Script
 			{
 				DataMinerID = dialog.DataMinerID,
 			};
-			app.Engine.SendSLNetSingleResponseMessage(removeMessage);
+			_app.Engine.SendSLNetSingleResponseMessage(removeMessage);
 
 			var settings = dialog.GroupSettings;
 			var pKeys = settings.Parameters.ToList();
 			var groupInfo = new MADGroupInfo(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 			var message = new AddMADParameterGroupMessage(groupInfo);
-			app.Engine.SendSLNetSingleResponseMessage(message);
+			_app.Engine.SendSLNetSingleResponseMessage(message);
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
 			return;
 		}
 
-		app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
 	}
 }

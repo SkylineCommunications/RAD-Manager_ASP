@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using AddParameterGroup;
+	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -29,37 +30,41 @@
 
 	public class RadGroupByProtocolCreator : Section
 	{
-		private readonly IEngine engine_;
-		private readonly TextBox groupPrefixTextBox_;
-		private readonly MultiParameterPerProtocolSelector parameterSelector_;
-		private readonly RadGroupOptionsEditor optionsEditor_;
-		private readonly Label detailsLabel_;
-		private readonly List<string> existingGroupNames_;
+		private readonly IEngine _engine;
+		private readonly ParametersCache _parametersCache;
+		private readonly List<string> _existingGroupNames;
+		private readonly Label _groupPrefixLabel;
+		private readonly TextBox _groupPrefixTextBox;
+		private readonly MultiParameterPerProtocolSelector _parameterSelector;
+		private readonly RadGroupOptionsEditor _optionsEditor;
+		private readonly Label _detailsLabel;
+		private bool _isVisible = true;
 
 		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
 		{
-			engine_ = engine;
-			existingGroupNames_ = existingGroupNames;
+			_engine = engine;
+			_parametersCache = new ParametersCache(engine);
+			_existingGroupNames = existingGroupNames;
 
 			string groupPrefixTooltip = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
-			var groupPrefixLabel = new Label("Group name prefix");
-			groupPrefixTextBox_ = new TextBox()
+			_groupPrefixLabel = new Label("Group name prefix");
+			_groupPrefixTextBox = new TextBox()
 			{
 				MinWidth = 600,
 				Tooltip = groupPrefixTooltip,
 			};
-			groupPrefixTextBox_.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
-			groupPrefixTextBox_.ValidationText = "Provide a valid prefix";
+			_groupPrefixTextBox.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
+			_groupPrefixTextBox.ValidationText = "Provide a valid prefix";
 
-			parameterSelector_ = new MultiParameterPerProtocolSelector(engine)
+			_parameterSelector = new MultiParameterPerProtocolSelector(engine)
 			{
 				IsVisible = false,
 			};
-			parameterSelector_.Changed += (sender, args) => OnParameterSelectorChanged();
+			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			optionsEditor_ = new RadGroupOptionsEditor(parameterSelector_.ColumnCount);
+			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
 
-			detailsLabel_ = new Label()
+			_detailsLabel = new Label()
 			{
 				MaxWidth = 900,
 			};
@@ -67,17 +72,17 @@
 			OnGroupPrefixTextBoxChanged();
 
 			int row = 0;
-			AddWidget(groupPrefixLabel, row, 0);
-			AddWidget(groupPrefixTextBox_, row, 1, 1, parameterSelector_.ColumnCount - 1);
+			AddWidget(_groupPrefixLabel, row, 0);
+			AddWidget(_groupPrefixTextBox, row, 1, 1, _parameterSelector.ColumnCount - 1);
 			++row;
 
-			AddSection(parameterSelector_, row, 0);
-			row += parameterSelector_.RowCount;
+			AddSection(_parameterSelector, row, 0);
+			row += _parameterSelector.RowCount;
 
-			AddSection(optionsEditor_, row, 0);
-			row += optionsEditor_.RowCount;
+			AddSection(_optionsEditor, row, 0);
+			row += _optionsEditor.RowCount;
 
-			AddWidget(detailsLabel_, row, 0, 1, parameterSelector_.ColumnCount, HorizontalAlignment.Stretch);
+			AddWidget(_detailsLabel, row, 0, 1, _parameterSelector.ColumnCount, HorizontalAlignment.Stretch);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
@@ -85,6 +90,26 @@
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		/// <inheritdoc />
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
+			get => _isVisible;
+			set
+			{
+				if (_isVisible == value)
+					return;
+
+				_isVisible = value;
+
+				_groupPrefixLabel.IsVisible = value;
+				_groupPrefixTextBox.IsVisible = value;
+				_parameterSelector.IsVisible = value;
+				_optionsEditor.IsVisible = value;
+				UpdateDetailsLabelVisibility();
+			}
+		}
 
 		public List<MADGroupInfo> GetGroupsToAdd()
 		{
@@ -98,9 +123,9 @@
 				groups.Add(new MADGroupInfo(
 					p.GroupName,
 					p.ParameterKeys,
-					optionsEditor_.Options.UpdateModel,
-					optionsEditor_.Options.AnomalyThreshold,
-					optionsEditor_.Options.MinimalDuration));
+					_optionsEditor.Options.UpdateModel,
+					_optionsEditor.Options.AnomalyThreshold,
+					_optionsEditor.Options.MinimalDuration));
 			}
 
 			return groups;
@@ -108,7 +133,7 @@
 
 		private void UpdateIsValid()
 		{
-			if (groupPrefixTextBox_.ValidationState != UIValidationState.Valid)
+			if (_groupPrefixTextBox.ValidationState != UIValidationState.Valid)
 			{
 				IsValid = false;
 				ValidationText = "Provide a valid group name prefix";
@@ -130,54 +155,81 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		private List<ParameterKey> GetSelectedParametersForElement(Element element)
+		{
+			if (!_parametersCache.TryGet(element.DmaId, element.ElementId, out var parametersOnElement))
+			{
+				_engine.Log($"Could not find parameters for element {element.ElementName} ({element.DmaId}/{element.ElementId})");
+				return new List<ParameterKey>();
+			}
+
+			var pKeys = new List<ParameterKey>();
+			foreach (var parameter in _parameterSelector.GetSelectedParameters())
+			{
+				var paramInfo = parametersOnElement.FirstOrDefault(p => p.ID == parameter.ParameterID);
+				if (paramInfo == null)
+				{
+					_engine.Log($"Could not find parameter {parameter.ParameterID} on element {element.ElementName} ({element.DmaId}/{element.ElementId})");
+					continue;
+				}
+
+				if (!paramInfo.HasTrending())
+					continue;
+
+				if (parameter.ParentTableID == null)
+				{
+					pKeys.Add(new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID));
+				}
+				else
+				{
+					var matchingInstances = RadWidgets.Utils.FetchMatchingInstancesWithTrending(_engine, element.DmaId, element.ElementId, paramInfo, parameter.DisplayKeyFilter);
+					pKeys.AddRange(matchingInstances.Select(i => new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID, i.IndexValue)));
+				}
+			}
+
+			return pKeys;
+		}
+
 		private List<GroupByProtocolInfo> GetSelectedGroupInfo()
 		{
-			if (groupPrefixTextBox_.ValidationState != UIValidationState.Valid)
+			if (_groupPrefixTextBox.ValidationState != UIValidationState.Valid)
 				return new List<GroupByProtocolInfo>();
 
-			var elements = engine_.FindElementsByProtocol(parameterSelector_.ProtocolName, parameterSelector_.ProtocolVersion);
+			var elements = _engine.FindElementsByProtocol(_parameterSelector.ProtocolName, _parameterSelector.ProtocolVersion);
 			if (elements == null || elements.Length == 0)
 				return new List<GroupByProtocolInfo>();
 
 			var groups = new List<GroupByProtocolInfo>();
 			foreach (var element in elements)
 			{
-				var pKeys = new List<ParameterKey>();
-				foreach (var parameter in parameterSelector_.GetSelectedParameters())
-				{
-					if (parameter.ParentTableID == null)
-					{
-						pKeys.Add(new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID));
-					}
-					else
-					{
-						var matchingInstances = Utils.FetchMatchingInstances(engine_, element.DmaId, element.ElementId, parameter.ParentTableID.Value, parameter.DisplayKeyFilter);
-						pKeys.AddRange(matchingInstances.Select(i => new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID, i)));
-					}
-				}
-
-				var groupName = $"{groupPrefixTextBox_.Text} ({element.ElementName})";
+				var pKeys = GetSelectedParametersForElement(element);
+				var groupName = $"{_groupPrefixTextBox.Text} ({element.ElementName})";
 				groups.Add(new GroupByProtocolInfo()
 				{
 					ElementName = element.ElementName,
 					GroupName = groupName,
 					ParameterKeys = pKeys,
-					ValidGroupName = !existingGroupNames_.Contains(groupName),
+					ValidGroupName = !_existingGroupNames.Contains(groupName),
 				});
 			}
 
 			return groups;
 		}
 
+		private void UpdateDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = _isVisible && _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
+		}
+
 		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)
 		{
-			detailsLabel_.IsVisible = groupPrefixTextBox_.ValidationState == UIValidationState.Valid;
-			if (!detailsLabel_.IsVisible)
+			UpdateDetailsLabelVisibility();
+			if (!_detailsLabel.IsVisible)
 				return;
 
 			if (groups.Count == 0)
 			{
-				detailsLabel_.Text = "No elements found on the selected protocol";
+				_detailsLabel.Text = "No elements found on the selected protocol";
 				return;
 			}
 
@@ -202,7 +254,7 @@
 
 			if (groupsWithTooFewInstances.Count > 0)
 			{
-				lines.Add($"Too few instances have been selected for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.Add($"Too few instances have been selected, or instances are not trended for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
 			}
 
 			if (groupsWithTooManyInstances.Count > 0)
@@ -210,7 +262,7 @@
 				lines.Add($"Too many instances have been selected for {groupsWithTooManyInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
 			}
 
-			detailsLabel_.Text = string.Join("\n", lines);
+			_detailsLabel.Text = string.Join("\n", lines);
 		}
 
 		private void OnParameterSelectorChanged()
@@ -220,10 +272,11 @@
 
 		private void OnGroupPrefixTextBoxChanged()
 		{
-			UIValidationState newState = string.IsNullOrEmpty(groupPrefixTextBox_.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
-			if (newState != groupPrefixTextBox_.ValidationState)
-				groupPrefixTextBox_.ValidationState = newState;
+			UIValidationState newState = string.IsNullOrEmpty(_groupPrefixTextBox.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
+			if (newState != _groupPrefixTextBox.ValidationState)
+				_groupPrefixTextBox.ValidationState = newState;
 
+			UpdateDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 	}

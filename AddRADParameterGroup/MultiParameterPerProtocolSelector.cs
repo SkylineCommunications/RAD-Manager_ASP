@@ -9,65 +9,87 @@
 
 	public class MultiParameterPerProtocolSelector : Section
 	{
-		private readonly IEngine engine_;
-		private readonly DropDown<GetProtocolsResponseMessage> protocolNameDropDown_;
-		private readonly DropDown<string> protocolVersionDropDown_;
-		private readonly MultiProtocolParameterSelector parameterSelector_;
+		private readonly IEngine _engine;
+		private readonly Label _protocolNameLabel;
+		private readonly DropDown<GetProtocolsResponseMessage> _protocolNameDropDown;
+		private readonly Label _protocolVersionLabel;
+		private readonly DropDown<string> _protocolVersionDropDown;
+		private readonly MultiProtocolParameterSelector _parameterSelector;
+		private bool _isVisible = true;
 
 		public MultiParameterPerProtocolSelector(IEngine engine) : base()
 		{
-			engine_ = engine;
+			_engine = engine;
 
 			string protocolNameTooltip = "Make a parameter group for each element that uses this connector.";
-			var protocolNameLabel = new Label("Connector")
+			_protocolNameLabel = new Label("Connector")
 			{
 				Tooltip = protocolNameTooltip,
 			};
-			protocolNameDropDown_ = new DropDown<GetProtocolsResponseMessage>()
+			_protocolNameDropDown = new DropDown<GetProtocolsResponseMessage>()
 			{
 				Options = FetchProtocols().Where(p => !p.IsExportedProtocol).Select(p => new Option<GetProtocolsResponseMessage>(p.Protocol, p)),
 				IsDisplayFilterShown = true,
 				IsSorted = true,
 				Tooltip = protocolNameTooltip,
 			};
-			protocolNameDropDown_.Changed += (sender, args) => OnSelectedProtocolChanged();
+			_protocolNameDropDown.Changed += (sender, args) => OnSelectedProtocolChanged();
 
 			string protocolVersionTooltip = "Make a parameter group for each element that uses this connector version.";
-			var protocolVersionLabel = new Label("Connector version")
+			_protocolVersionLabel = new Label("Connector version")
 			{
 				Tooltip = protocolVersionTooltip,
 			};
-			protocolVersionDropDown_ = new DropDown<string>()
+			_protocolVersionDropDown = new DropDown<string>()
 			{
 				Options = new List<Option<string>>(),
 				IsDisplayFilterShown = true,
 				IsSorted = true,
 				Tooltip = protocolVersionTooltip,
 			};
-			protocolVersionDropDown_.Changed += (sender, args) => OnSelectedProtocolVersionChanged();
+			_protocolVersionDropDown.Changed += (sender, args) => OnSelectedProtocolVersionChanged();
 
-			parameterSelector_ = new MultiProtocolParameterSelector(string.Empty, string.Empty, engine);
-			parameterSelector_.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
+			_parameterSelector = new MultiProtocolParameterSelector(string.Empty, string.Empty, engine);
+			_parameterSelector.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 			OnSelectedProtocolChanged();
 
-			AddWidget(protocolNameLabel, 0, 0);
-			AddWidget(protocolNameDropDown_, 0, 1, 1, parameterSelector_.ColumnCount - 1);
+			AddWidget(_protocolNameLabel, 0, 0);
+			AddWidget(_protocolNameDropDown, 0, 1, 1, _parameterSelector.ColumnCount - 1);
 
-			AddWidget(protocolVersionLabel, 1, 0);
-			AddWidget(protocolVersionDropDown_, 1, 1, 1, parameterSelector_.ColumnCount - 1);
+			AddWidget(_protocolVersionLabel, 1, 0);
+			AddWidget(_protocolVersionDropDown, 1, 1, 1, _parameterSelector.ColumnCount - 1);
 
-			AddSection(parameterSelector_, 2, 0);
+			AddSection(_parameterSelector, 2, 0);
 		}
 
 		public event EventHandler Changed;
 
-		public string ProtocolName => protocolNameDropDown_.Selected?.Protocol;
+		public string ProtocolName => _protocolNameDropDown.Selected?.Protocol;
 
-		public string ProtocolVersion => protocolVersionDropDown_.Selected;
+		public string ProtocolVersion => _protocolVersionDropDown.Selected;
+
+		public override bool IsVisible
+		{
+			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
+			get => _isVisible;
+			set
+			{
+				if (_isVisible == value)
+					return;
+
+				_isVisible = value;
+
+				_protocolNameLabel.IsVisible = value;
+				_protocolNameDropDown.IsVisible = value;
+				_protocolVersionLabel.IsVisible = value;
+				_protocolVersionDropDown.IsVisible = value;
+				_parameterSelector.IsVisible = value;
+			}
+		}
 
 		public IEnumerable<ProtocolParameterSelectorInfo> GetSelectedParameters()
 		{
-			return parameterSelector_.GetSelected();
+			return _parameterSelector.GetSelected();
 		}
 
 		private static Option<string> GetProtocolVersionOption(string version)
@@ -80,21 +102,21 @@
 
 		private void OnSelectedProtocolVersionChanged()
 		{
-			var protocol = protocolNameDropDown_.Selected;
-			var version = protocolVersionDropDown_.Selected;
+			var protocol = _protocolNameDropDown.Selected;
+			var version = _protocolVersionDropDown.Selected;
 			if (protocol == null || string.IsNullOrEmpty(version))
 				return;
 
-			parameterSelector_.SetProtocol(protocol.Protocol, version);
+			_parameterSelector.SetProtocol(protocol.Protocol, version);
 		}
 
 		private void OnSelectedProtocolChanged()
 		{
-			var protocol = protocolNameDropDown_.Selected;
+			var protocol = _protocolNameDropDown.Selected;
 			if (protocol == null)
-				protocolVersionDropDown_.Options = new List<Option<string>>();
+				_protocolVersionDropDown.Options = new List<Option<string>>();
 			else
-				protocolVersionDropDown_.Options = protocol.Versions.OrderBy(v => v).Select(s => GetProtocolVersionOption(s)).ToList();
+				_protocolVersionDropDown.Options = protocol.Versions.OrderBy(v => v).Select(s => GetProtocolVersionOption(s)).ToList();
 			OnSelectedProtocolVersionChanged();
 		}
 
@@ -103,12 +125,12 @@
 			try
 			{
 				var request = new GetInfoMessage(InfoType.Protocols);
-				var responses = engine_.SendSLNetMessage(request);
+				var responses = _engine.SendSLNetMessage(request);
 				return responses.Select(r => r as GetProtocolsResponseMessage).Where(r => r != null).OrderBy(p => p.Protocol).ToList();
 			}
 			catch (Exception e)
 			{
-				engine_.Log($"Failed to fetch protocols: {e}", LogType.Error, 5);
+				_engine.Log($"Failed to fetch protocols: {e}", LogType.Error, 5);
 				return new List<GetProtocolsResponseMessage>();
 			}
 		}

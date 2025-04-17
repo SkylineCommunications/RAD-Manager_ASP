@@ -8,7 +8,7 @@ using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 public class Script
 {
-	private InteractiveController app;
+	private InteractiveController _app;
 
 	/// <summary>
 	/// The Script entry point.
@@ -25,17 +25,17 @@ public class Script
 
 		try
 		{
-			app = new InteractiveController(engine);
+			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(app);
+			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(app, "No parameter group selected", "Please select the parameter group you want to retrain first");
+				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
 				return;
 			}
 			else if (groupNamesAndIds.Count > 1)
 			{
-				Utils.ShowMessageDialog(app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
 				return;
 			}
 
@@ -43,7 +43,7 @@ public class Script
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
-			app.ShowDialog(dialog);
+			_app.ShowDialog(dialog);
 		}
 		catch (ScriptAbortException)
 		{
@@ -69,7 +69,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		app.Engine.ExitSuccess("Removing parameter group cancelled");
+		_app.Engine.ExitSuccess("Removing parameter group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -84,14 +84,14 @@ public class Script
 			{
 				DataMinerID = dialog.DataMinerID,
 			};
-			app.Engine.SendSLNetSingleResponseMessage(message);
+			_app.Engine.SendSLNetSingleResponseMessage(message);
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(app, "Failed to retrain parameter group", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
 			return;
 		}
 
-		app.Engine.ExitSuccess("Successfully retrained RAD model");
+		_app.Engine.ExitSuccess("Successfully retrained RAD model");
 	}
 }
