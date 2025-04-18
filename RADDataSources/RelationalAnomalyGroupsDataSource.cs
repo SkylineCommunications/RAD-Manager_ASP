@@ -3,6 +3,7 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadDataSourceUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -62,11 +63,7 @@ namespace RadDataSources
 				return new GQIPage(Array.Empty<GQIRow>());
 
 			int dataMinerID = _dmaIDEnumerator.Current;
-			GetMADParameterGroupsMessage request = new GetMADParameterGroupsMessage()
-			{
-				DataMinerID = dataMinerID,
-			};
-			var response = ConnectionHelper.Connection.HandleSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
+			var response = RadMessageHelper.FetchParameterGroups(ConnectionHelper.Connection, dataMinerID);
 			if (response == null)
 			{
 				_logger.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
@@ -76,18 +73,13 @@ namespace RadDataSources
 			var rows = new List<GQIRow>(response.GroupNames.Count);
 			foreach (var groupName in response.GroupNames)
 			{
-				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName)
-				{
-					DataMinerID = dataMinerID,
-				};
-				var groupInfoResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
-				if (groupInfoResponse?.GroupInfo == null)
+				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, dataMinerID, groupName);
+				if (groupInfo == null)
 				{
 					_logger.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
 					continue;
 				}
 
-				MADGroupInfo groupInfo = groupInfoResponse.GroupInfo;
 				var parameterStr = groupInfo.Parameters.Select(p => ParameterKeyToString(p));
 				rows.Add(new GQIRow(
 					new GQICell[]

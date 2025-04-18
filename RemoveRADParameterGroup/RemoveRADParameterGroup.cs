@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RadDataSourceUtils;
 using RadWidgets;
 using RemoveRADParameterGroup;
 using Skyline.DataMiner.Analytics.Mad;
@@ -79,11 +80,7 @@ public class Script
 		{
 			try
 			{
-				var message = new RemoveMADParameterGroupMessage(group.Item2)
-				{
-					DataMinerID = group.Item1,
-				};
-				_app.Engine.SendSLNetSingleResponseMessage(message);
+				RadMessageHelper.RemoveParameterGroup(_app.Engine, group.Item1, group.Item2);
 			}
 			catch (Exception ex)
 			{

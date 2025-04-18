@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using EditRADParameterGroup;
+using RadDataSourceUtils;
 using RadWidgets;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
@@ -44,12 +45,8 @@ public class Script
 			RadGroupSettings settings = null;
 			try
 			{
-				var request = new GetMADParameterGroupInfoMessage(groupName)
-				{
-					DataMinerID = dataMinerID,
-				};
-				var response = _app.Engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupInfoResponseMessage;
-				if (response?.GroupInfo == null)
+				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
+				if (groupInfo == null)
 				{
 					Utils.ShowMessageDialog(
 						_app,
@@ -60,13 +57,13 @@ public class Script
 
 				settings = new RadGroupSettings()
 				{
-					GroupName = response.GroupInfo.Name,
-					Parameters = response.GroupInfo.Parameters,
+					GroupName = groupInfo.Name,
+					Parameters = groupInfo.Parameters,
 					Options = new RadGroupOptions()
 					{
-						UpdateModel = response.GroupInfo.UpdateModel,
-						AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
-						MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+						UpdateModel = groupInfo.UpdateModel,
+						AnomalyThreshold = groupInfo.AnomalyThreshold,
+						MinimalDuration = groupInfo.MinimumAnomalyDuration,
 					},
 				};
 			}
@@ -117,17 +114,12 @@ public class Script
 
 		try
 		{
-			var removeMessage = new RemoveMADParameterGroupMessage(dialog.OriginalGroupName)
-			{
-				DataMinerID = dialog.DataMinerID,
-			};
-			_app.Engine.SendSLNetSingleResponseMessage(removeMessage);
+			RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, dialog.OriginalGroupName);
 
 			var settings = dialog.GroupSettings;
 			var pKeys = settings.Parameters.ToList();
 			var groupInfo = new MADGroupInfo(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
-			var message = new AddMADParameterGroupMessage(groupInfo);
-			_app.Engine.SendSLNetSingleResponseMessage(message);
+			RadMessageHelper.AddParameterGroup(_app.Engine, groupInfo);
 		}
 		catch (Exception ex)
 		{

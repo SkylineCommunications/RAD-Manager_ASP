@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AddParameterGroup;
+using RadDataSourceUtils;
 using RadWidgets;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
@@ -73,8 +74,7 @@ public class Script
 		{
 			try
 			{
-				var message = new AddMADParameterGroupMessage(group);
-				_app.Engine.SendSLNetSingleResponseMessage(message);
+				RadMessageHelper.AddParameterGroup(_app.Engine, group);
 			}
 			catch (Exception ex)
 			{
