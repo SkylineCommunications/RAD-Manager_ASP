@@ -3,7 +3,7 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadDataSourceUtils;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Net.Exceptions;
@@ -79,7 +79,7 @@ namespace RadDataSources
 			try
 			{
 				_anomalyScoreData.AnomalyScores.Clear();
-				var madDataResponse = RadMessageHelper.FetchRADData(ConnectionHelper.Connection, _dataMinerID, _groupName, _startTime, _endTime);
+				var madDataResponse = RadMessageHelper.FetchRADData(ConnectionHelper.Connection, _dataMinerID, _groupName, _startTime.Value, _endTime.Value);
 				_logger.Information($"Number of points: {madDataResponse?.Data.Count}");
 				if (madDataResponse != null)
 				{

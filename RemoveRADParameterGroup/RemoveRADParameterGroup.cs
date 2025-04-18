@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RadDataSourceUtils;
+using RadUtils;
 using RadWidgets;
 using RemoveRADParameterGroup;
-using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -29,10 +28,10 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
+			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to remove first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to remove first");
 				return;
 			}
 
@@ -92,7 +91,7 @@ public class Script
 		if (failedGroups.Count > 0)
 		{
 			var ex = new AggregateException("Failed to remove parameter group(s) from RAD configuration", failedGroups.Select(p => p.Item2));
-			Utils.ShowExceptionDialog(_app, $"Failed to remove {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex);
+			RadWidgets.Utils.ShowExceptionDialog(_app, $"Failed to remove {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex);
 			return;
 		}
 

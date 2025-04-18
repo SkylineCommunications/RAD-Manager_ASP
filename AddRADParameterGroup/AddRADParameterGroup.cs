@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AddParameterGroup;
-using RadDataSourceUtils;
+using RadUtils;
 using RadWidgets;
-using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -86,7 +85,7 @@ public class Script
 		if (failedGroups.Count > 0)
 		{
 			var ex = new AggregateException("Failed to add parameter group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
-			Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
 
 			return;
 		}

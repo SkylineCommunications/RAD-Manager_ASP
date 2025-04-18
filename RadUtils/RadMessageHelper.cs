@@ -1,4 +1,4 @@
-﻿namespace RadDataSourceUtils
+﻿namespace RadUtils
 {
 	using System;
 	using System.Collections.Generic;
@@ -73,7 +73,6 @@
 			return RetrainParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, timeRanges);
 		}
 
-
 #pragma warning disable CS0618 // Type or member is obsolete: messages are obsolete since 10.5.5, but replacements were only added in that version
 		private static GetMADParameterGroupsResponseMessage FetchParameterGroups(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID)
 		{
@@ -85,7 +84,8 @@
 			return sendMessageFunc(request) as GetMADParameterGroupsResponseMessage;
 		}
 
-		private static MADGroupInfo FetchParameterGroupInfo(Func<DMSMessage, DMSMessage> sendMessageFunc,
+		private static MADGroupInfo FetchParameterGroupInfo(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
 		{
@@ -98,7 +98,8 @@
 			return response?.GroupInfo;
 		}
 
-		private static GetMADDataResponseMessage FetchRADData(Func<DMSMessage, DMSMessage> sendMessageFunc,
+		private static GetMADDataResponseMessage FetchRADData(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName,
 			DateTime startTime,

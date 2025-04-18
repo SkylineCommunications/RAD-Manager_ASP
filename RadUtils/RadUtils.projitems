@@ -6,7 +6,7 @@
     <SharedGUID>2ade4ecb-223a-40e2-b795-2f33a74d70d8</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>RadDataSourceUtils</Import_RootNamespace>
+    <Import_RootNamespace>RadUtils</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Cache.cs" />

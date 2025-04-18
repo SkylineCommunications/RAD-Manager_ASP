@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
-using RadDataSourceUtils;
+using RadUtils;
 using RadWidgets;
 using RetrainRADModel;
-using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -28,15 +27,15 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
+			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
 				return;
 			}
 			else if (groupNamesAndIds.Count > 1)
 			{
-				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
 				return;
 			}
 
@@ -85,7 +84,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
 			return;
 		}
 

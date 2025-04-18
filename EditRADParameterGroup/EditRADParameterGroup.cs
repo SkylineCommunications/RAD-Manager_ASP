@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using EditRADParameterGroup;
-using RadDataSourceUtils;
+using RadUtils;
 using RadWidgets;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
@@ -28,15 +28,15 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
+			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
 				return;
 			}
 			else if (groupNamesAndIds.Count > 1)
 			{
-				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
 				return;
 			}
 
@@ -48,7 +48,7 @@ public class Script
 				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
 				if (groupInfo == null)
 				{
-					Utils.ShowMessageDialog(
+					RadWidgets.Utils.ShowMessageDialog(
 						_app,
 						"Failed to fetch parameter group information",
 						"Failed to fetch parameter group information: no response or a response of the wrong type received");
@@ -69,7 +69,7 @@ public class Script
 			}
 			catch (Exception ex)
 			{
-				Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
+				RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
 				return;
 			}
 
@@ -123,7 +123,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
 			return;
 		}
 
