@@ -79,7 +79,7 @@ namespace RadDataSources
 			try
 			{
 				_anomalyScoreData.AnomalyScores.Clear();
-				var madDataResponse = RadMessageHelper.FetchRADData(ConnectionHelper.Connection, _dataMinerID, _groupName, _startTime.Value, _endTime.Value);
+				var madDataResponse = RadMessageHelper.FetchRADData(ConnectionHelper.Connection, _dataMinerID, _groupName, DateTime.Now.AddMonths(-1), DateTime.Now);
 				_logger.Information($"Number of points: {madDataResponse?.Data.Count}");
 				if (madDataResponse != null)
 				{

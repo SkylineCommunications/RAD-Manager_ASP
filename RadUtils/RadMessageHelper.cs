@@ -63,12 +63,12 @@
 			return AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
 		}
 
-		public static RetrainMADModelResponseMessage RetrainParameterGroup(Connection connection, int dataMinerID, string groupName, List<TimeRange> timeRanges)
+		public static RetrainMADModelResponseMessage RetrainParameterGroup(Connection connection, int dataMinerID, string groupName, List<Skyline.DataMiner.Analytics.Mad.TimeRange> timeRanges)
 		{
 			return RetrainParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, timeRanges);
 		}
 
-		public static RetrainMADModelResponseMessage RetrainParameterGroup(IEngine engine, int dataMinerID, string groupName, List<TimeRange> timeRanges)
+		public static RetrainMADModelResponseMessage RetrainParameterGroup(IEngine engine, int dataMinerID, string groupName, List<Skyline.DataMiner.Analytics.Mad.TimeRange> timeRanges)
 		{
 			return RetrainParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, timeRanges);
 		}
@@ -136,7 +136,7 @@
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName,
-			List<TimeRange> timeRanges)
+			List<Skyline.DataMiner.Analytics.Mad.TimeRange> timeRanges)
 		{
 			var request = new RetrainMADModelMessage(groupName, timeRanges)
 			{

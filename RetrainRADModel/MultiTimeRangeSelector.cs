@@ -3,18 +3,17 @@
 	using System;
 	using System.Globalization;
 	using RadWidgets;
-	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class TimeRangeItem : MultiSelectorItem
 	{
-		public TimeRangeItem(TimeRange range)
+		public TimeRangeItem(Skyline.DataMiner.Analytics.Mad.TimeRange range)
 		{
 			this.TimeRange = range;
 		}
 
-		public TimeRange TimeRange { get; set; }
+		public Skyline.DataMiner.Analytics.Mad.TimeRange TimeRange { get; set; }
 
 		public override string GetKey()
 		{
@@ -64,7 +63,7 @@
 			{
 				if (_startTimePicker.DateTime >= _endTimePicker.DateTime)
 					return null;
-				return new TimeRangeItem(new TimeRange(_startTimePicker.DateTime, _endTimePicker.DateTime));
+				return new TimeRangeItem(new Skyline.DataMiner.Analytics.Mad.TimeRange(_startTimePicker.DateTime, _endTimePicker.DateTime));
 			}
 		}
 
