@@ -3,6 +3,7 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Analytics.Mad;
@@ -61,13 +62,9 @@ namespace RadDataSources
 
 			try
 			{
-				GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(_groupName)
-				{
-					DataMinerID = _dataMinerID,
-				};
-				var groupInfoResponse = ConnectionHelper.Connection.HandleSingleResponseMessage(msg) as GetMADParameterGroupInfoResponseMessage;
-				if (groupInfoResponse?.GroupInfo != null)
-					_parameterKeys = groupInfoResponse.GroupInfo.Parameters;
+				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, _dataMinerID, _groupName);
+				if (groupInfo != null)
+					_parameterKeys = groupInfo.Parameters;
 			}
 			catch (Exception ex)
 			{

@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -56,7 +55,7 @@
 
 		public int DataMinerID { get; private set; }
 
-		public IEnumerable<TimeRange> GetSelectedTimeRanges()
+		public IEnumerable<Skyline.DataMiner.Analytics.Mad.TimeRange> GetSelectedTimeRanges()
 		{
 			return _timeRangeSelector.GetSelected().Select(i => i.TimeRange);
 		}

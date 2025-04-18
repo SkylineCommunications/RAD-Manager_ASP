@@ -4,8 +4,10 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
-	using Skyline.DataMiner.Analytics.Mad;
+	using RadUtils;
 	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
+	using Skyline.DataMiner.Core.DataMinerSystem.Common;
 	using Skyline.DataMiner.Net.Helper;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -171,23 +173,27 @@
 
 		public static List<string> FetchRadGroupNames(IEngine engine)
 		{
-			try
+			var result = new List<string>();
+			foreach (var agent in engine.GetDms().GetAgents())
 			{
-				var request = new GetMADParameterGroupsMessage();
-				var response = engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupsResponseMessage;
-				if (response == null)
+				try
 				{
-					engine.Log("Could not fetch RAD group names: no response or response of the wrong type received", LogType.Error, 5);
-					return new List<string> { };
-				}
+					var response = RadMessageHelper.FetchParameterGroups(engine, agent.Id);
+					if (response == null)
+					{
+						engine.Log("Could not fetch RAD group names: no response or response of the wrong type received", LogType.Error, 5);
+						return new List<string> { };
+					}
 
-				return response.GroupNames;
+					return response.GroupNames;
+				}
+				catch (Exception e)
+				{
+					engine.Log($"Could not fetch RAD group names: {e}", LogType.Error, 5);
+				}
 			}
-			catch (Exception e)
-			{
-				engine.Log($"Could not fetch RAD group names: {e}", LogType.Error, 5);
-				return new List<string>() { };
-			}
+
+			return result;
 		}
 
 		/// <summary>

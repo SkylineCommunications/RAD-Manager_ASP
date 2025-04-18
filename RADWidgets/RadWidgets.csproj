@@ -13,7 +13,8 @@
     <VersionComment>Initial Version</VersionComment>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.4.1" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.2.2" />
+    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.5.2" />
     <PackageReference Include="Skyline.DataMiner.Utils.InteractiveAutomationScriptToolkit" Version="10.0.5" />
   </ItemGroup>
   <ItemGroup>
@@ -22,5 +23,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  <Import Project="..\RadUtils\RadDataSourceUtils.projitems" Label="Shared" />
+  <Import Project="..\RadUtils\RadUtils.projitems" Label="Shared" />
 </Project>

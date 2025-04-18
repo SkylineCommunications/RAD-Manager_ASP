@@ -73,8 +73,8 @@ Global
 		SolutionGuid = {C0C090A6-5A8E-4200-87E5-92D361756E2E}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RadUtils\RadDataSourceUtils.projitems*{2ade4ecb-223a-40e2-b795-2f33a74d70d8}*SharedItemsImports = 13
-		RadUtils\RadDataSourceUtils.projitems*{391c490f-138c-4cd1-90f2-5514f6c8315a}*SharedItemsImports = 5
-		RadUtils\RadDataSourceUtils.projitems*{af76190b-a00f-476b-ab49-e07ad7a67e4d}*SharedItemsImports = 5
+		RadUtils\RadUtils.projitems*{2ade4ecb-223a-40e2-b795-2f33a74d70d8}*SharedItemsImports = 13
+		RadUtils\RadUtils.projitems*{391c490f-138c-4cd1-90f2-5514f6c8315a}*SharedItemsImports = 5
+		RadUtils\RadUtils.projitems*{af76190b-a00f-476b-ab49-e07ad7a67e4d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

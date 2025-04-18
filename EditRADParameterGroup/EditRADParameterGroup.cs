@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using EditRADParameterGroup;
+using RadUtils;
 using RadWidgets;
 using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
@@ -27,15 +28,15 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = Utils.GetGroupNameAndDataMinerID(_app);
+			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
 			if (groupNamesAndIds.Count == 0)
 			{
-				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
 				return;
 			}
 			else if (groupNamesAndIds.Count > 1)
 			{
-				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
 				return;
 			}
 
@@ -44,14 +45,10 @@ public class Script
 			RadGroupSettings settings = null;
 			try
 			{
-				var request = new GetMADParameterGroupInfoMessage(groupName)
+				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
+				if (groupInfo == null)
 				{
-					DataMinerID = dataMinerID,
-				};
-				var response = _app.Engine.SendSLNetSingleResponseMessage(request) as GetMADParameterGroupInfoResponseMessage;
-				if (response?.GroupInfo == null)
-				{
-					Utils.ShowMessageDialog(
+					RadWidgets.Utils.ShowMessageDialog(
 						_app,
 						"Failed to fetch parameter group information",
 						"Failed to fetch parameter group information: no response or a response of the wrong type received");
@@ -60,19 +57,19 @@ public class Script
 
 				settings = new RadGroupSettings()
 				{
-					GroupName = response.GroupInfo.Name,
-					Parameters = response.GroupInfo.Parameters,
+					GroupName = groupInfo.Name,
+					Parameters = groupInfo.Parameters,
 					Options = new RadGroupOptions()
 					{
-						UpdateModel = response.GroupInfo.UpdateModel,
-						AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
-						MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+						UpdateModel = groupInfo.UpdateModel,
+						AnomalyThreshold = groupInfo.AnomalyThreshold,
+						MinimalDuration = groupInfo.MinimumAnomalyDuration,
 					},
 				};
 			}
 			catch (Exception ex)
 			{
-				Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
+				RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
 				return;
 			}
 
@@ -117,21 +114,16 @@ public class Script
 
 		try
 		{
-			var removeMessage = new RemoveMADParameterGroupMessage(dialog.OriginalGroupName)
-			{
-				DataMinerID = dialog.DataMinerID,
-			};
-			_app.Engine.SendSLNetSingleResponseMessage(removeMessage);
+			RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, dialog.OriginalGroupName);
 
 			var settings = dialog.GroupSettings;
 			var pKeys = settings.Parameters.ToList();
 			var groupInfo = new MADGroupInfo(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
-			var message = new AddMADParameterGroupMessage(groupInfo);
-			_app.Engine.SendSLNetSingleResponseMessage(message);
+			RadMessageHelper.AddParameterGroup(_app.Engine, groupInfo);
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
 			return;
 		}
 
