@@ -89,12 +89,12 @@
 			int dataMinerID,
 			string groupName)
 		{
-			GetMADParameterGroupInfoMessage msg = new GetMADParameterGroupInfoMessage(groupName)
+			GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
 			{
 				DataMinerID = dataMinerID,
 			};
 
-			var response = sendMessageFunc(sendMessageFunc(msg)) as GetMADParameterGroupInfoResponseMessage;
+			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
 			return response?.GroupInfo;
 		}
 
@@ -105,11 +105,11 @@
 			DateTime startTime,
 			DateTime endTime)
 		{
-			GetMADDataMessage msg = new GetMADDataMessage(groupName, startTime, endTime)
+			GetMADDataMessage request = new GetMADDataMessage(groupName, startTime, endTime)
 			{
 				DataMinerID = dataMinerID,
 			};
-			return sendMessageFunc(sendMessageFunc(msg)) as GetMADDataResponseMessage;
+			return sendMessageFunc(request) as GetMADDataResponseMessage;
 		}
 
 		private static RemoveRADParameterGroupResponseMessage RemoveParameterGroup(
