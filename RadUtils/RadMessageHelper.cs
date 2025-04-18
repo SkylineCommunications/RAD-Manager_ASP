@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using Skyline.DataMiner.Analytics.Mad;
-	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
@@ -43,22 +42,22 @@
 			return FetchRADData(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, startTime, endTime);
 		}
 
-		public static RemoveRADParameterGroupResponseMessage RemoveParameterGroup(Connection connection, int dataMinerID, string groupName)
+		public static RemoveMADParameterGroupResponseMessage RemoveParameterGroup(Connection connection, int dataMinerID, string groupName)
 		{
 			return RemoveParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static RemoveRADParameterGroupResponseMessage RemoveParameterGroup(IEngine engine, int dataMinerID, string groupName)
+		public static RemoveMADParameterGroupResponseMessage RemoveParameterGroup(IEngine engine, int dataMinerID, string groupName)
 		{
 			return RemoveParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static AddRADParameterGroupResponseMessage AddParameterGroup(Connection connection, MADGroupInfo groupInfo)
+		public static AddMADParameterGroupResponseMessage AddParameterGroup(Connection connection, MADGroupInfo groupInfo)
 		{
 			return AddParameterGroup(connection.HandleSingleResponseMessage, groupInfo);
 		}
 
-		public static AddRADParameterGroupResponseMessage AddParameterGroup(IEngine engine, MADGroupInfo groupInfo)
+		public static AddMADParameterGroupResponseMessage AddParameterGroup(IEngine engine, MADGroupInfo groupInfo)
 		{
 			return AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
 		}
@@ -112,7 +111,7 @@
 			return sendMessageFunc(request) as GetMADDataResponseMessage;
 		}
 
-		private static RemoveRADParameterGroupResponseMessage RemoveParameterGroup(
+		private static RemoveMADParameterGroupResponseMessage RemoveParameterGroup(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
@@ -121,15 +120,15 @@
 			{
 				DataMinerID = dataMinerID,
 			};
-			return sendMessageFunc(request) as RemoveRADParameterGroupResponseMessage;
+			return sendMessageFunc(request) as RemoveMADParameterGroupResponseMessage;
 		}
 
-		private static AddRADParameterGroupResponseMessage AddParameterGroup(
+		private static AddMADParameterGroupResponseMessage AddParameterGroup(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			MADGroupInfo groupInfo)
 		{
 			var request = new AddMADParameterGroupMessage(groupInfo);
-			return sendMessageFunc(request) as AddRADParameterGroupResponseMessage;
+			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
 		}
 
 		private static RetrainMADModelResponseMessage RetrainParameterGroup(
