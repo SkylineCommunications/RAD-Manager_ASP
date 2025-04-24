@@ -43,7 +43,7 @@ short_description: Low-code app to manage Relational Anomaly Detection configura
 #   A valid URL
 #   Max length: 2048 characters
 #   Note: When Skyline Communications Reusable GitHub workflows are used, this will be automatically filled in.
-source_code_url:
+source_code_url: https://github.com/SkylineCommunications/RAD-Manager
 # [Optional]
 # A valid URL that points to documentation.
 #   A valid URL
