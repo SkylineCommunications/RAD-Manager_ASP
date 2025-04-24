@@ -23,8 +23,8 @@
 
 	public class AnomalyScoreCache
 	{
+		private readonly object _anomalyScoreDataLock = new object();
 		private AnomalyScoreData _anomalyScoreData = null;
-		private object _anomalyScoreDataLock = new object();
 
 		public IEnumerable<KeyValuePair<DateTime, double>> GetAnomalyScores(int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
 		{
