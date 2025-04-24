@@ -12,7 +12,7 @@ The app has the following key features:
 
 - Easily configure **which parameters to monitor** with RAD.
 - **Visualize** current and historical results of RAD.
-- **Experiment** with all available options in RAD to see which are best for you.
+- **Experiment** with all available options in RAD to see which work best for you.
 
 ## Prerequisites
 
