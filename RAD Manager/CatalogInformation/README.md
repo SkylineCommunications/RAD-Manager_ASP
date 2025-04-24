@@ -1,6 +1,6 @@
 # Easily configure Relational Anomaly Detection and inspect its results
 
-[Relational Anomaly Detection (RAD)](https://aka.dataminer.services/RAD) is a **powerful feature** that can detect when a group of parameters **deviates from its normal behavior**. It can be used **in many different scenarios** such as monitoring whether main and backup channels are in sync, checking whether load balancing is performing optimally, tracking health of battery cells and many more.
+[Relational Anomaly Detection (RAD)](https://aka.dataminer.services/RAD) is a **powerful feature** that can detect when a group of parameters **deviates from its normal behavior**. It can be used **in many different scenarios** such as monitoring whether main and backup channels are in sync, checking whether load balancing is performing optimally, tracking health of battery cells, and much more.
 
 This app allows you to **easily configure** relational anomaly detection and **visualize** its results.
 
