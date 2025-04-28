@@ -79,7 +79,7 @@ namespace RadDataSources
 			if (_anomalyScores.Count == 0)
 				return new GQIPage(new GQIRow[0]);
 
-			List<GQIRow> rows = new List<GQIRow>(_anomalyScores.Count());
+			List<GQIRow> rows = new List<GQIRow>(_anomalyScores.Count);
 			if (_startTime.Value.AddMinutes(5) < _anomalyScores.First().Key)
 				rows.Add(GetGQIRow(_startTime.Value, null));
 			rows.AddRange(_anomalyScores.Select(s => GetGQIRow(s.Key, s.Value)));
