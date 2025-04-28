@@ -26,7 +26,7 @@
 		private readonly object _anomalyScoreDataLock = new object();
 		private AnomalyScoreData _anomalyScoreData = null;
 
-		public IEnumerable<KeyValuePair<DateTime, double>> GetAnomalyScores(int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
+		public List<KeyValuePair<DateTime, double>> GetAnomalyScores(int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
 		{
 			lock (_anomalyScoreDataLock)
 			{

@@ -16,7 +16,7 @@ namespace RadDataSources
 		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("startTime");
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("endTime");
 		private static readonly AnomalyScoreCache _anomalyScoreCache = new AnomalyScoreCache();
-		private IEnumerable<KeyValuePair<DateTime, double>> _anomalyScores = new List<KeyValuePair<DateTime, double>>();
+		private List<KeyValuePair<DateTime, double>> _anomalyScores = new List<KeyValuePair<DateTime, double>>();
 		private string _groupName = string.Empty;
 		private int _dataMinerID = -1;
 		private DateTime? _startTime = null;
@@ -76,17 +76,27 @@ namespace RadDataSources
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			var rows = _anomalyScores.Select(s =>
-			{
-				GQICell[] cells = new GQICell[]
-				{
-					new GQICell { Value = s.Key },
-					new GQICell { Value = s.Value },
-				};
-				return new GQIRow(cells);
-			}).ToArray();
+			if (_anomalyScores.Count == 0)
+				return new GQIPage(new GQIRow[0]);
+
+			List<GQIRow> rows = new List<GQIRow>(_anomalyScores.Count());
+			if (_startTime.Value.AddMinutes(5) < _anomalyScores.First().Key)
+				rows.Add(GetGQIRow(_startTime.Value, null));
+			rows.AddRange(_anomalyScores.Select(s => GetGQIRow(s.Key, s.Value)));
+			if (_anomalyScores.Last().Key.AddMinutes(5) < _endTime)
+				rows.Add(GetGQIRow(_endTime.Value, null));
 
 			return new GQIPage(rows.ToArray());
+		}
+
+		private GQIRow GetGQIRow(DateTime time, double? value)
+		{
+			GQICell[] cells = new GQICell[]
+			{
+				new GQICell { Value = time },
+				new GQICell { Value = value },
+			};
+			return new GQIRow(cells);
 		}
 	}
 }
