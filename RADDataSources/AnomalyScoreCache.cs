@@ -69,7 +69,7 @@
 			}
 			catch (Exception ex)
 			{
-				throw new DataMinerCommunicationException("Failed to fetch MAD data", ex);
+				throw new DataMinerCommunicationException("Failed to fetch RAD data", ex);
 			}
 		}
 
