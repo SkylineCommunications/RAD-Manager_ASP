@@ -53,8 +53,8 @@
 			{
 				var requestStartTime = Min(now.AddMonths(-1), startTime);
 				var requestEndTime = Max(now, endTime);
-				var madDataResponse = RadMessageHelper.FetchRADData(ConnectionHelper.Connection, dataMinerID, groupName, requestStartTime, requestEndTime);
-				if (madDataResponse == null)
+				var anomalyScores = RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, requestStartTime, requestEndTime);
+				if (anomalyScores == null)
 					throw new DataMinerCommunicationException("No response or a response of the wrong type received");
 
 				_anomalyScoreData = new AnomalyScoreData()
@@ -64,7 +64,7 @@
 					CacheTime = now,
 					RequestStartTime = requestStartTime,
 					RequestEndTime = requestEndTime,
-					AnomalyScores = madDataResponse.Data.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList(),
+					AnomalyScores = anomalyScores,
 				};
 			}
 			catch (Exception ex)
