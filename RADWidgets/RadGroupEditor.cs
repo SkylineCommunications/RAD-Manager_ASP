@@ -3,18 +3,9 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Skyline.DataMiner.Analytics.DataTypes;
+	using RadUtils;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	public class RadGroupSettings
-	{
-		public string GroupName { get; set; }
-
-		public IEnumerable<ParameterKey> Parameters { get; set; }
-
-		public RadGroupOptions Options { get; set; }
-	}
 
 	public class RadGroupEditor : Section
 	{

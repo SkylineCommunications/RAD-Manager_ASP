@@ -1,24 +1,14 @@
 ﻿namespace RadWidgets
 {
 	using System;
+	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	public class RadGroupOptions
-	{
-		public bool UpdateModel { get; set; }
-
-		public double? AnomalyThreshold { get; set; }
-
-		public int? MinimalDuration { get; set; }
-	}
 
 	/// <summary>
 	/// Editor for RAD group options.
 	/// </summary>
 	public class RadGroupOptionsEditor : Section
 	{
-		private const int _DefaultAnomalyThreshold = 3;
-		private static readonly TimeSpan _DefaultMinimalDuration = TimeSpan.FromMinutes(5);
 		private readonly CheckBox _updateModelCheckBox;
 		private readonly CheckBox _anomalyThresholdOverrideCheckBox;
 		private readonly Numeric _anomalyThresholdNumeric;
@@ -55,7 +45,7 @@
 			_anomalyThresholdNumeric = new Numeric()
 			{
 				Minimum = 0,
-				Value = options?.AnomalyThreshold ?? _DefaultAnomalyThreshold,
+				Value = options?.AnomalyThreshold ?? RadGroupOptions.DefaultAnomalyThreshold,
 				StepSize = 0.01,
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
@@ -78,7 +68,7 @@
 			{
 				HasSeconds = false,
 				Minimum = TimeSpan.FromMinutes(5),
-				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : _DefaultMinimalDuration,
+				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : TimeSpan.FromMinutes(RadGroupOptions.DefaultMinimalDuration),
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
 			};
@@ -142,14 +132,14 @@
 		{
 			_anomalyThresholdNumeric.IsEnabled = _anomalyThresholdOverrideCheckBox.IsChecked;
 			if (!_anomalyThresholdOverrideCheckBox.IsChecked)
-				_anomalyThresholdNumeric.Value = _DefaultAnomalyThreshold;
+				_anomalyThresholdNumeric.Value = RadGroupOptions.DefaultAnomalyThreshold;
 		}
 
 		private void OnMinimalDurationOverrideCheckBoxChanged()
 		{
 			_minimalDurationTime.IsEnabled = _minimalDurationOverrideCheckBox.IsChecked;
 			if (!_minimalDurationOverrideCheckBox.IsChecked)
-				_minimalDurationTime.TimeSpan = _DefaultMinimalDuration;
+				_minimalDurationTime.TimeSpan = TimeSpan.FromMinutes(RadGroupOptions.DefaultMinimalDuration);
 		}
 	}
 }

@@ -86,9 +86,9 @@ namespace RadDataSources
 						new GQICell() { Value = groupName },
 						new GQICell() { Value = dataMinerID },
 						new GQICell() { Value = $"[{string.Join(", ", parameterStr)}]" },
-						new GQICell() { Value = groupInfo.UpdateModel },
-						new GQICell() { Value = groupInfo.AnomalyThreshold ?? 3.0 },
-						new GQICell() { Value = TimeSpan.FromMinutes(groupInfo.MinimumAnomalyDuration ?? 5) },
+						new GQICell() { Value = groupInfo.Options.UpdateModel },
+						new GQICell() { Value = groupInfo.Options.GetAnomalyThresholdOrDefault() },
+						new GQICell() { Value = TimeSpan.FromMinutes(groupInfo.Options.GetMinimalDurationOrDefault()) },
 					}));
 			}
 

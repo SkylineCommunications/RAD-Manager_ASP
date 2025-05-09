@@ -64,7 +64,7 @@ namespace RadDataSources
 			{
 				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, _dataMinerID, _groupName);
 				if (groupInfo != null)
-					_parameterKeys = groupInfo.Parameters;
+					_parameterKeys = groupInfo.Parameters.ToList();
 			}
 			catch (Exception ex)
 			{

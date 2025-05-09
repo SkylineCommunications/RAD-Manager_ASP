@@ -23,12 +23,12 @@
 			return FetchParameterGroups(engine.SendSLNetSingleResponseMessage, dataMinerID);
 		}
 
-		public static MADGroupInfo FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
+		public static RadGroupSettings FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(connection.HandleSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static MADGroupInfo FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
+		public static RadGroupSettings FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
@@ -85,7 +85,7 @@
 			return response?.GroupNames;
 		}
 
-		private static MADGroupInfo FetchParameterGroupInfo(
+		private static RadGroupSettings FetchParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
@@ -96,7 +96,20 @@
 			};
 
 			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
-			return response?.GroupInfo;
+			if (response?.GroupInfo == null)
+				return null;
+
+			return new RadGroupSettings()
+			{
+				GroupName = response.GroupInfo.Name,
+				Parameters = response.GroupInfo.Parameters,
+				Options = new RadGroupOptions()
+				{
+					UpdateModel = response.GroupInfo.UpdateModel,
+					AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
+					MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+				},
+			};
 		}
 
 		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(

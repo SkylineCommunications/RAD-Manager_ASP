@@ -1,6 +1,7 @@
 ﻿namespace EditRADParameterGroup
 {
 	using System;
+	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -17,7 +18,7 @@
 			OriginalGroupName = groupSettings.GroupName;
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
-			_groupEditor = new RadGroupEditor(engine, Utils.FetchRadGroupNames(engine), groupSettings);
+			_groupEditor = new RadGroupEditor(engine, RadWidgets.Utils.FetchRadGroupNames(engine), groupSettings);
 			_groupEditor.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			_okButton = new Button("Apply")

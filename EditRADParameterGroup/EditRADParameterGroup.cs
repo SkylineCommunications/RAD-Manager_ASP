@@ -45,8 +45,8 @@ public class Script
 			RadGroupSettings settings = null;
 			try
 			{
-				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
-				if (groupInfo == null)
+				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
+				if (settings == null)
 				{
 					RadWidgets.Utils.ShowMessageDialog(
 						_app,
@@ -54,18 +54,6 @@ public class Script
 						"Failed to fetch parameter group information: no response or a response of the wrong type received");
 					return;
 				}
-
-				settings = new RadGroupSettings()
-				{
-					GroupName = groupInfo.Name,
-					Parameters = groupInfo.Parameters,
-					Options = new RadGroupOptions()
-					{
-						UpdateModel = groupInfo.UpdateModel,
-						AnomalyThreshold = groupInfo.AnomalyThreshold,
-						MinimalDuration = groupInfo.MinimumAnomalyDuration,
-					},
-				};
 			}
 			catch (Exception ex)
 			{
