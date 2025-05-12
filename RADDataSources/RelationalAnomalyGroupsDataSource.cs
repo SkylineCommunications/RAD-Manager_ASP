@@ -38,6 +38,7 @@ namespace RadDataSources
 				new GQIBooleanColumn("Update Model"),
 				new GQIDoubleColumn("Anomaly Threshold"),
 				new GQITimeSpanColumn("Minimum Anomaly Duration"),
+				new GQIBooleanColumn("Is Monitored"),
 			};
 		}
 
@@ -89,6 +90,7 @@ namespace RadDataSources
 						new GQICell() { Value = groupInfo.Options.UpdateModel },
 						new GQICell() { Value = groupInfo.Options.GetAnomalyThresholdOrDefault() },
 						new GQICell() { Value = TimeSpan.FromMinutes(groupInfo.Options.GetMinimalDurationOrDefault()) },
+						new GQICell() { Value = groupInfo.IsMonitored },
 					}));
 			}
 

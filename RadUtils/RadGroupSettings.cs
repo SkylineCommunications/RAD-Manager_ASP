@@ -3,6 +3,11 @@
 	using System.Collections.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 
+	public class RadGroupInfo : RadGroupSettings
+	{
+		public bool IsMonitored { get; set; } = true;
+	}
+
 	/// <summary>
 	/// Represents the settings for a RAD group.
 	/// </summary>

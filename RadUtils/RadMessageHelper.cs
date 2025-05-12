@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using Skyline.DataMiner.Analytics.Mad;
+	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
@@ -23,12 +24,12 @@
 			return FetchParameterGroups(engine.SendSLNetSingleResponseMessage, dataMinerID);
 		}
 
-		public static RadGroupSettings FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
+		public static RadGroupInfo FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(connection.HandleSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static RadGroupSettings FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
+		public static RadGroupInfo FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
@@ -85,31 +86,65 @@
 			return response?.GroupNames;
 		}
 
-		private static RadGroupSettings FetchParameterGroupInfo(
+		private static RadGroupInfo FetchRADParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
 		{
-			GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
+			GetRADParameterGroupInfoMessage request = new GetRADParameterGroupInfoMessage(groupName)
 			{
 				DataMinerID = dataMinerID,
 			};
-
-			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
-			if (response?.GroupInfo == null)
+			var response = sendMessageFunc(request) as GetRADParameterGroupInfoResponseMessage;
+			if (response?.ParameterGroupInfo == null)
 				return null;
-
-			return new RadGroupSettings()
+			return new RadGroupInfo()
 			{
-				GroupName = response.GroupInfo.Name,
-				Parameters = response.GroupInfo.Parameters,
+				GroupName = response.ParameterGroupInfo.Name,
+				Parameters = response.ParameterGroupInfo.Parameters,
 				Options = new RadGroupOptions()
 				{
-					UpdateModel = response.GroupInfo.UpdateModel,
-					AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
-					MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+					UpdateModel = response.ParameterGroupInfo.UpdateModel,
+					AnomalyThreshold = response.ParameterGroupInfo.AnomalyThreshold,
+					MinimalDuration = response.ParameterGroupInfo.MinimumAnomalyDuration,
 				},
+				IsMonitored = response.IsMonitored,
 			};
+		}
+
+		private static RadGroupInfo FetchParameterGroupInfo(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string groupName)
+		{
+			try
+			{
+				return FetchRADParameterGroupInfo(sendMessageFunc, dataMinerID, groupName);
+			}
+			catch (TypeLoadException)
+			{
+				// Ignore exceptions and try the old method
+				GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
+				{
+					DataMinerID = dataMinerID,
+				};
+
+				var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
+				if (response?.GroupInfo == null)
+					return null;
+
+				return new RadGroupInfo()
+				{
+					GroupName = response.GroupInfo.Name,
+					Parameters = response.GroupInfo.Parameters,
+					Options = new RadGroupOptions()
+					{
+						UpdateModel = response.GroupInfo.UpdateModel,
+						AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
+						MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+					},
+				};
+			}
 		}
 
 		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(
