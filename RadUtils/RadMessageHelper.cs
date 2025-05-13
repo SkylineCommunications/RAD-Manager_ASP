@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Runtime.CompilerServices;
 	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Automation;
@@ -64,6 +65,32 @@
 			AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
 		}
 
+		/// <summary>
+		/// Rename a parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
+		/// <param name="oldGroupName">The old group name.</param>
+		/// <param name="newGroupName">The new group name.</param>
+		/// <exception cref="TypeLoadException">Thrown if the RenameRADParmaeterGroupMessage is not known.</exception>
+		public static void RenameParameterGroup(Connection connection, int dataMinerID, string oldGroupName, string newGroupName)
+		{
+			RenameParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, oldGroupName, newGroupName);
+		}
+
+		/// <summary>
+		/// Rename a parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
+		/// <param name="oldGroupName">The old group name.</param>
+		/// <param name="newGroupName">The new group name.</param>
+		/// <exception cref="TypeLoadException">Thrown if the RenameRADParmaeterGroupMessage is not known.</exception>
+		public static void RenameParameterGroup(IEngine engine, int dataMinerID, string oldGroupName, string newGroupName)
+		{
+			RenameParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, oldGroupName, newGroupName);
+		}
+
 		public static void RetrainParameterGroup(Connection connection, int dataMinerID, string groupName, IEnumerable<TimeRange> timeRanges)
 		{
 			RetrainParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, timeRanges);
@@ -86,6 +113,10 @@
 			return response?.GroupNames;
 		}
 
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static RadGroupInfo FetchRADParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
@@ -112,6 +143,33 @@
 			};
 		}
 
+		private static RadGroupInfo FetchMADParameterGroupInfo(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string groupName)
+		{
+			GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
+			{
+				DataMinerID = dataMinerID,
+			};
+
+			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
+			if (response?.GroupInfo == null)
+				return null;
+
+			return new RadGroupInfo()
+			{
+				GroupName = response.GroupInfo.Name,
+				Parameters = response.GroupInfo.Parameters,
+				Options = new RadGroupOptions()
+				{
+					UpdateModel = response.GroupInfo.UpdateModel,
+					AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
+					MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+				},
+			};
+		}
+
 		private static RadGroupInfo FetchParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
@@ -123,28 +181,13 @@
 			}
 			catch (TypeLoadException)
 			{
-				// Ignore exceptions and try the old method
-				GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
-				{
-					DataMinerID = dataMinerID,
-				};
-
-				var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
-				if (response?.GroupInfo == null)
-					return null;
-
-				return new RadGroupInfo()
-				{
-					GroupName = response.GroupInfo.Name,
-					Parameters = response.GroupInfo.Parameters,
-					Options = new RadGroupOptions()
-					{
-						UpdateModel = response.GroupInfo.UpdateModel,
-						AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
-						MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
-					},
-				};
 			}
+			catch (MissingMethodException)
+			{
+			}
+
+			// New method failed, try the old one
+			return FetchMADParameterGroupInfo(sendMessageFunc, dataMinerID, groupName);
 		}
 
 		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(
@@ -180,6 +223,23 @@
 		{
 			var request = new AddMADParameterGroupMessage(groupInfo);
 			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static RenameRADParameterGroupResponseMessage RenameParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string oldGroupName,
+			string newGroupName)
+		{
+			var request = new RenameRADParameterGroupMessage(oldGroupName, newGroupName)
+			{
+				DataMinerID = dataMinerID,
+			};
+			return sendMessageFunc(request) as RenameRADParameterGroupResponseMessage;
 		}
 
 		private static RetrainMADModelResponseMessage RetrainParameterGroup(

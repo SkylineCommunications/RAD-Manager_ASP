@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Text;
 	using RadUtils;
+	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -197,6 +198,17 @@
 		}
 
 		/// <summary>
+		/// Returns true if <paramref name="a"/> has the same parameters as <paramref name="b"/>, ignoring the order and multiple parameters.
+		/// </summary>
+		/// <param name="a">The first group settings.</param>
+		/// <param name="b">The second group settings.</param>
+		/// <returns>True if both groups has the same parameter, false otherwise.</returns>
+		public static bool HasSameParameters(this RadGroupSettings a, RadGroupSettings b)
+		{
+			return a.Parameters.ToHashSet(new ParameterKeyEqualityComparer()).SetEquals(b.Parameters);
+		}
+
+		/// <summary>
 		/// Join list of strings into a human readable string. E.g. ["a", "b", "c"] -> "a, b and c".
 		/// </summary>
 		/// <param name="l">A list of strings.</param>
@@ -280,5 +292,12 @@
 				return Array.Empty<DynamicTableIndex>();
 			}
 		}
+	}
+
+	public class ParameterKeyEqualityComparer : IEqualityComparer<ParameterKey>
+	{
+		public bool Equals(ParameterKey x, ParameterKey y) => x.Equals(y);
+
+		public int GetHashCode(ParameterKey key) => key.GetHashCode();
 	}
 }

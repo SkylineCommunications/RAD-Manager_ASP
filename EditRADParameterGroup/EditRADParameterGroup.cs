@@ -62,8 +62,8 @@ public class Script
 			}
 
 			var dialog = new EditParameterGroupDialog(engine, settings, dataMinerID);
-			dialog.Accepted += Dialog_Accepted;
-			dialog.Cancelled += Dialog_Cancelled;
+			dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
+			dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 
 			_app.ShowDialog(dialog);
 		}
@@ -89,24 +89,41 @@ public class Script
 		}
 	}
 
-	private void Dialog_Cancelled(object sender, EventArgs e)
+	private void Dialog_Cancelled()
 	{
 		_app.Engine.ExitSuccess("Adding parameter group cancelled");
 	}
 
-	private void Dialog_Accepted(object sender, EventArgs e)
+	private void Dialog_Accepted(EditParameterGroupDialog dialog, RadGroupSettings originalSettings)
 	{
-		var dialog = sender as EditParameterGroupDialog;
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
 
 		try
 		{
-			RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, dialog.OriginalGroupName);
+			var newSettings = dialog.GroupSettings;
+			if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
+			{
+				if (originalSettings.HasSameParameters(newSettings))
+				{
+					try
+					{
+						RadMessageHelper.RenameParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+					}
+					catch (TypeLoadException)
+					{
+						// We can't rename, so remove the old group instead
+						RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+					}
+				}
+				else
+				{
+					RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+				}
+			}
 
-			var settings = dialog.GroupSettings;
-			var pKeys = settings.Parameters.ToList();
-			var groupInfo = new MADGroupInfo(settings.GroupName, pKeys, settings.Options.UpdateModel, settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
+			var pKeys = newSettings.Parameters.ToList();
+			var groupInfo = new MADGroupInfo(newSettings.GroupName, pKeys, newSettings.Options.UpdateModel, newSettings.Options.AnomalyThreshold, newSettings.Options.MinimalDuration);
 			RadMessageHelper.AddParameterGroup(_app.Engine, groupInfo);
 		}
 		catch (Exception ex)

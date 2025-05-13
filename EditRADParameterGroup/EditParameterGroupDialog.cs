@@ -15,7 +15,6 @@
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
-			OriginalGroupName = groupSettings.GroupName;
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
 			_groupEditor = new RadGroupEditor(engine, RadWidgets.Utils.FetchRadGroupNames(engine), groupSettings);
@@ -45,8 +44,6 @@
 		public event EventHandler Cancelled;
 
 		public int DataMinerID { get; private set; }
-
-		public string OriginalGroupName { get; private set; }
 
 		public RadGroupSettings GroupSettings => _groupEditor.Settings;
 
