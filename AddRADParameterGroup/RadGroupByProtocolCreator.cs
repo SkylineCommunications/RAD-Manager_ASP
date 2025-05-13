@@ -28,7 +28,7 @@
 		public bool Valid => MoreThanMinInstances && LessThanMaxInstances && ValidGroupName;
 	}
 
-	public class RadGroupByProtocolCreator : Section
+	public class RadGroupByProtocolCreator : VisibilitySection
 	{
 		private readonly IEngine _engine;
 		private readonly ParametersCache _parametersCache;
@@ -38,7 +38,6 @@
 		private readonly MultiParameterPerProtocolSelector _parameterSelector;
 		private readonly RadGroupOptionsEditor _optionsEditor;
 		private readonly Label _detailsLabel;
-		private bool _isVisible = true;
 
 		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
 		{
@@ -94,14 +93,14 @@
 		/// <inheritdoc />
 		public override bool IsVisible
 		{
-			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
-			get => _isVisible;
+			// Note: we had to override this, since otherwise it will make the details label always visible
+			get => IsSectionVisible;
 			set
 			{
-				if (_isVisible == value)
+				if (IsSectionVisible == value)
 					return;
 
-				_isVisible = value;
+				IsSectionVisible = value;
 
 				_groupPrefixLabel.IsVisible = value;
 				_groupPrefixTextBox.IsVisible = value;
@@ -218,7 +217,7 @@
 
 		private void UpdateDetailsLabelVisibility()
 		{
-			_detailsLabel.IsVisible = _isVisible && _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
+			_detailsLabel.IsVisible = IsSectionVisible && _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
 		}
 
 		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)

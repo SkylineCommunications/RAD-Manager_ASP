@@ -7,7 +7,7 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class RadGroupEditor : Section
+	public class RadGroupEditor : VisibilitySection
 	{
 		public const int MIN_PARAMETERS = 2;
 		public const int MAX_PARAMETERS = 100;
@@ -19,7 +19,6 @@
 		private readonly List<string> _existingGroupNames;
 		private bool _moreThanMinParametersSelected = false;
 		private bool _lessThanMaxParametersSelected = false;
-		private bool _isVisible = true;
 
 		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, RadGroupSettings settings = null)
 		{
@@ -83,13 +82,13 @@
 		public override bool IsVisible
 		{
 			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
-			get => _isVisible;
+			get => IsSectionVisible;
 			set
 			{
-				if (_isVisible == value)
+				if (IsSectionVisible == value)
 					return;
 
-				_isVisible = value;
+				IsSectionVisible = value;
 
 				_groupNameLabel.IsVisible = value;
 				_groupNameTextBox.IsVisible = value;
@@ -119,7 +118,7 @@
 
 		private void UpdateDetailsLabelVisibility()
 		{
-			_detailsLabel.IsVisible = _isVisible && _groupNameTextBox.ValidationState == UIValidationState.Valid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
+			_detailsLabel.IsVisible = IsSectionVisible && _groupNameTextBox.ValidationState == UIValidationState.Valid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
 		}
 
 		private void UpdateDetailsLabel()
