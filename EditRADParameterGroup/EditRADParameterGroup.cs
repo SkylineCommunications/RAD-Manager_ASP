@@ -28,24 +28,23 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
-			if (groupNamesAndIds.Count == 0)
+			var groupIDs = RadWidgets.Utils.ParseGroupIDParameters(_app);
+			if (groupIDs.Count == 0)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
 				return;
 			}
-			else if (groupNamesAndIds.Count > 1)
+			else if (groupIDs.Count > 1)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
 				return;
 			}
 
-			int dataMinerID = groupNamesAndIds[0].Item1;
-			string groupName = groupNamesAndIds[0].Item2;
+			var groupID = groupIDs.First();
 			RadGroupSettings settings = null;
 			try
 			{
-				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, dataMinerID, groupName);
+				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, groupID.DataMinerID, groupID.GroupName) as RadGroupSettings; //TODO
 				if (settings == null)
 				{
 					RadWidgets.Utils.ShowMessageDialog(
@@ -61,7 +60,7 @@ public class Script
 				return;
 			}
 
-			var dialog = new EditParameterGroupDialog(engine, settings, dataMinerID);
+			var dialog = new EditParameterGroupDialog(engine, settings, groupID.DataMinerID);
 			dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
 			dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 

@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -11,13 +12,12 @@
 		private readonly Button _okButton;
 		private readonly MultiTimeRangeSelector _timeRangeSelector;
 
-		public RetrainRadModelDialog(IEngine engine, string groupName, int dataMinerID) : base(engine)
+		public RetrainRadModelDialog(IEngine engine, RadGroupID groupID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
-			GroupName = groupName;
-			DataMinerID = dataMinerID;
+			GroupID = groupID;
 
-			Title = $"Retrain model for parameter group '{groupName}'";
+			Title = $"Retrain model for parameter group '{groupID.GroupName}'";
 
 			var label = new Label($"Retrain the model using the following time ranges with normal behavior:");
 
@@ -51,9 +51,7 @@
 
 		public event EventHandler Cancelled;
 
-		public string GroupName { get; private set; }
-
-		public int DataMinerID { get; private set; }
+		public RadGroupID GroupID { get; private set; }
 
 		public IEnumerable<RadUtils.TimeRange> GetSelectedTimeRanges()
 		{

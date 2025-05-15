@@ -9,21 +9,21 @@
 
 	public class RemoveParameterGroupDialog : Dialog
     {
-		public RemoveParameterGroupDialog(IEngine engine, List<Tuple<int, string>> groupNamesAndIDs) : base(engine)
+		public RemoveParameterGroupDialog(IEngine engine, List<RadGroupID> groupIDs) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
-			GroupNamesAndIDs = groupNamesAndIDs;
+			GroupIDs = groupIDs;
 
 			Label label;
-			if (groupNamesAndIDs.Count == 1)
+			if (groupIDs.Count == 1)
 			{
 				Title = "Remove parameter group";
-				label = new Label($"Are you sure you want to remove the parameter group '{GroupNamesAndIDs[0].Item2}' from Relational Anomaly Detection?");
+				label = new Label($"Are you sure you want to remove the parameter group '{groupIDs[0].GroupName}' from Relational Anomaly Detection?");
 			}
 			else
 			{
 				Title = "Remove parameter groups";
-				var groupNamesStr = groupNamesAndIDs.Select(g => $"'{g.Item2}'").HumanReadableJoin();
+				var groupNamesStr = groupIDs.Select(g => $"'{g.GroupName}'").HumanReadableJoin();
 				label = new Label($"Are you sure you want to remove the parameter groups {groupNamesStr} from Relational Anomaly Detection?");
 			}
 
@@ -47,6 +47,6 @@
 
 		public event EventHandler Cancelled;
 
-		public List<Tuple<int, string>> GroupNamesAndIDs { get; private set; }
+		public List<RadGroupID> GroupIDs { get; private set; }
     }
 }

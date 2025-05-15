@@ -1,6 +1,7 @@
 ﻿namespace EditRADParameterGroup
 {
 	using System;
+	using System.Linq;
 	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Automation;
@@ -17,7 +18,8 @@
 			DataMinerID = dataMinerID;
 			Title = $"Edit group '{groupSettings.GroupName}'";
 
-			_groupEditor = new RadGroupEditor(engine, RadWidgets.Utils.FetchRadGroupNames(engine), groupSettings);
+			var groupNames = RadWidgets.Utils.FetchRadGroupNames(engine).Select(id => id.GroupName).Distinct().ToList();
+			_groupEditor = new RadGroupEditor(engine, groupNames, groupSettings);
 			_groupEditor.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			_okButton = new Button("Apply")

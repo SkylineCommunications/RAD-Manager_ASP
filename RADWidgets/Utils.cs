@@ -13,6 +13,19 @@
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
+	public struct RadGroupID
+	{
+		public RadGroupID(int dataMinerID, string groupName)
+		{
+			DataMinerID = dataMinerID;
+			GroupName = groupName;
+		}
+
+		public int DataMinerID { get; set; }
+
+		public string GroupName { get; set; }
+	}
+
 	public static class Utils
 	{
 		/// <summary>
@@ -21,23 +34,23 @@
 		/// <param name="app">The app.</param>
 		/// <returns>A list with the DataMiner IDs and names of the provided groups, or an empty list if none were provided.</returns>
 		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
-		public static List<Tuple<int, string>> GetGroupNameAndDataMinerID(InteractiveController app)
+		public static List<RadGroupID> ParseGroupIDParameters(InteractiveController app)
 		{
 			var groupNames = ParseScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
 			var dataMinerIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
 			if (groupNames.IsNullOrEmpty() || dataMinerIDs.IsNullOrEmpty())
-				return new List<Tuple<int, string>>();
+				return new List<RadGroupID>();
 
 			if (groupNames.Count != dataMinerIDs.Count)
 				throw new FormatException("The number of group names and DataMiner IDs must be equal");
 
-			var result = new List<Tuple<int, string>>(groupNames.Count);
+			var result = new List<RadGroupID>(groupNames.Count);
 			for (int i = 0; i < groupNames.Count; ++i)
 			{
 				if (!int.TryParse(dataMinerIDs[i], out int dataMinerID))
 					throw new FormatException($"DataMinerID parameter is not a valid number, got '{dataMinerIDs[i]}'");
 
-				result.Add(new Tuple<int, string>(dataMinerID, groupNames[i]));
+				result.Add(new RadGroupID(dataMinerID, groupNames[i]));
 			}
 
 			return result;
@@ -172,9 +185,9 @@
 				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue));
 		}
 
-		public static List<string> FetchRadGroupNames(IEngine engine)
+		public static List<RadGroupID> FetchRadGroupNames(IEngine engine)
 		{
-			var result = new List<string>();
+			var result = new List<RadGroupID>();
 			foreach (var agent in engine.GetDms().GetAgents())
 			{
 				try
@@ -183,10 +196,10 @@
 					if (groupNames == null)
 					{
 						engine.Log("Could not fetch RAD group names: no response or response of the wrong type received", LogType.Error, 5);
-						return new List<string> { };
+						continue;
 					}
 
-					return groupNames;
+					result.AddRange(groupNames.Select(n => new RadGroupID(agent.Id, n)));
 				}
 				catch (Exception e)
 				{
