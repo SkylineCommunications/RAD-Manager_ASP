@@ -46,7 +46,7 @@
 			{
 				Minimum = 0,
 				Value = options?.AnomalyThreshold ?? RadGroupOptions.DefaultAnomalyThreshold,
-				StepSize = 0.01,
+				StepSize = 0.1,
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
 			};
