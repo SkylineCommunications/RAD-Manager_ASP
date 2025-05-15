@@ -48,8 +48,8 @@
 
 	public class RadGroupBaseOptions
 	{
-		public static readonly double DefaultAnomalyThreshold = 3.0;
-		public static readonly int DefaultMinimalDuration = 5;
+		public const double DefaultAnomalyThreshold = 3.0;
+		public const int DefaultMinimalDuration = 5;
 
 		/// <summary>
 		/// Gets or sets threshold above which an anomaly will be generated. Leave empty to use the default threshold.
