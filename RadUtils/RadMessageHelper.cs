@@ -25,24 +25,98 @@
 			return FetchParameterGroups(engine.SendSLNetSingleResponseMessage, dataMinerID);
 		}
 
-		public static RadGroupInfo FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
+		public static IRadGroupBaseInfo FetchParameterGroupInfo(Connection connection, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(connection.HandleSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static RadGroupInfo FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
+		public static IRadGroupBaseInfo FetchParameterGroupInfo(IEngine engine, int dataMinerID, string groupName)
 		{
 			return FetchParameterGroupInfo(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Connection connection, int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Connection connection, int dataMinerID, string groupName,
+			DateTime startTime, DateTime endTime)
 		{
 			return FetchAnomalyScoreData(connection.HandleSingleResponseMessage, dataMinerID, groupName, startTime, endTime);
 		}
 
-		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(IEngine engine, int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(IEngine engine, int dataMinerID, string groupName,
+			DateTime startTime, DateTime endTime)
 		{
 			return FetchAnomalyScoreData(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, startTime, endTime);
+		}
+
+		/// <summary>
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupName">The name of the subgroup</param>
+		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
+		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="GetRADDataMessage" /> is not known.</exception>
+		/// <returns>The anomaly scores.</returns>
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Connection connection, int dataMinerID, string groupName,
+			string subGroupName, DateTime startTime, DateTime endTime)
+		{
+			return FetchRADAnomalyScoreData(connection.HandleSingleResponseMessage, dataMinerID, groupName, subGroupName, startTime, endTime);
+		}
+
+		/// <summary>
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupName">The name of the subgroup</param>
+		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
+		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="GetRADDataMessage" /> is not known.</exception>
+		/// <returns>The anomaly scores.</returns>
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(IEngine engine, int dataMinerID, string groupName,
+			string subGroupName, DateTime startTime, DateTime endTime)
+		{
+			return FetchRADAnomalyScoreData(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, subGroupName, startTime, endTime);
+		}
+
+		/// <summary>
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupID">The id of the subgroup</param>
+		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
+		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="GetRADDataMessage" /> is not known.</exception>
+		/// <returns>The anomaly scores.</returns>
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Connection connection, int dataMinerID, string groupName,
+			Guid subGroupID, DateTime startTime, DateTime endTime)
+		{
+			return FetchRADAnomalyScoreData(connection.HandleSingleResponseMessage, dataMinerID, groupName, subGroupID, startTime, endTime);
+		}
+
+		/// <summary>
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupID">The id of the subgroup</param>
+		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
+		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="GetRADDataMessage" /> is not known.</exception>
+		/// <returns>The anomaly scores.</returns>
+		public static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(IEngine engine, int dataMinerID, string groupName,
+			Guid subGroupID, DateTime startTime, DateTime endTime)
+		{
+			return FetchRADAnomalyScoreData(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, subGroupID, startTime, endTime);
 		}
 
 		public static void RemoveParameterGroup(Connection connection, int dataMinerID, string groupName)
@@ -72,7 +146,7 @@
 		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
 		/// <param name="oldGroupName">The old group name.</param>
 		/// <param name="newGroupName">The new group name.</param>
-		/// <exception cref="TypeLoadException">Thrown if the RenameRADParmaeterGroupMessage is not known.</exception>
+		/// <exception cref="TypeLoadException">Thrown if the <see cref="RenameRADParameterGroupMessage"/> is not known.</exception>
 		public static void RenameParameterGroup(Connection connection, int dataMinerID, string oldGroupName, string newGroupName)
 		{
 			RenameParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, oldGroupName, newGroupName);
@@ -117,7 +191,7 @@
 		/// Supported from TODO: version
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static RadGroupInfo FetchRADParameterGroupInfo(
+		private static IRadGroupBaseInfo FetchRADParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
@@ -126,21 +200,62 @@
 			{
 				DataMinerID = dataMinerID,
 			};
-			var response = sendMessageFunc(request) as GetRADParameterGroupInfoResponseMessage;
-			if (response?.ParameterGroupInfo == null)
-				return null;
-			return new RadGroupInfo()
+			var response = sendMessageFunc(request);
+			if (response is GetRADParameterGroupInfoResponseMessage parameterGroupInfoResponse)
 			{
-				GroupName = response.ParameterGroupInfo.Name,
-				Parameters = response.ParameterGroupInfo.Parameters,
-				Options = new RadGroupOptions()
+				if (parameterGroupInfoResponse.ParameterGroupInfo == null)
+					return null;
+
+				return new RadGroupInfo()
 				{
-					UpdateModel = response.ParameterGroupInfo.UpdateModel,
-					AnomalyThreshold = response.ParameterGroupInfo.AnomalyThreshold,
-					MinimalDuration = response.ParameterGroupInfo.MinimumAnomalyDuration,
-				},
-				IsMonitored = response.IsMonitored,
-			};
+					GroupName = parameterGroupInfoResponse.ParameterGroupInfo.Name,
+					Parameters = parameterGroupInfoResponse.ParameterGroupInfo.Parameters,
+					Options = new RadGroupOptions()
+					{
+						UpdateModel = parameterGroupInfoResponse.ParameterGroupInfo.UpdateModel,
+						AnomalyThreshold = parameterGroupInfoResponse.ParameterGroupInfo.AnomalyThreshold,
+						MinimalDuration = parameterGroupInfoResponse.ParameterGroupInfo.MinimumAnomalyDuration,
+					},
+					IsMonitored = parameterGroupInfoResponse.IsMonitored,
+				};
+			}
+			else if (response is GetRADSharedModelGroupInfoResponseMessage sharedModelGroupInfoResponse)
+			{
+				if (sharedModelGroupInfoResponse.GroupInfo == null)
+					return null;
+
+				var subgroups = new List<RadSubgroupInfo>();
+				foreach (var subgroup in sharedModelGroupInfoResponse.GroupInfo.ParameterGroups)
+				{
+					subgroups.Add(new RadSubgroupInfo()
+					{
+						Name = subgroup.Name,
+						Parameters = subgroup.Parameters,
+						Options = new RadSubgroupOptions()
+						{
+							AnomalyThreshold = subgroup.AnomalyThreshold,
+							MinimalDuration = subgroup.MinimumAnomalyDuration,
+						},
+						IsMonitored = true, // TODO: add this
+					});
+				}
+
+				return new RadSharedModelGroupInfo()
+				{
+					GroupName = sharedModelGroupInfoResponse.GroupInfo.Name,
+					Options = new RadGroupOptions()
+					{
+						UpdateModel = sharedModelGroupInfoResponse.GroupInfo.UpdateModel,
+						AnomalyThreshold = sharedModelGroupInfoResponse.GroupInfo.AnomalyThreshold,
+						MinimalDuration = sharedModelGroupInfoResponse.GroupInfo.MinimumAnomalyDuration,
+					},
+					Subgroups = subgroups,
+				};
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		private static RadGroupInfo FetchMADParameterGroupInfo(
@@ -170,7 +285,7 @@
 			};
 		}
 
-		private static RadGroupInfo FetchParameterGroupInfo(
+		private static IRadGroupBaseInfo FetchParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
 			string groupName)
@@ -190,12 +305,38 @@
 			return FetchMADParameterGroupInfo(sendMessageFunc, dataMinerID, groupName);
 		}
 
-		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName,
-			DateTime startTime,
-			DateTime endTime)
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static List<KeyValuePair<DateTime, double>> FetchRADAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID, string groupName, string subGroupName, DateTime startTime, DateTime endTime)
+		{
+			GetRADDataMessage request = new GetRADDataMessage(groupName, subGroupName, startTime, endTime)
+			{
+				DataMinerID = dataMinerID,
+			};
+			var response = sendMessageFunc(request) as GetRADDataResponseMessage;
+			return response?.DataPoints.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList();
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static List<KeyValuePair<DateTime, double>> FetchRADAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID, string groupName, Guid subGroupID, DateTime startTime, DateTime endTime)
+		{
+			GetRADDataMessage request = new GetRADDataMessage(groupName, subGroupID.ToString(), startTime, endTime) //TODO: remove the toString in the GUID
+			{
+				DataMinerID = dataMinerID,
+			};
+			var response = sendMessageFunc(request) as GetRADDataResponseMessage;
+			return response?.DataPoints.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList();
+		}
+
+		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
 		{
 			GetMADDataMessage request = new GetMADDataMessage(groupName, startTime, endTime)
 			{

@@ -39,6 +39,8 @@ namespace RadDataSources
 				new GQIDoubleColumn("Anomaly Threshold"),
 				new GQITimeSpanColumn("Minimum Anomaly Duration"),
 				new GQIBooleanColumn("Is Monitored"),
+				new GQIStringColumn("Parent Group"), //TODO: or model?
+				new GQIStringColumn("Subgroup ID"),
 			};
 		}
 
@@ -74,24 +76,46 @@ namespace RadDataSources
 			foreach (var groupName in groupNames)
 			{
 				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, dataMinerID, groupName);
-				if (groupInfo == null)
+				if (groupInfo is RadGroupInfo parameterGroupInfo)
+				{
+					rows.Add(new GQIRow(
+						new GQICell[]
+						{
+							new GQICell() { Value = groupName },
+							new GQICell() { Value = dataMinerID },
+							new GQICell() { Value = ParameterKeysToString(parameterGroupInfo.Parameters) },
+							new GQICell() { Value = parameterGroupInfo.Options.UpdateModel },
+							new GQICell() { Value = parameterGroupInfo.Options.GetAnomalyThresholdOrDefault() },
+							new GQICell() { Value = TimeSpan.FromMinutes(parameterGroupInfo.Options.GetMinimalDurationOrDefault()) },
+							new GQICell() { Value = parameterGroupInfo.IsMonitored },
+							//new GQICell() { Value = string.Empty, DisplayValue = "<no parent group>" }, // Parent group
+							new GQICell() { Value = groupName }, // Parent group //TODO: do we want this, or do we want the top one? If the top one, make sure to add another column that we can use in the other data source
+							new GQICell() { Value = string.Empty }, // Subgroup ID
+						}));
+				}
+				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
+				{
+					foreach (var subgroupInfo in sharedModelGroupInfo.Subgroups)
+					{
+						rows.Add(new GQIRow(
+							new GQICell[]
+							{
+								new GQICell() { Value = subgroupInfo.GetName(sharedModelGroupInfo.GroupName) },
+								new GQICell() { Value = dataMinerID },
+								new GQICell() { Value = ParameterKeysToString(subgroupInfo.Parameters.Select(p => p.Key)) },
+								new GQICell() { Value = sharedModelGroupInfo.Options.UpdateModel },
+								new GQICell() { Value = subgroupInfo.Options.GetAnomalyThresholdOrDefault(sharedModelGroupInfo.Options.AnomalyThreshold) },
+								new GQICell() { Value = TimeSpan.FromMinutes(subgroupInfo.Options.GetMinimalDurationOrDefault(sharedModelGroupInfo.Options.MinimalDuration)) },
+								new GQICell() { Value = subgroupInfo.IsMonitored },
+								new GQICell() { Value = sharedModelGroupInfo.GroupName }, // Parent group
+								new GQICell() { Value = subgroupInfo.ID.ToString() }, // Subgroup ID
+							}));
+					}
+				}
+				else
 				{
 					_logger.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
-					continue;
 				}
-
-				var parameterStr = groupInfo.Parameters.Select(p => ParameterKeyToString(p));
-				rows.Add(new GQIRow(
-					new GQICell[]
-					{
-						new GQICell() { Value = groupName },
-						new GQICell() { Value = dataMinerID },
-						new GQICell() { Value = $"[{string.Join(", ", parameterStr)}]" },
-						new GQICell() { Value = groupInfo.Options.UpdateModel },
-						new GQICell() { Value = groupInfo.Options.GetAnomalyThresholdOrDefault() },
-						new GQICell() { Value = TimeSpan.FromMinutes(groupInfo.Options.GetMinimalDurationOrDefault()) },
-						new GQICell() { Value = groupInfo.IsMonitored },
-					}));
 			}
 
 			return new GQIPage(rows.ToArray())
@@ -120,6 +144,11 @@ namespace RadDataSources
 				return $"{elementName}/{parameterName}";
 			else
 				return $"{elementName}/{parameterName}/{instance}";
+		}
+
+		private string ParameterKeysToString(IEnumerable<ParameterKey> pKeys)
+		{
+			return $"[{string.Join(", ", pKeys.Select(p => ParameterKeyToString(p)))}]";
 		}
 	}
 }
