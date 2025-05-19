@@ -221,11 +221,11 @@
 			}
 			else if (response is GetRADSharedModelGroupInfoResponseMessage sharedModelGroupInfoResponse)
 			{
-				if (sharedModelGroupInfoResponse.GroupInfo == null)
+				if (sharedModelGroupInfoResponse.ParameterGroups == null)
 					return null;
 
 				var subgroups = new List<RadSubgroupInfo>();
-				foreach (var subgroup in sharedModelGroupInfoResponse.GroupInfo.ParameterGroups)
+				foreach (var subgroup in sharedModelGroupInfoResponse.ParameterGroups)
 				{
 					subgroups.Add(new RadSubgroupInfo()
 					{
@@ -236,18 +236,19 @@
 							AnomalyThreshold = subgroup.AnomalyThreshold,
 							MinimalDuration = subgroup.MinimumAnomalyDuration,
 						},
-						IsMonitored = true, // TODO: add this
+						IsMonitored = subgroup.IsMonitored,
+						ID = subgroup.ID,
 					});
 				}
 
 				return new RadSharedModelGroupInfo()
 				{
-					GroupName = sharedModelGroupInfoResponse.GroupInfo.Name,
+					GroupName = sharedModelGroupInfoResponse.Name,
 					Options = new RadGroupOptions()
 					{
-						UpdateModel = sharedModelGroupInfoResponse.GroupInfo.UpdateModel,
-						AnomalyThreshold = sharedModelGroupInfoResponse.GroupInfo.AnomalyThreshold,
-						MinimalDuration = sharedModelGroupInfoResponse.GroupInfo.MinimumAnomalyDuration,
+						UpdateModel = sharedModelGroupInfoResponse.UpdateModel,
+						AnomalyThreshold = sharedModelGroupInfoResponse.AnomalyThreshold,
+						MinimalDuration = sharedModelGroupInfoResponse.MinimumAnomalyDuration,
 					},
 					Subgroups = subgroups,
 				};
@@ -327,7 +328,7 @@
 		private static List<KeyValuePair<DateTime, double>> FetchRADAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID, string groupName, Guid subGroupID, DateTime startTime, DateTime endTime)
 		{
-			GetRADDataMessage request = new GetRADDataMessage(groupName, subGroupID.ToString(), startTime, endTime) //TODO: remove the toString in the GUID
+			GetRADDataMessage request = new GetRADDataMessage(groupName, subGroupID, startTime, endTime)
 			{
 				DataMinerID = dataMinerID,
 			};

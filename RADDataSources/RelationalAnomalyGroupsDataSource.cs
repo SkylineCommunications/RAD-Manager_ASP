@@ -88,8 +88,7 @@ namespace RadDataSources
 							new GQICell() { Value = parameterGroupInfo.Options.GetAnomalyThresholdOrDefault() },
 							new GQICell() { Value = TimeSpan.FromMinutes(parameterGroupInfo.Options.GetMinimalDurationOrDefault()) },
 							new GQICell() { Value = parameterGroupInfo.IsMonitored },
-							//new GQICell() { Value = string.Empty, DisplayValue = "<no parent group>" }, // Parent group
-							new GQICell() { Value = groupName }, // Parent group //TODO: do we want this, or do we want the top one? If the top one, make sure to add another column that we can use in the other data source
+							new GQICell() { Value = groupName }, // Parent group
 							new GQICell() { Value = string.Empty }, // Subgroup ID
 						}));
 				}
