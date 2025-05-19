@@ -64,7 +64,7 @@
 				var requestEndTime = Max(now, endTime);
 				List<KeyValuePair<DateTime, double>> anomalyScores = null;
 
-				FetchAnomalyScore(dataMinerID, groupName, subGroupName, subGroupID, requestStartTime, requestEndTime);
+				anomalyScores = FetchAnomalyScore(dataMinerID, groupName, subGroupName, subGroupID, requestStartTime, requestEndTime);
 				if (anomalyScores == null)
 					throw new DataMinerCommunicationException("No response or a response of the wrong type received");
 
