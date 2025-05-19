@@ -7,11 +7,11 @@
     {
         private readonly RadGroupBaseOptionsEditor _baseOptionsEditor;
 
-        public RadSubgroupOptionsEditor(int columnCount, double? parentAnomalyThreshold, int? parentMinimalDuration, RadSubgroupOptions options = null)
+        public RadSubgroupOptionsEditor(int columnCount, RadGroupOptions parentOptions, RadSubgroupOptions options = null)
         {
             _baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, options,
-				parentAnomalyThreshold.GetValueOrDefault(RadGroupOptions.DefaultAnomalyThreshold),
-				parentMinimalDuration.GetValueOrDefault(RadGroupOptions.DefaultMinimalDuration));
+				parentOptions?.GetAnomalyThresholdOrDefault() ?? RadGroupOptions.DefaultAnomalyThreshold,
+				parentOptions?.GetMinimalDurationOrDefault() ?? RadGroupOptions.DefaultMinimalDuration);
 
             AddSection(_baseOptionsEditor, 0, 0);
         }

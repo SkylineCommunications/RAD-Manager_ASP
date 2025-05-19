@@ -1,5 +1,6 @@
 ﻿namespace RadWidgets
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Runtime;
@@ -16,11 +17,13 @@
 		//from pressing OK
 		private RadSubgroupOptionsEditor _optionsEditor;
 		private Label _detailsLabel;
+		private Guid subgroupID;
 		//TODO: accept empty group names as well. Probably add a placeholder to the group name text box
 
-		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, RadSubgroupSettings settings, double? parentAnomalyThreshold,
-			int? parentMinimalDuration)
+		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, RadSubgroupSettings settings, RadGroupOptions parentOptions)
 		{
+			subgroupID = settings.ID;
+
 			int parameterCount = settings.Parameters.Count;
 			var parameterSelectorLabels = new List<Label>(parameterCount);
 			_parameterSelectors = new List<ParameterSelector>(parameterCount);
@@ -31,13 +34,13 @@
 				_parameterSelectors.Add(new ParameterSelector(engine));//TODO: show the current parameter key
 			}
 
-			ConstuctWidgets(existingSubgroupNames, settings.Name, parameterSelectorLabels, _parameterSelectors, settings.Options,
-				parentAnomalyThreshold, parentMinimalDuration);
+			ConstuctWidgets(existingSubgroupNames, settings.Name, parameterSelectorLabels, _parameterSelectors, settings.Options, parentOptions);
 		}
 
-		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, List<string> parameterLabels, double? parentAnomalyThreshold,
-			int? parentMinimalDuration)
+		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, List<string> parameterLabels, RadGroupOptions parentOptions)
 		{
+			subgroupID = Guid.NewGuid();
+
 			var parameterSelectorLabels = new List<Label>(parameterLabels.Count);
 			_parameterSelectors = new List<ParameterSelector>(parameterLabels.Count);
 			for (int i = 0; i < parameterLabels.Count; i++)
@@ -46,8 +49,7 @@
 				_parameterSelectors.Add(new ParameterSelector(engine));//TODO: show the current parameter key
 			}
 
-			ConstuctWidgets(existingSubgroupNames, string.Empty, parameterSelectorLabels, _parameterSelectors, null,
-				parentAnomalyThreshold, parentMinimalDuration);
+			ConstuctWidgets(existingSubgroupNames, string.Empty, parameterSelectorLabels, _parameterSelectors, null, parentOptions);
 		}
 
 		public RadSubgroupSettings Settings
@@ -57,6 +59,7 @@
 				return new RadSubgroupSettings
 				{
 					Name = _groupNameSection.GroupName,
+					ID = subgroupID,
 					Parameters = new List<RADParameter>(),//TODO: fill this in. Also probably include more info than just the key, but also the element name and stuff
 					Options = _optionsEditor.Options,
 				};
@@ -65,14 +68,14 @@
 
 		private void ConstuctWidgets(List<string> existingSubgroupNames, string groupName,
 			List<Label> parameterSelectorLabels, List<ParameterSelector> parameterSelectors,
-			RadSubgroupOptions options, double? parentAnomalyThreshold, int? parentMinimalDuration)
+			RadSubgroupOptions options, RadGroupOptions parentOptions)
 		{
 			_parameterSelectors = parameterSelectors;
 
 			int parameterSelectorColumnCount = parameterSelectors.FirstOrDefault()?.ColumnCount ?? 1;
 			_groupNameSection = new GroupNameSection(groupName, existingSubgroupNames, parameterSelectorColumnCount);
 
-			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentAnomalyThreshold, parentMinimalDuration, options);
+			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, options);
 
 			_detailsLabel = new Label();
 

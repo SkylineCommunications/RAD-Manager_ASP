@@ -5,6 +5,7 @@ namespace RadDataSources
 	using System.Linq;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 
+	//TODO: probably prevent adding groups with same parameters in other subgroups
 	/// <summary>
 	/// Represents a DataMiner Automation script.
 	/// </summary>

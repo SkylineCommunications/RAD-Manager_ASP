@@ -1,5 +1,6 @@
 ﻿namespace RadWidgets
 {
+	using System;
 	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -28,11 +29,14 @@
 			};
 
 			_baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, options);
+			_baseOptionsEditor.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;
 			AddWidget(_updateModelCheckBox, row++, 0, 1, columnCount);
 			AddSection(_baseOptionsEditor, row, 0);
 		}
+
+		public event EventHandler Changed;
 
 		public RadGroupOptions Options
 		{

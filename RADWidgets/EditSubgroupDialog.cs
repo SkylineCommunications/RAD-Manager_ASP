@@ -6,21 +6,21 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class AddSubgroupDialog : Dialog
+	public class EditSubgroupDialog : Dialog
 	{
 		private readonly RadSubgroupEditor _subgroupEditor;
 		private readonly Button _okButton;
 		private readonly Button _cancelButton;
 
-		public AddSubgroupDialog(IEngine engine, List<string> existingSubgroups, List<string> labels, RadGroupOptions parentOptions) : base(engine)
+		public EditSubgroupDialog(IEngine engine, List<string> existingSubgroups, RadSubgroupSettings settings, RadGroupOptions parentOptions) : base(engine)
 		{
-			Title = "Add Subgroup";
-			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, labels, parentOptions);
+			Title = string.IsNullOrEmpty(settings?.Name) ? "Edit subgroup" : $"Edit subgroup '{settings.Name}'";
+			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, settings, parentOptions);
 
-			_okButton = new Button("OK")
+			_okButton = new Button("Apply")
 			{
 				Style = ButtonStyle.CallToAction,
-				Tooltip = "Create the subgroup with the specified settings.",
+				Tooltip = "Apply the specified settings to the subgroup.",
 			};
 			_okButton.Pressed += (s, e) => Accepted?.Invoke(this, EventArgs.Empty);
 

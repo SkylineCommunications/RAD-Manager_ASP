@@ -53,6 +53,7 @@
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
 			};
+			_anomalyThresholdNumeric.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			_minimalDurationOverrideCheckBox = new CheckBox("Override default minimum anomaly duration?")
 			{
@@ -75,6 +76,7 @@
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
 			};
+			_minimalDurationTime.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;
 			AddWidget(_anomalyThresholdOverrideCheckBox, row, 0, 1, columnCount);
@@ -90,6 +92,8 @@
 			AddWidget(minimalDurationLabel, row, 0);
 			AddWidget(_minimalDurationTime, row, 1, 1, columnCount - 1);
 		}
+
+		public event EventHandler Changed;
 
 		public double? AnomalyThreshold
 		{
@@ -118,6 +122,8 @@
 			_anomalyThresholdNumeric.IsEnabled = _anomalyThresholdOverrideCheckBox.IsChecked;
 			if (!_anomalyThresholdOverrideCheckBox.IsChecked)
 				_anomalyThresholdNumeric.Value = _defaultAnomalyThreshold;
+
+			Changed?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void OnMinimalDurationOverrideCheckBoxChanged()
@@ -125,6 +131,8 @@
 			_minimalDurationTime.IsEnabled = _minimalDurationOverrideCheckBox.IsChecked;
 			if (!_minimalDurationOverrideCheckBox.IsChecked)
 				_minimalDurationTime.TimeSpan = TimeSpan.FromMinutes(_defaultMinimalDuration);
+
+			Changed?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

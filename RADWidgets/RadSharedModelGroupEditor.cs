@@ -4,7 +4,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadUtils;
-	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -16,14 +15,14 @@
 		private readonly GroupNameSection _groupNameSection;
 		private readonly RadGroupOptionsEditor _optionsEditor;
 		private readonly Numeric _parametersCountNumeric;
-		private readonly List<RadSubgroupView> _subgroupViews;
+		private readonly RadSubgroupSelector _subgroupSelector;
 		private readonly Label _detailsLabel;
 		private readonly List<string> _existingGroupNames;//TODO: still use this one for validation
 		private List<string> _parameterLabels;
 
 		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, RadSharedModelGroupSettings settings = null)
 		{
-			_engine = engine;
+			_engine = engine;//TODO: also select the correct subgroup when editting an existing subgroup of a shared model group
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
@@ -63,42 +62,10 @@
 			};
 			editLabelsButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
-			_subgroupViews = new List<RadSubgroupView>();
-			if (settings?.Subgroups != null)
-				_subgroupViews.AddRange(settings.Subgroups.Select(s => new RadSubgroupView(s)));
-			//TODO: this is just a preview
-			_subgroupViews.Add(new RadSubgroupView(new RadSubgroupSettings()
-			{
-				Name = "First subgroup",
-				Parameters = new List<RADParameter>()
-				{
-					new RADParameter(new Skyline.DataMiner.Analytics.DataTypes.ParameterKey(1, 2, 3, "instance"), "Input power"),
-					new RADParameter(new Skyline.DataMiner.Analytics.DataTypes.ParameterKey(1, 2, 3, "instance2"), "Output power"),
-				},
-				Options = new RadSubgroupOptions()
-				{
-					AnomalyThreshold = 0.5,
-					MinimalDuration = 10,
-				},
-			}));
-			_subgroupViews.Add(new RadSubgroupView(new RadSubgroupSettings()
-			{
-				Name = "Second subgroup",
-				Parameters = new List<RADParameter>()
-				{
-					new RADParameter(new Skyline.DataMiner.Analytics.DataTypes.ParameterKey(2, 2, 3, "instance"), "Input power"),
-					new RADParameter(new Skyline.DataMiner.Analytics.DataTypes.ParameterKey(2, 2, 3, "instance2"), "Output power"),
-				},
-				Options = new RadSubgroupOptions(),
-			}));
-
-			var addSubgroupButton = new Button("Add subgroup...")
-			{
-				Tooltip = "Add a new subgroup.",
-			};
-			addSubgroupButton.Pressed += (sender, args) => OnAddSubgroupButtonPressed();
+			_subgroupSelector = new RadSubgroupSelector(engine, settings?.Options, _parameterLabels, settings?.Subgroups);
 
 			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
+			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
 
 			_detailsLabel = new Label();
 
@@ -107,61 +74,17 @@
 			row += _groupNameSection.RowCount;
 
 			AddWidget(parametersCountLabel, row, 0);
-			AddWidget(_parametersCountNumeric, row, 1, 1, 2);
-			row++;
-
+			AddWidget(_parametersCountNumeric, row, 1);
 			AddWidget(editLabelsButton, row, 2);
 			row++;
 
-			foreach (var subgroupView in _subgroupViews)
-			{
-				AddSection(subgroupView, row, 0);
-				row += subgroupView.RowCount;
-			}
-
-			AddWidget(addSubgroupButton, row, 2);
-			row++;
+			AddSection(_subgroupSelector, row, 0);
+			row += _subgroupSelector.RowCount;
 
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
 			AddWidget(_detailsLabel, row, 0, 1, 3);
-		}
-
-		private void UpdateLabels(List<string> parameterLabels)
-		{
-			_parameterLabels = parameterLabels;
-			foreach (var subgroupView in _subgroupViews)
-				subgroupView.UpdateLabels(parameterLabels);
-		}
-
-		private void AddSubgroup(RadSubgroupSettings settings)
-		{
-			var subgroupView = new RadSubgroupView(settings);
-			_subgroupViews.Add(subgroupView);
-
-			//TODO: add the subgroup to the editor, remove the widgets below it and readd them, then propagate upwards
-		}
-
-		private void OnAddSubgroupButtonPressed()
-		{
-			InteractiveController app = new InteractiveController(_engine);
-			//TODO: fill in existing subgroup names
-			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, new List<string>(), _parameterLabels, _optionsEditor.Options.AnomalyThreshold,
-				_optionsEditor.Options.MinimalDuration);
-			dialog.Accepted += (sender, args) =>
-			{
-				var d = sender as AddSubgroupDialog;
-				if (d == null)
-					return;
-
-				app.Stop();
-
-				AddSubgroup(d.Settings);
-			};
-			dialog.Cancelled += (sender, args) => app.Stop();
-
-			app.ShowDialog(dialog);
 		}
 
 		private void OnEditLabelsButtonPressed()
@@ -176,7 +99,7 @@
 
 				app.Stop();
 
-				UpdateLabels(d.Labels);
+				_subgroupSelector.UpdateParameterLabels(d.Labels);
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();
 
@@ -189,13 +112,12 @@
 			if (newCount == _parameterLabels.Count)
 				return;
 
-			List<string> newParameterLabels;
 			if (newCount > _parameterLabels.Count)
-				newParameterLabels = _parameterLabels.Concat(Enumerable.Range(0, newCount - _parameterLabels.Count).Select(i => string.Empty)).ToList();
+				_parameterLabels = _parameterLabels.Concat(Enumerable.Range(0, newCount - _parameterLabels.Count).Select(i => string.Empty)).ToList();
 			else
-				newParameterLabels = _parameterLabels.Take(newCount).ToList();
+				_parameterLabels = _parameterLabels.Take(newCount).ToList();
 
-			UpdateLabels(newParameterLabels);
+			_subgroupSelector.UpdateParameterLabels(_parameterLabels);
 			//TODO: remember the old labels
 
 			//TODO: update the text about the subgroups and the validation state

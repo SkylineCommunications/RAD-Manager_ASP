@@ -22,8 +22,6 @@
 
 	public class RadSubgroupInfo : RadSubgroupSettings
 	{
-		public Guid ID { get; set; } //TODO: also this one should be set correctly
-
 		public bool IsMonitored { get; set; } = true;
 	}
 
@@ -57,6 +55,10 @@
 		/// Gets or sets the name of the subgroup.
 		/// </summary>
 		public string Name { get; set; }
+		/// <summary>
+		/// Gets or sets the ID of the subgroup.
+		/// </summary>
+		public Guid ID { get; set; } //TODO: also this one should be set correctly
 
 		/// <summary>
 		/// Gets or sets the parameters in the subgroup.
