@@ -91,6 +91,8 @@ namespace RadDataSources
 						_parameters = new List<RADParameter>();
 						return default;
 					}
+
+					_parameters = subgroupInfo.Parameters;
 				}
 				else
 				{
