@@ -60,7 +60,7 @@
 
 			try
 			{
-				var requestStartTime = Min(now.AddMonths(-1), startTime);
+				var requestStartTime = Min(now.AddDays(-7), startTime);
 				var requestEndTime = Max(now, endTime);
 				List<KeyValuePair<DateTime, double>> anomalyScores = null;
 
