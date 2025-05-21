@@ -86,7 +86,6 @@
 
 	public class RadSubgroupSelector : VisibilitySection
 	{
-		//TODO: try this with a RadioButtonList instead of a TreeView
 		private readonly IEngine _engine;
 		private readonly TreeView _selectorTreeView;
 		private readonly Label _noSubgroupsLabel;
@@ -107,12 +106,16 @@
 			_parentOptions = parentOptions;
 			_parameterLabels = parameterLabels;
 
-			_noSubgroupsLabel = new Label("Add a subgroup by selecting 'Add subgroup...' below");
+			_noSubgroupsLabel = new Label("Add a subgroup by selecting 'Add subgroup...' below")
+			{
+				MinWidth = 600,
+			};
 
 			_selectorTreeView = new TreeView(new List<TreeViewItem>())
 			{
 				Tooltip = "The subgroups of the current group. Click on a subgroup to view its parameters and options.",
 				IsReadOnly = false,
+				MinWidth = 300,
 			};
 			_selectorTreeView.Changed += (sender, args) => OnSelectorTreeViewChanged();
 
@@ -130,6 +133,7 @@
 			_detailsLabel = new Label()
 			{
 				Tooltip = "The parameters and options of the selected subgroup.",
+				MinWidth = 300,
 			};
 
 			_editButton = new Button("Edit subgroup...")
@@ -146,7 +150,7 @@
 
 			var whitespace = new WhiteSpace()
 			{
-				MinHeight = 50,
+				MinHeight = 100,
 			};
 
 			_addButton = new Button("Add subgroup...")
@@ -195,7 +199,9 @@
 		public void UpdateParameterLabels(List<string> parameterLabels)
 		{
 			_parameterLabels = parameterLabels;
-			UpdateSelectorTreeViewItems(); // We might need to append the missing parameters suffix to the display value.
+
+			// We might need to append the missing parameters suffix to the display value, hence recalculate all items
+			UpdateSelectorTreeViewItems(_selectorTreeView.Items.Where(i => i.IsChecked).Select(i => Guid.Parse(i.KeyValue)).ToArray());
 		}
 
 		public void UpdateParentOptions(RadGroupOptions parentOptions)
@@ -267,7 +273,7 @@
 			UpdateSelectorTreeViewItems();
 		}
 
-		private void UpdateSelectorTreeViewItems(Guid? selectedGroupId = null)
+		private void UpdateSelectorTreeViewItems(params Guid[] selectedGroups)
 		{
 			const string missingParametersSuffix = " (missing parameters)";
 			var newItems = new List<TreeViewItem>();
@@ -278,7 +284,7 @@
 					displayValue += missingParametersSuffix;
 				var newItem = new TreeViewItem(displayValue, kvp.Key.ToString())
 				{
-					IsChecked = kvp.Value.ID == selectedGroupId,
+					IsChecked = selectedGroups.Contains(kvp.Key),
 				};
 				newItems.Add(newItem);
 			}
