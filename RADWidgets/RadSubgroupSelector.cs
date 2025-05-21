@@ -83,7 +83,6 @@
 	{
 		//TODO: try this with a RadioButtonList instead of a TreeView
 		private readonly IEngine _engine;
-		private readonly Label _subgroupsLabel;
 		private readonly TreeView _selectorTreeView;
 		private readonly Label _noSubgroupsLabel;
 		private readonly Label _groupNameLabel;
@@ -105,16 +104,9 @@
 
 			_noSubgroupsLabel = new Label("Add a subgroup by selecting 'Add subgroup...' below");
 
-			string subgroupTooltip = "The subgroups of the current group. Click on a subgroup to view its parameters and options.";
-			_subgroupsLabel = new Label("Subgroups")
-			{
-				Tooltip = subgroupTooltip,
-				Style = TextStyle.Heading,
-			};
-
 			_selectorTreeView = new TreeView(new List<TreeViewItem>())
 			{
-				Tooltip = subgroupTooltip,
+				Tooltip = "The subgroups of the current group. Click on a subgroup to view its parameters and options.",
 				IsReadOnly = false,
 			};
 			_selectorTreeView.Changed += (sender, args) => OnSelectorTreeViewChanged();
@@ -160,16 +152,15 @@
 
 			SetSubgroups(subgroups);
 
-			AddWidget(_subgroupsLabel, 0, 0, 1, 3);
-			AddWidget(_noSubgroupsLabel, 1, 0, 1, 2);
-			AddWidget(_selectorTreeView, 2, 0, 4, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_groupNameLabel, 2, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 3, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 4, 1, 2, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_editButton, 1, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_removeButton, 4, 2, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(whitespace, 5, 2);
-			AddWidget(_addButton, 6, 2);
+			AddWidget(_noSubgroupsLabel, 0, 0, 1, 2);
+			AddWidget(_selectorTreeView, 1, 0, 4, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_groupNameLabel, 1, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_invalidSelectionLabel, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_detailsLabel, 3, 1, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(whitespace, 4, 2);
+			AddWidget(_addButton, 5, 2);
 		}
 
 		public List<RadSubgroupSettings> Subgroups
@@ -189,7 +180,6 @@
 
 				IsSectionVisible = value;
 
-				_subgroupsLabel.IsVisible = value;
 				_editButton.IsVisible = value;
 				_removeButton.IsVisible = value;
 				_addButton.IsVisible = value;
@@ -276,9 +266,9 @@
 		{
 			_selectorTreeView.Items = _subgroups.OrderBy(kvp => kvp.Value.DisplayValue, StringComparer.CurrentCultureIgnoreCase)
 				.Select(kvp => new TreeViewItem(kvp.Value.DisplayValue, kvp.Key.ToString())
-				{
-					IsChecked = kvp.Value.ID == selectedGroupId,
-				});
+			{
+				IsChecked = kvp.Value.ID == selectedGroupId,
+			});
 			UpdateSelectedSubgroup();
 		}
 
