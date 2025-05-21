@@ -70,12 +70,17 @@
 			};
 		}
 
+		public bool HasMissingParameters(List<string> labels)
+		{
+			return Parameters.Count() < labels.Count() || Parameters.Any(p => p == null);
+		}
+
 		public bool HasSameParameters(List<ParameterKey> parameters)
 		{
 			if (Parameters == null || parameters == null)
 				return parameters == null && Parameters == null;
 
-			return parameters.SequenceEqual(Parameters.Select(p => p.Key), new ParameterKeyEqualityComparer());
+			return parameters.SequenceEqual(Parameters.Select(p => p?.Key), new ParameterKeyEqualityComparer());
 		}
 	}
 
@@ -190,7 +195,7 @@
 		public void UpdateParameterLabels(List<string> parameterLabels)
 		{
 			_parameterLabels = parameterLabels;
-			UpdateSelectedSubgroup();
+			UpdateSelectorTreeViewItems(); // We might need to append the missing parameters suffix to the display value.
 		}
 
 		public void UpdateParentOptions(RadGroupOptions parentOptions)
@@ -264,11 +269,21 @@
 
 		private void UpdateSelectorTreeViewItems(Guid? selectedGroupId = null)
 		{
-			_selectorTreeView.Items = _subgroups.OrderBy(kvp => kvp.Value.DisplayValue, StringComparer.CurrentCultureIgnoreCase)
-				.Select(kvp => new TreeViewItem(kvp.Value.DisplayValue, kvp.Key.ToString())
+			const string missingParametersSuffix = " (missing parameters)";
+			var newItems = new List<TreeViewItem>();
+			foreach (var kvp in _subgroups.OrderBy(kvp => kvp.Value.DisplayValue, StringComparer.CurrentCultureIgnoreCase))
 			{
-				IsChecked = kvp.Value.ID == selectedGroupId,
-			});
+				string displayValue = kvp.Value.DisplayValue;
+				if (kvp.Value.HasMissingParameters(_parameterLabels))
+					displayValue += missingParametersSuffix;
+				var newItem = new TreeViewItem(displayValue, kvp.Key.ToString())
+				{
+					IsChecked = kvp.Value.ID == selectedGroupId,
+				};
+				newItems.Add(newItem);
+			}
+
+			_selectorTreeView.Items = newItems;
 			UpdateSelectedSubgroup();
 		}
 
@@ -310,10 +325,10 @@
 			for (int i = 0; i < _parameterLabels.Count; ++i)
 			{
 				string label = string.IsNullOrEmpty(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i];
-				if (i < settings.Parameters.Count)
+				if (i < settings.Parameters.Count && settings.Parameters[i] != null)
 					parameterTexts.Add($"  {label}: {settings.Parameters[i].ToString()}");
 				else
-					parameterTexts.Add($"  {label}: Not set");//TOOD: I might want to mark groups with missing parameters in the tree view (add (parameters missing to the name or something))
+					parameterTexts.Add($"  {label}: Not set");
 			}
 
 			var parameterText = string.Join("\n", parameterTexts);
