@@ -62,10 +62,10 @@
 			};
 			editLabelsButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
-			_subgroupSelector = new RadSubgroupSelector(engine, settings?.Options, _parameterLabels, settings?.Subgroups);
-
 			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
+
+			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, settings?.Subgroups);
 
 			_detailsLabel = new Label();
 

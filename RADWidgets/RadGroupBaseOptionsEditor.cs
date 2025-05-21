@@ -53,7 +53,7 @@
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
 			};
-			_anomalyThresholdNumeric.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
+			_anomalyThresholdNumeric.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);//TODO: report that this event doesn't seem to work completely correctly
 
 			_minimalDurationOverrideCheckBox = new CheckBox("Override default minimum anomaly duration?")
 			{

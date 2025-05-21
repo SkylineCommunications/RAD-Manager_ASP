@@ -206,6 +206,7 @@
 		public void UpdateParentOptions(RadGroupOptions parentOptions)
 		{
 			_parentOptions = parentOptions;
+			UpdateSelectedSubgroup();
 		}
 
 		private void SetInvalidSelection(string detailsText, bool removeButtonEnabled)
@@ -326,14 +327,14 @@
 			}
 
 			var parameterText = string.Join("\n", parameterTexts);
-
-			string anomalyThresholdText = settings.Options.AnomalyThreshold.HasValue ? settings.Options.AnomalyThreshold.ToString() : "same as parent group";
-			string minimalDurationText = settings.Options.MinimalDuration.HasValue ? $"{settings.Options.MinimalDuration.ToString()} minutes" : "same as parent group";
-			var optionsText = $"  Anomaly threshold: {anomalyThresholdText}\n" +
-				$"  Minimal anomaly duration: {minimalDurationText}";
-
+			double anomalyThreshold = settings.Options.GetAnomalyThresholdOrDefault(_parentOptions.AnomalyThreshold);
+			string anomalyThresholdText = settings.Options.AnomalyThreshold.HasValue ? anomalyThreshold.ToString() : $"{anomalyThreshold} (same as parent group)";
+			int minimalDuration = settings.Options.GetMinimalDurationOrDefault(_parentOptions.MinimalDuration);
+			string minimalDurationText = settings.Options.MinimalDuration.HasValue ? $"{minimalDuration} minutes" : $"{minimalDuration} minutes (same as parent group)";
 			_detailsLabel.Text = $"Parameters:\n{parameterText}\n\n" +
-				$"Options:\n{optionsText}";
+				$"Options:\n" +
+				$"  Anomaly threshold: {anomalyThresholdText}\n" +
+				$"  Minimal anomaly duration: {minimalDurationText}";
 		}
 
 		private void OnEditButtonPressed()
