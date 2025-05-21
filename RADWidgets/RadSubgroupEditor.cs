@@ -3,97 +3,197 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Runtime;
 	using RadUtils;
-	using Skyline.DataMiner.Analytics.Rad;
+	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class RadSubgroupEditor : VisibilitySection
 	{
-		private GroupNameSection _groupNameSection;
-		private List<ParameterSelector> _parameterSelectors;//TODO: probably a dropdown for the display index instead of a text box
-		//TODO: validation for when the parameters are exactly the same as the parameters of anonther group (show a warning here, but do not block the user
-		//from pressing OK
-		private RadSubgroupOptionsEditor _optionsEditor;
-		private Label _detailsLabel;
-		private Guid subgroupID;
-		//TODO: accept empty group names as well. Probably add a placeholder to the group name text box
+		private readonly GroupNameSection _groupNameSection;
+		private readonly List<Tuple<Label, ParameterInstanceSelector>> _parameterSelectors;
+		private readonly RadSubgroupOptionsEditor _optionsEditor;
+		private readonly Label _detailsLabel;
+		private readonly Guid _subgroupID;
+		private readonly List<RadSubgroupSelectorItem> _otherSubgroups;
+		private bool _hasInvalidParameter;
+		private IGrouping<ParameterKey, Tuple<Label, ParameterInstanceSelector>> _duplicatedParameters;//TODO: also avoid duplicate labels
+		private RadSubgroupSelectorItem _subgroupWithSameParameters;
+		//TODO: number of subgroups must be between 2 and 2500
+		//TODO: check for duplicate group name
+		//TODO: check for either all have a label, or none do (also check in the label editor)
 
-		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, RadSubgroupSettings settings, RadGroupOptions parentOptions)
+		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
+			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)
 		{
-			subgroupID = settings.ID;
+			_subgroupID = settings?.ID ?? Guid.NewGuid();
+			_otherSubgroups = allSubgroups;
+			if (settings != null)
+				_otherSubgroups.RemoveAll(s => s.ID == settings.ID);
 
-			int parameterCount = settings.Parameters.Count;
-			var parameterSelectorLabels = new List<Label>(parameterCount);
-			_parameterSelectors = new List<ParameterSelector>(parameterCount);
-			for (int i = 0; i < parameterCount; i++)
-			{
-				var p = settings.Parameters[i];
-				parameterSelectorLabels.Add(new Label(string.IsNullOrEmpty(p.Label) ? $"Parameter {i + 1}" : p.Label));
-				_parameterSelectors.Add(new ParameterSelector(engine));//TODO: show the current parameter key
-			}
-
-			ConstuctWidgets(existingSubgroupNames, settings.Name, parameterSelectorLabels, _parameterSelectors, settings.Options, parentOptions);
-		}
-
-		public RadSubgroupEditor(IEngine engine, List<string> existingSubgroupNames, List<string> parameterLabels, RadGroupOptions parentOptions)
-		{
-			subgroupID = Guid.NewGuid();
-
-			var parameterSelectorLabels = new List<Label>(parameterLabels.Count);
-			_parameterSelectors = new List<ParameterSelector>(parameterLabels.Count);
+			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(parameterLabels.Count);
 			for (int i = 0; i < parameterLabels.Count; i++)
 			{
-				parameterSelectorLabels.Add(new Label(string.IsNullOrEmpty(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]));
-				_parameterSelectors.Add(new ParameterSelector(engine));//TODO: show the current parameter key
+				var label = new Label(string.IsNullOrEmpty(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]);
+
+				RadSubgroupSelectorParameter parameter = null;
+				if (settings != null && i < settings.Parameters.Count)
+					parameter = settings.Parameters[i];
+				var parameterSelector = new ParameterInstanceSelector(engine, parameter);
+				parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
+
+				_parameterSelectors.Add(Tuple.Create(label, parameterSelector));
 			}
 
-			ConstuctWidgets(existingSubgroupNames, string.Empty, parameterSelectorLabels, _parameterSelectors, null, parentOptions);
-		}
+			int parameterSelectorColumnCount = _parameterSelectors.FirstOrDefault()?.Item2.ColumnCount ?? 1;
+			_groupNameSection = new GroupNameSection(settings?.Name, _otherSubgroups.Select(s => s.Name).ToList(), parameterSelectorColumnCount, groupNamePlaceHolder);
+			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
-		public RadSubgroupSettings Settings
-		{
-			get
-			{
-				return new RadSubgroupSettings
-				{
-					Name = _groupNameSection.GroupName,
-					ID = subgroupID,
-					Parameters = new List<RADParameter>(),//TODO: fill this in. Also probably include more info than just the key, but also the element name and stuff
-					Options = _optionsEditor.Options,
-				};
-			}
-		}
-
-		private void ConstuctWidgets(List<string> existingSubgroupNames, string groupName,
-			List<Label> parameterSelectorLabels, List<ParameterSelector> parameterSelectors,
-			RadSubgroupOptions options, RadGroupOptions parentOptions)
-		{
-			_parameterSelectors = parameterSelectors;
-
-			int parameterSelectorColumnCount = parameterSelectors.FirstOrDefault()?.ColumnCount ?? 1;
-			_groupNameSection = new GroupNameSection(groupName, existingSubgroupNames, parameterSelectorColumnCount);
-
-			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, options);
+			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
 
 			_detailsLabel = new Label();
+
+			OnGroupNameSectionValidationChanged();
+			OnParameterSelectorChanged();
 
 			int row = 0;
 			AddSection(_groupNameSection, row, 0);
 			row += _groupNameSection.RowCount;
 
-			for (int i = 0; i < parameterSelectorLabels.Count(); i++)
+			foreach (var (label, parameterSelector) in _parameterSelectors)
 			{
-				AddWidget(parameterSelectorLabels[i], row, 0, parameterSelectors[i].RowCount, 1);
-				AddSection(parameterSelectors[i], row, 1);
-				row += parameterSelectors[i].RowCount;
+				AddWidget(label, row, 0, parameterSelector.RowCount, 1);
+				AddSection(parameterSelector, row, 1);
+				row += parameterSelector.RowCount;
 			}
 
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
 			AddWidget(_detailsLabel, row, 0, 1, 2);
+		}
+
+		public event EventHandler ValidationChanged;
+
+		public RadSubgroupSelectorItem Settings
+		{
+			get
+			{
+				return new RadSubgroupSelectorItem(_subgroupID, _groupNameSection.GroupName, _optionsEditor.Options,
+					_parameterSelectors.Select(t => t.Item2.SelectedItem).ToList(),
+					string.IsNullOrEmpty(_groupNameSection.GroupName) ? _groupNameSection.GroupNamePlaceHolder : _groupNameSection.GroupName);
+			}
+		}
+
+		public bool IsValid { get; private set; }
+
+		public string ValidationText { get; private set; }
+
+		public override bool IsVisible
+		{
+			get => IsSectionVisible;
+			set
+			{
+				if (IsSectionVisible == value)
+					return;
+
+				IsSectionVisible = value;
+
+				_groupNameSection.IsVisible = value;
+				foreach (var child in _parameterSelectors)
+				{
+					child.Item1.IsVisible = value;
+					child.Item2.IsVisible = value;
+				}
+
+				_optionsEditor.IsVisible = value;
+				UpdateDetailsLabelVisibility();
+			}
+		}
+
+		private void UpdateSubgroupWithSameParameters()
+		{
+			var pKeys = _parameterSelectors.Select(p => p.Item2.SelectedItem?.Key).ToList();
+			foreach (var s in _otherSubgroups)
+			{
+				if (s.HasSameParameters(pKeys))
+				{
+					_subgroupWithSameParameters = s;
+					return;
+				}
+			}
+
+			_subgroupWithSameParameters = null;
+		}
+
+		private void UpdateDuplicatedParameters()
+		{
+			_duplicatedParameters = _parameterSelectors.GroupBy(p => p.Item2.SelectedItem?.Key, new ParameterKeyEqualityComparer()).Where(g => g.Count() > 1).FirstOrDefault();
+		}
+
+		private void UpdateIsValid()
+		{
+			List<string> validationTexts = new List<string>(2);
+			if (!_groupNameSection.IsValid)
+				validationTexts.Add("provide a valid subgroup name");
+			if (_hasInvalidParameter)
+				validationTexts.Add("make a valid selection for each parameter");
+			else if (_subgroupWithSameParameters != null)
+				validationTexts.Add("do not choose exactly the same parameters as another subgroup");
+
+			IsValid = validationTexts.Count == 0;
+			ValidationText = validationTexts.HumanReadableJoin().Capitalize();
+			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void UpdateDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid && (_hasInvalidParameter || _duplicatedParameters != null || _subgroupWithSameParameters != null);
+		}
+
+		private void UpdateDetailsLabel()
+		{
+			UpdateDetailsLabelVisibility();
+
+			if (_hasInvalidParameter)
+			{
+				var invalidParameterLabels = _parameterSelectors.Where(s => !s.Item2.IsValid).Select(s => s.Item1.Text);
+				if (invalidParameterLabels.Count() > 1)
+					_detailsLabel.Text = $"Make a valid selection for parameters {invalidParameterLabels.HumanReadableJoin()}.";
+				else
+					_detailsLabel.Text = $"Make a valid selection for parameter {invalidParameterLabels.FirstOrDefault()}";
+			}
+			else if (_duplicatedParameters != null)
+			{
+				_detailsLabel.Text = $"The parameters you selected for {_duplicatedParameters.Select(s => s.Item1.Text).HumanReadableJoin()} are exactly the same.";
+			}
+			else if (_subgroupWithSameParameters != null)
+			{
+				_detailsLabel.Text = $"The parameters you selected are exactly the same as those of subgroup '{_subgroupWithSameParameters.DisplayValue}'.";
+			}
+			else
+			{
+				_detailsLabel.Text = string.Empty;
+			}
+		}
+
+		private void OnParameterSelectorChanged()
+		{
+			_hasInvalidParameter = _parameterSelectors.Any(p => !p.Item2.IsValid);
+			if (!_hasInvalidParameter)
+			{
+				UpdateSubgroupWithSameParameters();
+				UpdateDuplicatedParameters();
+			}
+
+			UpdateIsValid();
+			UpdateDetailsLabel();
+		}
+
+		private void OnGroupNameSectionValidationChanged()
+		{
+			UpdateIsValid();
+			UpdateDetailsLabelVisibility();
 		}
 	}
 }

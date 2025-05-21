@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using Skyline.DataMiner.Analytics.Rad;
+	using Skyline.DataMiner.Analytics.DataTypes;
 
 	public class RadSharedModelGroupInfo : ARadSharedModelGroupSettings<RadSubgroupInfo>, IRadGroupBaseInfo
 	{
@@ -49,21 +49,29 @@
 		}
 	}
 
+	public class RadParameter
+	{
+		public ParameterKey Key { get; set; }
+
+		public string Label { get; set; }
+	}
+
 	public class RadSubgroupSettings
 	{
 		/// <summary>
 		/// Gets or sets the name of the subgroup.
 		/// </summary>
 		public string Name { get; set; }
+
 		/// <summary>
 		/// Gets or sets the ID of the subgroup.
 		/// </summary>
-		public Guid ID { get; set; } //TODO: also this one should be set correctly
+		public Guid ID { get; set; }
 
 		/// <summary>
 		/// Gets or sets the parameters in the subgroup.
 		/// </summary>
-		public List<RADParameter> Parameters { get; set; }
+		public List<RadParameter> Parameters { get; set; }
 
 		/// <summary>
 		/// Gets or sets the options for the subgroup.

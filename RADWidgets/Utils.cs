@@ -179,9 +179,47 @@
 			}
 		}
 
-		public static IEnumerable<DynamicTableIndex> FetchMatchingInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter)
+		/// <summary>
+		/// Fetches the parameter info for the given element and parameter ID. Returns null and logs an exception if the parameter info could not be fetched.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <param name="dataMinerID">The DataMiner ID of the element.</param>
+		/// <param name="elementID">The element ID.</param>
+		/// <param name="parameterID">The parameter ID.</param>
+		/// <returns>The parameter info, or null if the parameter could not be found.</returns>
+		public static ParameterInfo FetchParameterInfo(IEngine engine, int dataMinerID, int elementID, int parameterID)
 		{
-			return FetchMatchingInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter)
+			var protocol = FetchElementProtocol(engine, dataMinerID, elementID);
+			if (protocol == null)
+				return null;
+
+			var paramInfo = protocol.Parameters?.FirstOrDefault(p => p.ID == parameterID);
+			if (paramInfo == null)
+			{
+				engine.Log($"Could not find parameter {parameterID} in protocol for element {dataMinerID}/{elementID}");
+				return null;
+			}
+
+			return paramInfo;
+		}
+
+		public static GetProtocolInfoResponseMessage FetchProtocol(IEngine engine, string protocolName, string protocolVersion)
+		{
+			try
+			{
+				var request = new GetProtocolMessage(protocolName, protocolVersion);
+				return engine.SendSLNetSingleResponseMessage(request) as GetProtocolInfoResponseMessage;
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Could not fetch protocol with name '{protocolName}' and version '{protocolVersion}': {e}");
+				return null;
+			}
+		}
+
+		public static IEnumerable<DynamicTableIndex> FetchInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter = null)
+		{
+			return FetchInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter)
 				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue));
 		}
 
@@ -277,20 +315,21 @@
 			return char.ToUpper(s[0]) + s.Substring(1);
 		}
 
-		private static DynamicTableIndex[] FetchMatchingInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter)
+		private static DynamicTableIndex[] FetchInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter = null)
 		{
 			try
 			{
-				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, tableParameterID)
+				var indicesRequest = new GetDynamicTableIndices(dataMinerID, elementID, tableParameterID);
+				if (!string.IsNullOrEmpty(displayKeyFilter))
 				{
-					KeyFilter = displayKeyFilter,
-					KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey,
+					indicesRequest.KeyFilter = displayKeyFilter;
+					indicesRequest.KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey;
 				};
 				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
 				if (indicesResponse == null)
 				{
 					engine.Log(
-						$"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: " +
+						$"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter '{displayKeyFilter ?? string.Empty}': " +
 						$"no response, or response of the wrong type received",
 						LogType.Error,
 						5);
@@ -301,7 +340,7 @@
 			}
 			catch (Exception e)
 			{
-				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter {displayKeyFilter}: {e}", LogType.Error, 5);
+				engine.Log($"Could not fetch primary keys for element {dataMinerID}/{elementID} parameter {tableParameterID} with filter '{displayKeyFilter ?? string.Empty}': {e}", LogType.Error, 5);
 				return Array.Empty<DynamicTableIndex>();
 			}
 		}

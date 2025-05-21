@@ -5,8 +5,8 @@
 	using System.ComponentModel;
 	using System.Linq;
 	using AddRadParameterGroup;
+	using RadUtils;
 	using RadWidgets;
-	using Skyline.DataMiner.Analytics.Mad;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -43,7 +43,7 @@
 			};
 			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
-			var existingGroupNames = Utils.FetchRadGroupNames(engine).Select(id => id.GroupName).Distinct().ToList();
+			var existingGroupNames = RadWidgets.Utils.FetchRadGroupNames(engine).Select(id => id.GroupName).Distinct().ToList();
 			_groupEditor = new RadGroupEditor(engine, existingGroupNames);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
@@ -51,8 +51,7 @@
 			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
 			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames);
-			//_sharedModelGroupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
-			//TODO
+			_sharedModelGroupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 
 			_okButton = new Button()
 			{
@@ -87,21 +86,20 @@
 
 		public event EventHandler Cancelled;
 
-		public List<MADGroupInfo> GetGroupsToAdd() //TODO
+		public List<RadGroupBaseSettings> GetGroupsToAdd()
 		{
 			if (_addTypeDropDown.Selected == AddGroupType.Single)
 			{
-				var groupInfo = new MADGroupInfo(
-					_groupEditor.Settings.GroupName,
-					_groupEditor.Settings.Parameters.ToList(),
-					_groupEditor.Settings.Options.UpdateModel,
-					_groupEditor.Settings.Options.AnomalyThreshold,
-					_groupEditor.Settings.Options.MinimalDuration);
-				return new List<MADGroupInfo>() { groupInfo };
+				return new List<RadGroupBaseSettings>() { _groupEditor.Settings };
+			}
+			else if (_addTypeDropDown.Selected == AddGroupType.MultipleOnProtocol)
+			{
+				//TODO: do not do it this way when adding a shared group
+				return _groupByProtocolCreator.GetGroupsToAdd().OfType<RadGroupBaseSettings>().ToList();
 			}
 			else
 			{
-				return _groupByProtocolCreator.GetGroupsToAdd();
+				return new List<RadGroupBaseSettings>() { _sharedModelGroupEditor.Settings };
 			}
 		}
 

@@ -121,9 +121,7 @@ public class Script
 				}
 			}
 
-			var pKeys = newSettings.Parameters.ToList();
-			var groupInfo = new MADGroupInfo(newSettings.GroupName, pKeys, newSettings.Options.UpdateModel, newSettings.Options.AnomalyThreshold, newSettings.Options.MinimalDuration);
-			RadMessageHelper.AddParameterGroup(_app.Engine, groupInfo);
+			RadMessageHelper.AddParameterGroup(_app.Engine, newSettings);
 		}
 		catch (Exception ex)
 		{

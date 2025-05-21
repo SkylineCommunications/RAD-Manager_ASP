@@ -10,7 +10,7 @@
 		private readonly TextBox _groupNameTextBox;
 		private readonly List<string> _existingGroupNames;
 
-		public GroupNameSection(string initialName, List<string> existingGroupNames, int textBoxColumnSpan)
+		public GroupNameSection(string initialName, List<string> existingGroupNames, int textBoxColumnSpan, string groupNamePlaceHolder = null)
 		{
 			_existingGroupNames = existingGroupNames;
 			if (!string.IsNullOrEmpty(initialName)) // The current group name should be accepted as valid
@@ -26,16 +26,20 @@
 				Text = initialName,
 				MinWidth = 600,
 				Tooltip = groupNameTooltip,
+				PlaceHolder = groupNamePlaceHolder,
 			};
 			_groupNameTextBox.Changed += (sender, args) => OnGroupNameTextBoxChanged();
+			OnGroupNameTextBoxChanged();
 
 			AddWidget(groupNameLabel, 0, 0);
 			AddWidget(_groupNameTextBox, 0, 1, 1, textBoxColumnSpan);
 		}
 
-		public event EventHandler<EventArgs> ValidationChanged;
+		public event EventHandler ValidationChanged;
 
 		public string GroupName => _groupNameTextBox.Text;
+
+		public string GroupNamePlaceHolder => _groupNameTextBox.PlaceHolder;
 
 		public bool IsValid => _groupNameTextBox.ValidationState == UIValidationState.Valid;
 
@@ -45,8 +49,16 @@
 		{
 			if (string.IsNullOrEmpty(_groupNameTextBox.Text))
 			{
-				_groupNameTextBox.ValidationState = UIValidationState.Invalid;
-				_groupNameTextBox.ValidationText = "Provide a group name";
+				if (string.IsNullOrEmpty(_groupNameTextBox.PlaceHolder))
+				{
+					_groupNameTextBox.ValidationState = UIValidationState.Invalid;
+					_groupNameTextBox.ValidationText = "Provide a group name";
+				}
+				else
+				{
+					_groupNameTextBox.ValidationState = UIValidationState.Valid;
+					_groupNameTextBox.ValidationText = string.Empty;
+				}
 			}
 			else if (_existingGroupNames.Contains(_groupNameTextBox.Text))
 			{
@@ -58,6 +70,8 @@
 				_groupNameTextBox.ValidationState = UIValidationState.Valid;
 				_groupNameTextBox.ValidationText = string.Empty;
 			}
+
+			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

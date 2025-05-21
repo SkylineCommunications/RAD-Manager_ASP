@@ -6,7 +6,6 @@ namespace RadDataSources
 	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
-	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
 
@@ -27,7 +26,7 @@ namespace RadDataSources
 		private string _groupName = string.Empty;
 		private string _subGroupName = string.Empty;
 		private Guid _subGroupID = Guid.Empty;
-		private List<RADParameter> _parameters = new List<RADParameter>();
+		private List<RadParameter> _parameters = new List<RadParameter>();
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
@@ -66,7 +65,7 @@ namespace RadDataSources
 			if (string.IsNullOrEmpty(_groupName))
 			{
 				_logger.Error("Group name is empty");
-				_parameters = new List<RADParameter>();
+				_parameters = new List<RadParameter>();
 				return default;
 			}
 
@@ -75,7 +74,7 @@ namespace RadDataSources
 				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, _dataMinerID, _groupName);
 				if (groupInfo is RadGroupInfo parameterGroupInfo)
 				{
-					_parameters = parameterGroupInfo.Parameters.Select(p => new RADParameter(p, string.Empty)).ToList();
+					_parameters = parameterGroupInfo.Parameters.Select(p => new RadParameter() { Key = p }).ToList();
 				}
 				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
 				{
@@ -88,7 +87,7 @@ namespace RadDataSources
 					if (subgroupInfo == null)
 					{
 						_logger.Error("Could not find subgroup. Provide either a valid subgroup ID or a valid subgroup name.");
-						_parameters = new List<RADParameter>();
+						_parameters = new List<RadParameter>();
 						return default;
 					}
 
@@ -97,7 +96,7 @@ namespace RadDataSources
 				else
 				{
 					_logger.Error("Group not found, or group is of unknown type.");
-					_parameters = new List<RADParameter>();
+					_parameters = new List<RadParameter>();
 					return default;
 				}
 			}

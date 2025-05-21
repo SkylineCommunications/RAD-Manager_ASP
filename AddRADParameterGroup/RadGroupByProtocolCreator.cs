@@ -181,7 +181,7 @@
 				}
 				else
 				{
-					var matchingInstances = RadWidgets.Utils.FetchMatchingInstancesWithTrending(_engine, element.DmaId, element.ElementId, paramInfo, parameter.DisplayKeyFilter);
+					var matchingInstances = RadWidgets.Utils.FetchInstancesWithTrending(_engine, element.DmaId, element.ElementId, paramInfo, parameter.DisplayKeyFilter);
 					pKeys.AddRange(matchingInstances.Select(i => new ParameterKey(element.DmaId, element.ElementId, parameter.ParameterID, i.IndexValue)));
 				}
 			}

@@ -21,8 +21,7 @@
 				foreach (var parameter in parameters)
 				{
 					var element = engine.FindElement(parameter.DataMinerID, parameter.ElementID);
-					var protocol = Utils.FetchElementProtocol(engine, parameter.DataMinerID, parameter.ElementID);
-					var paramInfo = protocol?.Parameters.FirstOrDefault(p => p.ID == parameter.ParameterID);
+					var paramInfo = Utils.FetchParameterInfo(engine, parameter.DataMinerID, parameter.ElementID, parameter.ParameterID);
 					selection.Add(new ParameterSelectorInfo()
 					{
 						ElementName = element?.ElementName ?? "Unknown element",

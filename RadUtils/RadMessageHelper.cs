@@ -5,7 +5,7 @@
 	using System.Linq;
 	using System.Runtime.CompilerServices;
 	using Skyline.DataMiner.Analytics.Mad;
-	using Skyline.DataMiner.Analytics.Rad;
+	using Skyline.DataMiner.Analytics.Rad;//TODO: am I allowed to include this one in a 10.5.4? (I think I do when compiling and then it does run)
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
@@ -129,12 +129,34 @@
 			RemoveParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
 
-		public static void AddParameterGroup(Connection connection, MADGroupInfo groupInfo)
+		public static void AddParameterGroup(Connection connection, RadGroupSettings groupInfo)
 		{
 			AddParameterGroup(connection.HandleSingleResponseMessage, groupInfo);
 		}
 
-		public static void AddParameterGroup(IEngine engine, MADGroupInfo groupInfo)
+		public static void AddParameterGroup(IEngine engine, RadGroupSettings groupInfo)
+		{
+			AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
+		}
+
+		/// <summary>
+		/// Add a shared model parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="groupInfo">The group information.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="AddRADSharedModelGroupMessage"/> is not known.</exception>
+		public static void AddParameterGroup(Connection connection, RadSharedModelGroupSettings groupInfo)
+		{
+			AddParameterGroup(connection.HandleSingleResponseMessage, groupInfo);
+		}
+
+		/// <summary>
+		/// Add a shared model parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="groupInfo">The group information.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="AddRADSharedModelGroupMessage"/> is not known.</exception>
+		public static void AddParameterGroup(IEngine engine, RadSharedModelGroupSettings groupInfo)
 		{
 			AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
 		}
@@ -230,7 +252,7 @@
 					subgroups.Add(new RadSubgroupInfo()
 					{
 						Name = subgroup.Name,
-						Parameters = subgroup.Parameters,
+						Parameters = subgroup.Parameters.Select(p => new RadParameter() { Label = p.Label, Key = p.Key }).ToList(),
 						Options = new RadSubgroupOptions()
 						{
 							AnomalyThreshold = subgroup.AnomalyThreshold,
@@ -361,9 +383,31 @@
 
 		private static AddMADParameterGroupResponseMessage AddParameterGroup(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			MADGroupInfo groupInfo)
+			RadGroupSettings settings)
 		{
+			var groupInfo = new MADGroupInfo(settings.GroupName, settings.Parameters.ToList(), settings.Options.UpdateModel,
+				settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
 			var request = new AddMADParameterGroupMessage(groupInfo);
+			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static AddMADParameterGroupResponseMessage AddParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			RadSharedModelGroupSettings settings)
+		{
+			var subgroups = new List<RADSubgroupInfo>(settings.Subgroups.Count);
+			foreach (var s in settings.Subgroups)
+			{
+				var parameters = s.Parameters.Select(p => new RADParameter(p.Key, p.Label)).ToList();
+				subgroups.Add(new RADSubgroupInfo(s.Name, parameters, s.Options.AnomalyThreshold, s.Options.MinimalDuration));
+			}
+			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
+				settings.Options.MinimalDuration);
+			var request = new AddRADSharedModelGroupMessage(groupInfo);
 			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
 		}
 

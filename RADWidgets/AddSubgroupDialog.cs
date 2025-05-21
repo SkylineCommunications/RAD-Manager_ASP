@@ -12,15 +12,16 @@
 		private readonly Button _okButton;
 		private readonly Button _cancelButton;
 
-		public AddSubgroupDialog(IEngine engine, List<string> existingSubgroups, List<string> labels, RadGroupOptions parentOptions) : base(engine)
+		public AddSubgroupDialog(IEngine engine, List<RadSubgroupSelectorItem> existingSubgroups, List<string> labels, RadGroupOptions parentOptions,
+			string groupNamePlaceHolder) : base(engine)
 		{
 			Title = "Add Subgroup";
-			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, labels, parentOptions);
+			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, parentOptions, labels, groupNamePlaceHolder);
+			_subgroupEditor.ValidationChanged += (sender, args) => OnSubgroupEditorValidationChanged();
 
 			_okButton = new Button("OK")
 			{
 				Style = ButtonStyle.CallToAction,
-				Tooltip = "Create the subgroup with the specified settings.",
 			};
 			_okButton.Pressed += (s, e) => Accepted?.Invoke(this, EventArgs.Empty);
 
@@ -36,18 +37,31 @@
 
 			AddWidget(_cancelButton, row, 0);
 			AddWidget(_okButton, row, 1, 1, _subgroupEditor.ColumnCount - 1);
-			//TODO: check for duplicate parameters, duplicate names, that all parameters are filled in and so on
+			//TODO: check for duplicate parameters (also check the code in SLAnalytics to check that I have everything)
 		}
 
 		public event EventHandler Accepted;
 
 		public event EventHandler Cancelled;
 
-		public RadSubgroupSettings Settings
+		public RadSubgroupSelectorItem Settings
 		{
 			get
 			{
 				return _subgroupEditor.Settings;
+			}
+		}
+
+		private void OnSubgroupEditorValidationChanged()
+		{
+			if (_subgroupEditor.IsValid)
+			{
+				_okButton.Tooltip = "Create a subgroup with the specified settings.";
+			}
+			else
+			{
+				_okButton.Tooltip = "Create a subgroup with the specified settings. Note that some fields above are invalid and will have to be fixed " +
+					$"before submitting the shared model group: {_subgroupEditor.ValidationText}.";
 			}
 		}
 	}

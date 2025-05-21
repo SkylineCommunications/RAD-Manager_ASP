@@ -1,5 +1,6 @@
 ﻿namespace RadWidgets
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadUtils;
@@ -86,6 +87,25 @@
 			AddWidget(_detailsLabel, row, 0, 1, 3);
 		}
 
+		public event EventHandler ValidationChanged;
+
+		public RadSharedModelGroupSettings Settings
+		{
+			get
+			{
+				return new RadSharedModelGroupSettings
+				{
+					GroupName = _groupNameSection.GroupName,
+					Subgroups = _subgroupSelector.Subgroups,
+					Options = _optionsEditor.Options,
+				};
+			}
+		}
+
+		public bool IsValid { get; private set; }
+
+		public string ValidationText { get; private set; }
+
 		private void OnEditLabelsButtonPressed()
 		{
 			InteractiveController app = new InteractiveController(_engine);
@@ -126,5 +146,8 @@
 		{
 			//TODO
 		}
+		//TODO: also add shared group edit method
+		//TODO: remove group: either remove whole group, or only specific subgroup
+		//TODO: Retraining: exclude elements or subgroups for retraining
 	}
 }
