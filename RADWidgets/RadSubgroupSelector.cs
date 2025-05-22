@@ -65,7 +65,7 @@
 			return new RadSubgroupSettings
 			{
 				ID = ID,
-				Name = Name,
+				Name = string.IsNullOrEmpty(Name) ? null : Name, // Analytics requires null and not an empty string
 				Parameters = parameters,
 				Options = Options,
 			};

@@ -209,6 +209,101 @@
 			return response?.GroupNames;
 		}
 
+		private static RadGroupInfo FetchMADParameterGroupInfo(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string groupName)
+		{
+			GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
+			{
+				DataMinerID = dataMinerID,
+			};
+
+			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
+			if (response?.GroupInfo == null)
+				return null;
+
+			return new RadGroupInfo()
+			{
+				GroupName = response.GroupInfo.Name,
+				Parameters = response.GroupInfo.Parameters,
+				Options = new RadGroupOptions()
+				{
+					UpdateModel = response.GroupInfo.UpdateModel,
+					AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
+					MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
+				},
+			};
+		}
+
+		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
+		{
+			GetMADDataMessage request = new GetMADDataMessage(groupName, startTime, endTime)
+			{
+				DataMinerID = dataMinerID,
+			};
+			var response = sendMessageFunc(request) as GetMADDataResponseMessage;
+			return response?.Data.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList();
+		}
+
+		private static RemoveMADParameterGroupResponseMessage RemoveParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string groupName)
+		{
+			var request = new RemoveMADParameterGroupMessage(groupName)
+			{
+				DataMinerID = dataMinerID,
+			};
+			return sendMessageFunc(request) as RemoveMADParameterGroupResponseMessage;
+		}
+
+		private static AddMADParameterGroupResponseMessage AddParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			RadGroupSettings settings)
+		{
+			var groupInfo = new MADGroupInfo(settings.GroupName, settings.Parameters.ToList(), settings.Options.UpdateModel,
+				settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
+			var request = new AddMADParameterGroupMessage(groupInfo);
+			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static AddMADParameterGroupResponseMessage AddParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			RadSharedModelGroupSettings settings)
+		{
+			var subgroups = new List<RADSubgroupInfo>(settings.Subgroups.Count);
+			foreach (var s in settings.Subgroups)
+			{
+				var parameters = s.Parameters.Select(p => new RADParameter(p.Key, p.Label)).ToList();
+				subgroups.Add(new RADSubgroupInfo(s.Name, parameters, s.Options.AnomalyThreshold, s.Options.MinimalDuration));
+			}
+
+			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
+				settings.Options.MinimalDuration);
+			var request = new AddRADSharedModelGroupMessage(groupInfo);
+			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
+		}
+
+		private static RetrainMADModelResponseMessage RetrainParameterGroup(
+			Func<DMSMessage, DMSMessage> sendMessageFunc,
+			int dataMinerID,
+			string groupName,
+			IEnumerable<TimeRange> timeRanges)
+		{
+			var request = new RetrainMADModelMessage(groupName, timeRanges.Select(r => new Skyline.DataMiner.Analytics.Mad.TimeRange(r.Start, r.End)).ToList())
+			{
+				DataMinerID = dataMinerID,
+			};
+			return sendMessageFunc(request) as RetrainMADModelResponseMessage;
+		}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 		/// <summary>
 		/// Supported from TODO: version
 		/// </summary>
@@ -281,33 +376,6 @@
 			}
 		}
 
-		private static RadGroupInfo FetchMADParameterGroupInfo(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName)
-		{
-			GetMADParameterGroupInfoMessage request = new GetMADParameterGroupInfoMessage(groupName)
-			{
-				DataMinerID = dataMinerID,
-			};
-
-			var response = sendMessageFunc(request) as GetMADParameterGroupInfoResponseMessage;
-			if (response?.GroupInfo == null)
-				return null;
-
-			return new RadGroupInfo()
-			{
-				GroupName = response.GroupInfo.Name,
-				Parameters = response.GroupInfo.Parameters,
-				Options = new RadGroupOptions()
-				{
-					UpdateModel = response.GroupInfo.UpdateModel,
-					AnomalyThreshold = response.GroupInfo.AnomalyThreshold,
-					MinimalDuration = response.GroupInfo.MinimumAnomalyDuration,
-				},
-			};
-		}
-
 		private static IRadGroupBaseInfo FetchParameterGroupInfo(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
@@ -358,59 +426,6 @@
 			return response?.DataPoints.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList();
 		}
 
-		private static List<KeyValuePair<DateTime, double>> FetchAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
-		{
-			GetMADDataMessage request = new GetMADDataMessage(groupName, startTime, endTime)
-			{
-				DataMinerID = dataMinerID,
-			};
-			var response = sendMessageFunc(request) as GetMADDataResponseMessage;
-			return response?.Data.Select(p => new KeyValuePair<DateTime, double>(p.Timestamp.ToUniversalTime(), p.AnomalyScore)).ToList();
-		}
-
-		private static RemoveMADParameterGroupResponseMessage RemoveParameterGroup(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName)
-		{
-			var request = new RemoveMADParameterGroupMessage(groupName)
-			{
-				DataMinerID = dataMinerID,
-			};
-			return sendMessageFunc(request) as RemoveMADParameterGroupResponseMessage;
-		}
-
-		private static AddMADParameterGroupResponseMessage AddParameterGroup(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			RadGroupSettings settings)
-		{
-			var groupInfo = new MADGroupInfo(settings.GroupName, settings.Parameters.ToList(), settings.Options.UpdateModel,
-				settings.Options.AnomalyThreshold, settings.Options.MinimalDuration);
-			var request = new AddMADParameterGroupMessage(groupInfo);
-			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
-		}
-
-		/// <summary>
-		/// Supported from TODO: version
-		/// </summary>
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static AddMADParameterGroupResponseMessage AddParameterGroup(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			RadSharedModelGroupSettings settings)
-		{
-			var subgroups = new List<RADSubgroupInfo>(settings.Subgroups.Count);
-			foreach (var s in settings.Subgroups)
-			{
-				var parameters = s.Parameters.Select(p => new RADParameter(p.Key, p.Label)).ToList();
-				subgroups.Add(new RADSubgroupInfo(s.Name, parameters, s.Options.AnomalyThreshold, s.Options.MinimalDuration));
-			}
-			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
-				settings.Options.MinimalDuration);
-			var request = new AddRADSharedModelGroupMessage(groupInfo);
-			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
-		}
-
 		/// <summary>
 		/// Supported from TODO: version
 		/// </summary>
@@ -427,20 +442,6 @@
 			};
 			return sendMessageFunc(request) as RenameRADParameterGroupResponseMessage;
 		}
-
-		private static RetrainMADModelResponseMessage RetrainParameterGroup(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName,
-			IEnumerable<TimeRange> timeRanges)
-		{
-			var request = new RetrainMADModelMessage(groupName, timeRanges.Select(r => new Skyline.DataMiner.Analytics.Mad.TimeRange(r.Start, r.End)).ToList())
-			{
-				DataMinerID = dataMinerID,
-			};
-			return sendMessageFunc(request) as RetrainMADModelResponseMessage;
-		}
-#pragma warning restore CS0618 // Type or member is obsolete
 	}
 
 	public class TimeRange
