@@ -345,11 +345,4 @@
 			}
 		}
 	}
-
-	public class ParameterKeyEqualityComparer : IEqualityComparer<ParameterKey>
-	{
-		public bool Equals(ParameterKey x, ParameterKey y) => x.Equals(y);
-
-		public int GetHashCode(ParameterKey key) => key.GetHashCode();
-	}
 }

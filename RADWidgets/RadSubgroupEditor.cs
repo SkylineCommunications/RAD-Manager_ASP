@@ -17,11 +17,8 @@
 		private readonly Guid _subgroupID;
 		private readonly List<RadSubgroupSelectorItem> _otherSubgroups;
 		private bool _hasInvalidParameter;
-		private IGrouping<ParameterKey, Tuple<Label, ParameterInstanceSelector>> _duplicatedParameters;//TODO: also avoid duplicate labels
+		private IGrouping<ParameterKey, Tuple<Label, ParameterInstanceSelector>> _duplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
-		//TODO: number of subgroups must be between 2 and 2500
-		//TODO: check for duplicate group name
-		//TODO: check for either all have a label, or none do (also check in the label editor)
 
 		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
 			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)

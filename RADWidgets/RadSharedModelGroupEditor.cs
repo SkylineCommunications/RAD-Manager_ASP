@@ -7,18 +7,21 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	//TODO: probably prevent adding groups with same parameters in other subgroups
 	//TODO: make task for duplication of subgroups and groups if Dennis didn't make one already
 	public class RadSharedModelGroupEditor : VisibilitySection
 	{
+		private const string _invalidParameterLabelsText = "Either all parameters should have a label, or none of them should.";
 		private readonly IEngine _engine;
 		private readonly GroupNameSection _groupNameSection;
 		private readonly RadGroupOptionsEditor _optionsEditor;
+		private readonly Label _parametersCountLabel;
 		private readonly Numeric _parametersCountNumeric;
+		private readonly Button _parameterLabelsEditorButton;
 		private readonly RadSubgroupSelector _subgroupSelector;
 		private readonly Label _detailsLabel;
-		private readonly List<string> _existingGroupNames;//TODO: still use this one for validation
 		private List<string> _parameterLabels;
+		private List<string> _oldParameterLabels;
+		private bool _parameterLabelsValid;
 
 		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, RadSharedModelGroupSettings settings = null)
 		{
@@ -26,12 +29,8 @@
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
-			OnGroupNameSectionValidationChanged();
-
-			// Add the "Number of parameters per subgroup" label and numeric input
-			// Numeric input for number of parameters per subgroup
 			const string parametersPerSubgroupTooltip = "For each subgroup you will be able to add this many subgroups";
-			var parametersCountLabel = new Label("Number of parameters per subgroup")
+			_parametersCountLabel = new Label("Number of parameters per subgroup")
 			{
 				Tooltip = parametersPerSubgroupTooltip,
 			};
@@ -55,27 +54,33 @@
 				_parameterLabels = Enumerable.Range(0, RadGroupEditor.MIN_PARAMETERS).Select(i => string.Empty).ToList();
 				_parametersCountNumeric.Value = RadGroupEditor.MIN_PARAMETERS;
 			}
+			_oldParameterLabels = new List<string>();
 
-			var editLabelsButton = new Button("Edit labels...")
+			_parameterLabelsEditorButton = new Button("Edit labels...")
 			{
 				Tooltip = "Edit the labels of the parameters in the subgroups. These labels are used to identify the parameters in the subgroups.",
 			};
-			editLabelsButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
+			_parameterLabelsEditorButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
 			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
 
 			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, settings?.Subgroups);
+			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
 			_detailsLabel = new Label();
+
+			UpdateParameterLabelsValid();
+			UpdateDetailsLabel();
+			UpdateIsValid();
 
 			int row = 0;
 			AddSection(_groupNameSection, row, 0);
 			row += _groupNameSection.RowCount;
 
-			AddWidget(parametersCountLabel, row, 0);
+			AddWidget(_parametersCountLabel, row, 0);
 			AddWidget(_parametersCountNumeric, row, 1);
-			AddWidget(editLabelsButton, row, 2);
+			AddWidget(_parameterLabelsEditorButton, row, 2);
 			row++;
 
 			AddSection(_subgroupSelector, row, 0);
@@ -102,9 +107,79 @@
 			}
 		}
 
+		/// <inheritdoc />
+		public override bool IsVisible
+		{
+			get => IsSectionVisible;
+			set
+			{
+				if (IsSectionVisible == value)
+					return;
+
+				IsSectionVisible = value;
+
+				_groupNameSection.IsVisible = value;
+				_optionsEditor.IsVisible = value;
+				_parametersCountLabel.IsVisible = value;
+				_parametersCountNumeric.IsVisible = value;
+				_parameterLabelsEditorButton.IsVisible = value;
+				_subgroupSelector.IsVisible = value;
+				UpdateDetailsLabelVisibility();
+			}
+		}
+
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		private void UpdateParameterLabelsValid()
+		{
+			_parameterLabelsValid = _parameterLabels.All(s => !string.IsNullOrEmpty(s)) || _parameterLabels.All(s => string.IsNullOrEmpty(s));
+		}
+
+		private void UpdateDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid && (!_subgroupSelector.IsValid || !_parameterLabelsValid);
+		}
+
+		private void UpdateValidationText()
+		{
+			if (!_groupNameSection.IsValid)
+			{
+				ValidationText = "Provide a valid subgroup name";
+			}
+			else if (!_subgroupSelector.IsValid)
+			{
+				ValidationText = "Make sure all subgroup configurations are valid";
+			}
+			else if (!_parameterLabelsValid)
+			{
+				ValidationText = _invalidParameterLabelsText;
+			}
+			else
+			{
+				ValidationText = string.Empty;
+			}
+		}
+
+		private void UpdateDetailsLabel()
+		{
+			UpdateDetailsLabelVisibility();
+
+			if (!_subgroupSelector.IsValid)
+				_detailsLabel.Text = _subgroupSelector.ValidationText;
+			else if (!_parameterLabelsValid)
+				_detailsLabel.Text = _invalidParameterLabelsText;
+			else
+				_detailsLabel.Text = string.Empty;
+		}
+
+		private void UpdateIsValid()
+		{
+			UpdateValidationText();
+			IsValid = string.IsNullOrEmpty(ValidationText);
+			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
 
 		private void OnEditLabelsButtonPressed()
 		{
@@ -118,7 +193,13 @@
 
 				app.Stop();
 
-				_subgroupSelector.UpdateParameterLabels(d.Labels);
+				_parameterLabels = d.Labels;
+				_oldParameterLabels = new List<string>();
+				_subgroupSelector.UpdateParameterLabels(_parameterLabels);
+
+				UpdateParameterLabelsValid();
+				UpdateDetailsLabel();
+				UpdateIsValid();
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();
 
@@ -132,19 +213,36 @@
 				return;
 
 			if (newCount > _parameterLabels.Count)
-				_parameterLabels = _parameterLabels.Concat(Enumerable.Range(0, newCount - _parameterLabels.Count).Select(i => string.Empty)).ToList();
+			{
+				int nrFromOldLabels = Math.Min(_oldParameterLabels.Count, newCount - _parameterLabels.Count);
+				_parameterLabels.AddRange(_oldParameterLabels.Take(nrFromOldLabels));
+				_oldParameterLabels.RemoveRange(0, nrFromOldLabels);
+				if (newCount > _parameterLabels.Count)
+					_parameterLabels.AddRange(Enumerable.Range(0, newCount - _parameterLabels.Count).Select(i => string.Empty));
+			}
 			else
+			{
+				_oldParameterLabels.InsertRange(0, _parameterLabels.Skip(newCount));
 				_parameterLabels = _parameterLabels.Take(newCount).ToList();
+			}
 
 			_subgroupSelector.UpdateParameterLabels(_parameterLabels);
-			//TODO: remember the old labels
 
-			//TODO: update the text about the subgroups and the validation state
+			UpdateParameterLabelsValid();
+			UpdateDetailsLabel();
+			UpdateIsValid();
 		}
 
 		private void OnGroupNameSectionValidationChanged()
 		{
-			//TODO
+			UpdateDetailsLabelVisibility();
+			UpdateIsValid();
+		}
+
+		private void OnSubgroupSelectorValidationChanged()
+		{
+			UpdateDetailsLabel();
+			UpdateIsValid();
 		}
 		//TODO: also add shared group edit method
 		//TODO: remove group: either remove whole group, or only specific subgroup

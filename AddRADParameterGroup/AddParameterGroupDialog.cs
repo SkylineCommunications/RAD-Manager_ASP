@@ -151,6 +151,7 @@
 				_sharedModelGroupEditor.IsVisible = true;
 				_okButton.Text = "Add group";
 				_addTypeDropDown.Tooltip = "Add a parameter group with multiple subgroups that share a single model.";
+				OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 			}
 		}
 	}

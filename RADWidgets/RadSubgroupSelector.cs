@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Runtime;
 	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
@@ -75,17 +76,27 @@
 			return Parameters.Count() < labels.Count() || Parameters.Any(p => p == null);
 		}
 
+		public bool HasDuplicatedParameters()
+		{
+			if (Parameters == null || Parameters.Count() < 2)
+				return false;
+			return Parameters.GroupBy(p => p?.Key, new ParameterKeyEqualityComparer()).Any(g => g.Count() > 1);
+		}
+
 		public bool HasSameParameters(List<ParameterKey> parameters)
 		{
 			if (Parameters == null || parameters == null)
 				return parameters == null && Parameters == null;
 
-			return parameters.SequenceEqual(Parameters.Select(p => p?.Key), new ParameterKeyEqualityComparer());
+			var comparer = new ParameterKeyListEqualityComparer();
+			return comparer.Equals(Parameters.Select(p => p?.Key).ToList(), parameters);
 		}
 	}
 
 	public class RadSubgroupSelector : VisibilitySection
 	{
+		public const int MinNrOfSubgroups = 2;
+		public const int MaxNrOfSubgroups = 2500;
 		private readonly IEngine _engine;
 		private readonly TreeView _selectorTreeView;
 		private readonly Label _noSubgroupsLabel;
@@ -94,11 +105,16 @@
 		private readonly Label _detailsLabel;
 		private readonly Button _editButton;
 		private readonly Button _removeButton;
+		private readonly WhiteSpace _whitespace;
 		private readonly Button _addButton;
 		private List<string> _parameterLabels;
 		private RadGroupOptions _parentOptions;
 		private Dictionary<Guid, RadSubgroupSelectorItem> _subgroups;
 		private int _unnamedSubgroupCount = 0;
+		private HashSet<string> _subgroupsWithMissingParameters;
+		private HashSet<string> _subgroupsWithDuplicatedParameters;
+		private List<string> _duplicatedSubgroupNames;
+		private List<string> _subgroupsWithSameParameters;
 
 		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, List<RadSubgroupSettings> subgroups = null)
 		{
@@ -148,7 +164,7 @@
 			};
 			_removeButton.Pressed += (sender, args) => OnRemoveButtonPressed();
 
-			var whitespace = new WhiteSpace()
+			_whitespace = new WhiteSpace()
 			{
 				MinHeight = 100,
 			};
@@ -168,9 +184,11 @@
 			AddWidget(_detailsLabel, 3, 1, 2, 1, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(whitespace, 4, 2);
+			AddWidget(_whitespace, 4, 2);
 			AddWidget(_addButton, 5, 2);
 		}
+
+		public event EventHandler ValidationChanged;
 
 		public List<RadSubgroupSettings> Subgroups
 		{
@@ -192,13 +210,21 @@
 				_editButton.IsVisible = value;
 				_removeButton.IsVisible = value;
 				_addButton.IsVisible = value;
+				_whitespace.IsVisible = value;
 				UpdateTreeViewAndLabelVisibility();
 			}
 		}
 
+		public bool IsValid { get; private set; }
+
+		public string ValidationText { get; private set; }
+
 		public void UpdateParameterLabels(List<string> parameterLabels)
 		{
 			_parameterLabels = parameterLabels;
+
+			CalculateSubgroupsWithMissingParameters();
+			UpdateIsValid();
 
 			// We might need to append the missing parameters suffix to the display value, hence recalculate all items
 			UpdateSelectorTreeViewItems(_selectorTreeView.Items.Where(i => i.IsChecked).Select(i => Guid.Parse(i.KeyValue)).ToArray());
@@ -246,6 +272,7 @@
 			if (subgroups == null)
 			{
 				_subgroups = new Dictionary<Guid, RadSubgroupSelectorItem>();
+				CalculateAndUpdateIsValid();
 				UpdateSelectorTreeViewItems();
 				return;
 			}
@@ -270,18 +297,22 @@
 				_subgroups[subgroup.ID] = new RadSubgroupSelectorItem(subgroup.ID, subgroup.Name, subgroup.Options, parameters, displayValue);
 			}
 
+			CalculateAndUpdateIsValid();
 			UpdateSelectorTreeViewItems();
 		}
 
 		private void UpdateSelectorTreeViewItems(params Guid[] selectedGroups)
 		{
 			const string missingParametersSuffix = " (missing parameters)";
+			const string duplicatedParametersSuffix = " (duplicated parameters)";
 			var newItems = new List<TreeViewItem>();
 			foreach (var kvp in _subgroups.OrderBy(kvp => kvp.Value.DisplayValue, StringComparer.CurrentCultureIgnoreCase))
 			{
 				string displayValue = kvp.Value.DisplayValue;
 				if (kvp.Value.HasMissingParameters(_parameterLabels))
 					displayValue += missingParametersSuffix;
+				else if (kvp.Value.HasDuplicatedParameters())
+					displayValue += duplicatedParametersSuffix;
 				var newItem = new TreeViewItem(displayValue, kvp.Key.ToString())
 				{
 					IsChecked = selectedGroups.Contains(kvp.Key),
@@ -348,6 +379,135 @@
 				$"  Minimal anomaly duration: {minimalDurationText}";
 		}
 
+		private void CalculateSubgroupsWithMissingParameters()
+		{
+			_subgroupsWithMissingParameters = _subgroups.Where(kvp => kvp.Value.HasMissingParameters(_parameterLabels)).Select(kvp => kvp.Value.DisplayValue).ToHashSet();
+		}
+
+		private void CalculateSubgroupsWithDuplicatedParameters()
+		{
+			_subgroupsWithDuplicatedParameters = _subgroups.Where(kvp => kvp.Value.HasDuplicatedParameters()).Select(kvp => kvp.Value.DisplayValue).ToHashSet();
+		}
+
+		private void CalculateDuplicatedSubgroupNames()
+		{
+			_duplicatedSubgroupNames = _subgroups.Where(s => !string.IsNullOrEmpty(s.Value.Name))
+				.GroupBy(kvp => kvp.Value.Name, StringComparer.OrdinalIgnoreCase)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key)
+				.ToList();
+		}
+
+		/// <summary>
+		/// Check whether any two subgroups have exactly the same parameters. Stops as soon as it finds one collection of subgroups that have the same parameters.
+		/// </summary>
+		private void CalculateSubgroupsWithSameParameters()
+		{
+			var parameterKeyLists = _subgroups.Select(s => Tuple.Create(s.Value.DisplayValue, s.Value.Parameters.Select(p => p?.Key).ToList()));
+			var groupsWithSameParameters = parameterKeyLists.GroupBy(t => t.Item2, new ParameterKeyListEqualityComparer()).Where(g => g.Count() > 1);
+			if (groupsWithSameParameters.Any())
+				_subgroupsWithSameParameters = groupsWithSameParameters.First().Select(t => t.Item1).ToList();
+			else
+				_subgroupsWithSameParameters = new List<string>();
+		}
+
+		private void CalculateAndUpdateIsValidOnEditedSubgroup(RadSubgroupSelectorItem newSettings, RadSubgroupSelectorItem oldSettings)
+		{
+			if (oldSettings.HasMissingParameters(_parameterLabels))
+				_subgroupsWithMissingParameters.Remove(oldSettings.DisplayValue);
+			if (newSettings.HasMissingParameters(_parameterLabels))
+				_subgroupsWithMissingParameters.Add(newSettings.DisplayValue);
+
+			if (oldSettings.HasDuplicatedParameters())
+				_subgroupsWithDuplicatedParameters.Remove(oldSettings.DisplayValue);
+			if (newSettings.HasDuplicatedParameters())
+				_subgroupsWithDuplicatedParameters.Add(newSettings.DisplayValue);
+
+			if (!string.Equals(newSettings.Name, oldSettings.Name))
+				CalculateDuplicatedSubgroupNames();
+
+			if (!newSettings.HasSameParameters(oldSettings.Parameters?.Select(p => p?.Key).ToList()))
+				CalculateSubgroupsWithSameParameters();
+		}
+
+		private void CalculateAndUpdateIsValidOnAddedSubgroup(RadSubgroupSelectorItem newSettings)
+		{
+			if (newSettings.HasMissingParameters(_parameterLabels))
+				_subgroupsWithMissingParameters.Add(newSettings.DisplayValue);
+
+			if (newSettings.HasDuplicatedParameters())
+				_subgroupsWithDuplicatedParameters.Add(newSettings.DisplayValue);
+
+			string newName = newSettings.Name;
+			if (!string.IsNullOrEmpty(newName) && _subgroups.Count(s => string.Equals(s.Value.Name, newName, StringComparison.OrdinalIgnoreCase)) >= 2)
+				_duplicatedSubgroupNames.Add(newName);
+
+			CalculateSubgroupsWithSameParameters();
+		}
+
+		private void UpdateValidationText()
+		{
+			ValidationText = string.Empty;
+			if (_subgroups.Count < MinNrOfSubgroups || _subgroups.Count > MaxNrOfSubgroups)
+			{
+				ValidationText = $"The number of subgroups must be between {MinNrOfSubgroups} and {MaxNrOfSubgroups}.";
+				return;
+			}
+
+			if (_subgroupsWithMissingParameters.Count > 0)
+			{
+				if (_subgroupsWithMissingParameters.Count == 1)
+					ValidationText = $"Subgroup {_subgroupsWithMissingParameters.First()} is missing parameters.";
+				else
+					ValidationText = $"Subgroups {_subgroupsWithMissingParameters.HumanReadableJoin()} are missing parameters.";
+				return;
+			}
+
+			if (_subgroupsWithDuplicatedParameters.Count > 0)
+			{
+				if (_subgroupsWithDuplicatedParameters.Count == 1)
+					ValidationText = $"Subgroup {_subgroupsWithDuplicatedParameters.First()} has duplicated parameters.";
+				else
+					ValidationText = $"Subgroups {_subgroupsWithDuplicatedParameters.HumanReadableJoin()} have duplicated parameters.";
+				return;
+			}
+
+			if (_duplicatedSubgroupNames.Count > 0)
+			{
+				if (_duplicatedSubgroupNames.Count == 1)
+					ValidationText = $"The name {_duplicatedSubgroupNames.First()} is used by multiple subgroups.";
+				else
+					ValidationText = $"The names {_duplicatedSubgroupNames.HumanReadableJoin()} are used by multiple subgroups.";
+				return;
+			}
+
+			if (_subgroupsWithSameParameters.Count > 0)
+				ValidationText = $"The parameters of the subgroups {_subgroupsWithSameParameters.HumanReadableJoin()} are exactly the same. Provide unique parameters for each subgroup.";
+		}
+
+		/// <summary>
+		/// Update the IsValid state and ValidationText based on the already calculated state booleans.
+		/// </summary>
+		private void UpdateIsValid()
+		{
+			UpdateValidationText();
+			IsValid = string.IsNullOrEmpty(ValidationText);
+			ValidationChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		/// <summary>
+		/// Recaculate all the state booleans and update the IsValid state.
+		/// </summary>
+		private void CalculateAndUpdateIsValid()
+		{
+			CalculateSubgroupsWithDuplicatedParameters();
+			CalculateSubgroupsWithMissingParameters();
+			CalculateDuplicatedSubgroupNames();
+			CalculateSubgroupsWithSameParameters();
+
+			UpdateIsValid();
+		}
+
 		private void OnEditButtonPressed()
 		{
 			var settings = GetSelectedSubgroup();
@@ -370,6 +530,8 @@
 				if (string.IsNullOrEmpty(newSettings.Name) && !string.IsNullOrEmpty(settings.Name))
 					_unnamedSubgroupCount++;
 
+				CalculateAndUpdateIsValidOnEditedSubgroup(newSettings, settings);
+				UpdateIsValid();
 				UpdateSelectorTreeViewItems(settings.ID);
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();
@@ -382,6 +544,7 @@
 			foreach (var item in _selectorTreeView.Items.Where(i => i.IsChecked))
 				_subgroups.Remove(Guid.Parse(item.KeyValue));
 
+			CalculateAndUpdateIsValid();
 			UpdateSelectorTreeViewItems();
 		}
 
@@ -403,6 +566,8 @@
 				if (string.IsNullOrEmpty(newSettings.Name))
 					_unnamedSubgroupCount++;
 
+				CalculateAndUpdateIsValidOnAddedSubgroup(newSettings);
+				UpdateIsValid();
 				UpdateSelectorTreeViewItems(newSettings.ID);
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();

@@ -127,7 +127,7 @@
 			else if (!isEmpty)
 			{
 				// Here, a label is provided for all parameters
-				var duplicateLabels = _labelEditors.GroupBy(e => e.Label).Where(g => g.Count() > 1);
+				var duplicateLabels = _labelEditors.GroupBy(e => e.Label, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1);
 				if (duplicateLabels.Any())
 				{
 					_detailsLabel.Text = $"The labels {duplicateLabels.Select(g => g.Key).HumanReadableJoin()} are duplicated.";
