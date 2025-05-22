@@ -10,7 +10,6 @@
 	//TODO: make task for duplication of subgroups and groups if Dennis didn't make one already
 	public class RadSharedModelGroupEditor : VisibilitySection
 	{
-		private const string _invalidParameterLabelsText = "Either all parameters should have a label, or none of them should.";
 		private readonly IEngine _engine;
 		private readonly GroupNameSection _groupNameSection;
 		private readonly RadGroupOptionsEditor _optionsEditor;
@@ -21,7 +20,8 @@
 		private readonly Label _detailsLabel;
 		private List<string> _parameterLabels;
 		private List<string> _oldParameterLabels;
-		private bool _parameterLabelsValid;
+		private List<string> _duplicatedParameterLabels;
+		private bool _hasMissingParameterLabels;
 
 		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, RadSharedModelGroupSettings settings = null)
 		{
@@ -134,27 +134,33 @@
 
 		private void UpdateParameterLabelsValid()
 		{
-			_parameterLabelsValid = _parameterLabels.All(s => !string.IsNullOrEmpty(s)) || _parameterLabels.All(s => string.IsNullOrEmpty(s));
+			_hasMissingParameterLabels = !_parameterLabels.All(s => !string.IsNullOrEmpty(s)) && !_parameterLabels.All(s => string.IsNullOrEmpty(s));
+			_duplicatedParameterLabels = _parameterLabels.Where(s => !string.IsNullOrEmpty(s))
+				.GroupBy(s => s, StringComparer.OrdinalIgnoreCase)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key)
+				.ToList();
 		}
 
 		private void UpdateDetailsLabelVisibility()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid && (!_subgroupSelector.IsValid || !_parameterLabelsValid);
+			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid &&
+				(!_subgroupSelector.IsValid || _hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0);
 		}
 
 		private void UpdateValidationText()
 		{
 			if (!_groupNameSection.IsValid)
 			{
-				ValidationText = "Provide a valid subgroup name";
+				ValidationText = "Provide a valid subgroup name.";
 			}
 			else if (!_subgroupSelector.IsValid)
 			{
-				ValidationText = "Make sure all subgroup configurations are valid";
+				ValidationText = "Make sure all subgroup configurations are valid.";
 			}
-			else if (!_parameterLabelsValid)
+			else if (_hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0)
 			{
-				ValidationText = _invalidParameterLabelsText;
+				ValidationText = "Provide valid labels for the parameters.";
 			}
 			else
 			{
@@ -167,11 +173,24 @@
 			UpdateDetailsLabelVisibility();
 
 			if (!_subgroupSelector.IsValid)
+			{
 				_detailsLabel.Text = _subgroupSelector.ValidationText;
-			else if (!_parameterLabelsValid)
-				_detailsLabel.Text = _invalidParameterLabelsText;
+			}
+			else if (_hasMissingParameterLabels)
+			{
+				_detailsLabel.Text = "Either provide a label for all parameters, or do not provide any labels.";
+			}
+			else if (_duplicatedParameterLabels.Count > 0)
+			{
+				if (_duplicatedParameterLabels.Count == 1)
+					_detailsLabel.Text = $"Provide a unique label for each parameter. The following label is duplicated: {_duplicatedParameterLabels.First()}";
+				else
+					_detailsLabel.Text = $"Provide a unique label for each parameter. The following labels are duplicated: {_duplicatedParameterLabels.HumanReadableJoin()}";
+			}
 			else
+			{
 				_detailsLabel.Text = string.Empty;
+			}
 		}
 
 		private void UpdateIsValid()

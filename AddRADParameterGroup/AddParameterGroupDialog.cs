@@ -89,18 +89,11 @@
 		public List<RadGroupBaseSettings> GetGroupsToAdd()
 		{
 			if (_addTypeDropDown.Selected == AddGroupType.Single)
-			{
 				return new List<RadGroupBaseSettings>() { _groupEditor.Settings };
-			}
 			else if (_addTypeDropDown.Selected == AddGroupType.MultipleOnProtocol)
-			{
-				//TODO: do not do it this way when adding a shared group
-				return _groupByProtocolCreator.GetGroupsToAdd().OfType<RadGroupBaseSettings>().ToList();
-			}
+				return _groupByProtocolCreator.GetGroupsToAdd();
 			else
-			{
 				return new List<RadGroupBaseSettings>() { _sharedModelGroupEditor.Settings };
-			}
 		}
 
 		private void OnEditorValidationChanged(bool isValid, string validationText)
@@ -145,7 +138,7 @@
 				OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 			}
 			else
-			{
+			{//TODO: only show this option when available
 				_groupEditor.IsVisible = false;
 				_groupByProtocolCreator.IsVisible = false;
 				_sharedModelGroupEditor.IsVisible = true;
