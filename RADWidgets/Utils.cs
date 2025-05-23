@@ -260,6 +260,50 @@
 		}
 
 		/// <summary>
+		/// Return true if <paramref name="a"/> has the same parameters as <paramref name="b"/>, taking the order into account. For a good comparison,
+		/// the parameters need to be normalized wit <see cref="NormalizeParameters(RadSubgroupSettings)"/>.
+		/// </summary>
+		/// <param name="a">The first group settings.</param>
+		/// <param name="b">The second group settings.</param>
+		/// <returns>True if both groups has the same parameter, false otherwise.</returns>
+		public static bool HasSameParameters(this RadSubgroupSettings a, RadSubgroupSettings b)
+		{
+			if (a?.Parameters == null && b?.Parameters == null)
+				return true;
+			if (a?.Parameters == null || b?.Parameters == null)
+				return false;
+			if (a.Parameters.Count != b.Parameters.Count)
+				return false;
+
+			var comparer = new ParameterKeyEqualityComparer();
+			for (int i = 0; i < a.Parameters.Count; i++)
+			{
+				if (a.Parameters[i] == null && b.Parameters[i] == null)
+					continue;
+				if (a.Parameters[i] == null || b.Parameters[i] == null)
+					return false;
+				if (!string.Equals(a.Parameters[i].Label, b.Parameters[i].Label, StringComparison.OrdinalIgnoreCase))
+					return false;
+				if (!comparer.Equals(a.Parameters[i].Key, b.Parameters[i].Key))
+					return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Normalizes the parameters of the given RadSubgroupSettings by ordering the parameters by their label names (if any are provided).
+		/// </summary>
+		/// <param name="settings">The subgroup settings</param>
+		public static void NormalizeParameters(this RadSubgroupSettings settings)
+		{
+			if (settings?.Parameters == null)
+				return;
+			if (string.IsNullOrEmpty(settings.Parameters.FirstOrDefault()?.Label))
+				settings.Parameters = settings.Parameters.OrderBy(p => p?.Label, StringComparer.OrdinalIgnoreCase).ToList();
+		}
+
+		/// <summary>
 		/// Join list of strings into a human readable string. E.g. ["a", "b", "c"] -> "a, b and c".
 		/// </summary>
 		/// <param name="l">A list of strings.</param>

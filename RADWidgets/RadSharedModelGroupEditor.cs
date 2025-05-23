@@ -23,9 +23,10 @@
 		private List<string> _duplicatedParameterLabels;
 		private bool _hasMissingParameterLabels;
 
-		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, RadSharedModelGroupSettings settings = null)
+		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, RadSharedModelGroupInfo settings = null,
+			Guid? selectedSubgroup = null)
 		{
-			_engine = engine;//TODO: also select the correct subgroup when editting an existing subgroup of a shared model group
+			_engine = engine;
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
@@ -54,6 +55,7 @@
 				_parameterLabels = Enumerable.Range(0, RadGroupEditor.MIN_PARAMETERS).Select(i => string.Empty).ToList();
 				_parametersCountNumeric.Value = RadGroupEditor.MIN_PARAMETERS;
 			}
+
 			_oldParameterLabels = new List<string>();
 
 			_parameterLabelsEditorButton = new Button("Edit labels...")
@@ -65,7 +67,7 @@
 			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
 
-			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, settings?.Subgroups);
+			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
 			_detailsLabel = new Label();

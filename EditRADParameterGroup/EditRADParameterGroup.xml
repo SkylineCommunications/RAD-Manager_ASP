@@ -20,6 +20,12 @@
 		<ScriptParameter id="2" type="string" values="">
 			<Description>DataMinerID</Description>
 		</ScriptParameter>
+		<ScriptParameter id="4" type="string" values="">
+			<Description>SubgroupName</Description>
+		</ScriptParameter>
+		<ScriptParameter id="5" type="string" values="">
+			<Description>SubgroupID</Description>
+		</ScriptParameter>
 	</Parameters>
 
 	<Script>

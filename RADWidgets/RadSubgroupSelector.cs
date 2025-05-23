@@ -116,7 +116,8 @@
 		private List<string> _duplicatedSubgroupNames;
 		private List<string> _subgroupsWithSameParameters;
 
-		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, List<RadSubgroupSettings> subgroups = null)
+		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, List<RadSubgroupInfo> subgroups = null,
+			Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
 			_parentOptions = parentOptions;
@@ -175,7 +176,7 @@
 			};
 			_addButton.Pressed += (sender, args) => OnAddButtonPressed();
 
-			SetSubgroups(subgroups);
+			SetSubgroups(subgroups, selectedSubgroup);
 
 			AddWidget(_noSubgroupsLabel, 0, 0, 1, 2);
 			AddWidget(_selectorTreeView, 1, 0, 4, 1, verticalAlignment: VerticalAlignment.Top);
@@ -267,7 +268,7 @@
 			return _subgroups.TryGetValue(Guid.Parse(selectedItem.KeyValue), out var subgroup) ? subgroup : null;
 		}
 
-		private void SetSubgroups(List<RadSubgroupSettings> subgroups)
+		private void SetSubgroups(List<RadSubgroupInfo> subgroups, Guid? selectedSubgroup)
 		{
 			if (subgroups == null)
 			{
@@ -298,7 +299,10 @@
 			}
 
 			CalculateAndUpdateIsValid();
-			UpdateSelectorTreeViewItems();
+			if (selectedSubgroup.HasValue)
+				UpdateSelectorTreeViewItems(selectedSubgroup.Value);
+			else
+				UpdateSelectorTreeViewItems();
 		}
 
 		private void UpdateSelectorTreeViewItems(params Guid[] selectedGroups)

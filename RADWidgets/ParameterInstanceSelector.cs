@@ -99,7 +99,7 @@
 			if (!_instanceDropDown.IsEnabled)
 				return;
 
-			var instanceOption = _instanceDropDown.Options.FirstOrDefault(i => i.Value.IndexValue == parameter.Key.Instance);
+			var instanceOption = _instanceDropDown.Options.FirstOrDefault(i => string.Equals(i.Value.IndexValue, parameter.Key.Instance, StringComparison.OrdinalIgnoreCase));
 			if (instanceOption == null)
 				return;
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using EditRADParameterGroup;
 using RadUtils;
@@ -31,28 +32,40 @@ public class Script
 			var groupIDs = RadWidgets.Utils.ParseGroupIDParameters(_app);
 			if (groupIDs.Count == 0)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
 				return;
 			}
 			else if (groupIDs.Count > 1)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit");
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
+				return;
+			}
+
+			var subgroupNames = RadWidgets.Utils.ParseScriptParameterValue(_app.Engine.GetScriptParam("SubgroupName")?.Value);
+			if (subgroupNames.Count > 1)
+			{
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple subgroups selected", "Please select at most one subgroup you want to edit.");
+				return;
+			}
+
+			var subgroupIDs = RadWidgets.Utils.ParseScriptParameterValue(_app.Engine.GetScriptParam("SubgroupID")?.Value);
+			if (subgroupIDs.Count > 1)
+			{
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple subgroups selected", "Please select at most one subgroup you want to edit.");
+				return;
+			}
+
+			if (subgroupIDs.Count >= 1 && subgroupNames.Count >= 1)
+			{
+				RadWidgets.Utils.ShowMessageDialog(_app, "Subgroup name and ID selected", "Please select either a subgroup name or ID, not both.");
 				return;
 			}
 
 			var groupID = groupIDs.First();
-			RadGroupSettings settings = null;
+			IRadGroupBaseInfo settings = null;
 			try
 			{
-				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, groupID.DataMinerID, groupID.GroupName) as RadGroupSettings; //TODO
-				if (settings == null)
-				{
-					RadWidgets.Utils.ShowMessageDialog(
-						_app,
-						"Failed to fetch parameter group information",
-						"Failed to fetch parameter group information: no response or a response of the wrong type received");
-					return;
-				}
+				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, groupID.DataMinerID, groupID.GroupName);
 			}
 			catch (Exception ex)
 			{
@@ -60,11 +73,57 @@ public class Script
 				return;
 			}
 
-			var dialog = new EditParameterGroupDialog(engine, settings, groupID.DataMinerID);
-			dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
-			dialog.Cancelled += (sender, args) => Dialog_Cancelled();
+			if (settings is RadGroupInfo groupSettings)
+			{
+				var dialog = new EditParameterGroupDialog(engine, groupSettings, groupID.DataMinerID);
+				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, groupSettings);
+				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
+				_app.ShowDialog(dialog);
+			}
+			else if (settings is RadSharedModelGroupInfo sharedModelGroupSettings)
+			{
+				Guid? subgroupID = null;
+				if (subgroupIDs.Count == 1)
+				{
+					if (!Guid.TryParse(subgroupIDs.First(), out var parsedSubgroupID))
+					{
+						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup ID", $"The provided subgroup ID {subgroupIDs.First()} could not be parsed.");
+						return;
+					}
 
-			_app.ShowDialog(dialog);
+					if (!sharedModelGroupSettings.Subgroups.Any(s => s.ID == parsedSubgroupID))
+					{
+						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup ID", $"No subgroup with the provided ID {subgroupIDs.First()} found in the shared model group {groupID.GroupName}.");
+						return;
+					}
+
+					subgroupID = parsedSubgroupID;
+				}
+				else if (subgroupNames.Count == 1)
+				{
+					var subgroup = sharedModelGroupSettings.Subgroups.FirstOrDefault(s => string.Equals(s.Name, subgroupNames.First(), StringComparison.OrdinalIgnoreCase));
+					if (subgroup == null)
+					{
+						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup name", $"No subgroup with the provided name {subgroupNames.First()} found in the shared model group {groupID.GroupName}.");
+						return;
+					}
+
+					subgroupID = subgroup.ID;
+				}
+
+				var dialog = new EditSharedModelGroupDialog(engine, sharedModelGroupSettings, subgroupID, groupID.DataMinerID);
+				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditSharedModelGroupDialog, sharedModelGroupSettings);
+				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
+				_app.ShowDialog(dialog);
+			}
+			else
+			{
+				RadWidgets.Utils.ShowMessageDialog(
+					_app,
+					"Failed to fetch parameter group information",
+					"Failed to fetch parameter group information: no response or a response of the wrong type received");
+				return;
+			}
 		}
 		catch (ScriptAbortException)
 		{
@@ -90,7 +149,7 @@ public class Script
 
 	private void Dialog_Cancelled()
 	{
-		_app.Engine.ExitSuccess("Adding parameter group cancelled");
+		_app.Engine.ExitSuccess("Editing parameter group cancelled");
 	}
 
 	private void Dialog_Accepted(EditParameterGroupDialog dialog, RadGroupSettings originalSettings)
@@ -119,6 +178,82 @@ public class Script
 				{
 					RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
 				}
+			}
+
+			RadMessageHelper.AddParameterGroup(_app.Engine, newSettings);
+		}
+		catch (Exception ex)
+		{
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			return;
+		}
+
+		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+	}
+
+	private void GetAddedAndRemovedSubgroups(List<RadSubgroupSettings> newSubgroups, List<RadSubgroupInfo> oldSubgroups,
+		out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups)
+	{
+		foreach (var subgroup in oldSubgroups)
+			subgroup.NormalizeParameters();
+
+		bool[] matchedOldSubgroups = new bool[oldSubgroups.Count];
+		addedSubgroups = new List<RadSubgroupSettings>();
+		removedSubgroups = new List<RadSubgroupSettings>();
+		foreach (var subgroup in newSubgroups)
+		{
+			bool matched = false;
+
+			subgroup.NormalizeParameters();
+			for (int i = 0; i < oldSubgroups.Count; ++i)
+			{
+				if (matchedOldSubgroups[i])
+					continue;
+				if (oldSubgroups[i].HasSameParameters(subgroup))
+				{
+					matchedOldSubgroups[i] = true;
+					matched = true;
+					break;
+				}
+			}
+
+			if (!matched)
+				addedSubgroups.Add(subgroup);
+		}
+
+		for (int i = 0; i < matchedOldSubgroups.Length; ++i)
+		{
+			if (!matchedOldSubgroups[i])
+				removedSubgroups.Add(oldSubgroups[i]);
+		}
+	}
+
+	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadSharedModelGroupInfo originalSettings)
+	{
+		if (dialog == null)
+			throw new ArgumentException("Invalid sender type");
+
+		try
+		{
+			var newSettings = dialog.GroupSettings;
+
+			GetAddedAndRemovedSubgroups(newSettings.Subgroups, originalSettings.Subgroups,
+				out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups);
+			if (addedSubgroups.Count == newSettings.Subgroups.Count)
+			{
+				// No subgroup is preserved, so we remove the entire group
+				RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+			}
+			else
+			{
+				// Add least one of the original subgroups is preserved, so do not remove the entire group
+				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
+					RadMessageHelper.RenameParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+
+				foreach (var removedSubgroup in removedSubgroups)
+					RadMessageHelper.RemoveSubgroup(_app.Engine, dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
+				foreach (var addedSubgroup in addedSubgroups)
+					RadMessageHelper.AddSubgroup(_app.Engine, dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
 			}
 
 			RadMessageHelper.AddParameterGroup(_app.Engine, newSettings);

@@ -129,6 +129,32 @@
 			RemoveParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName);
 		}
 
+		/// <summary>
+		/// Remove a subgroup from a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupID">The id of the subgroup.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="RemoveRADSubgroupMessage"/> is not known.</exception>
+		public static void RemoveSubgroup(Connection connection, int dataMinerID, string groupName, Guid subGroupID)
+		{
+			RemoveSubgroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, subGroupID);
+		}
+
+		/// <summary>
+		/// Remove a subgroup from a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subGroupID">The id of the subgroup.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="RemoveRADSubgroupMessage"/> is not known.</exception>
+		public static void RemoveSubgroup(IEngine engine, int dataMinerID, string groupName, Guid subGroupID)
+		{
+			RemoveSubgroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, subGroupID);
+		}
+
 		public static void AddParameterGroup(Connection connection, RadGroupSettings groupInfo)
 		{
 			AddParameterGroup(connection.HandleSingleResponseMessage, groupInfo);
@@ -159,6 +185,32 @@
 		public static void AddParameterGroup(IEngine engine, RadSharedModelGroupSettings groupInfo)
 		{
 			AddParameterGroup(engine.SendSLNetSingleResponseMessage, groupInfo);
+		}
+
+		/// <summary>
+		/// Add a new subgroup to a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subgroupInfo">The new subgroup settings.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="AddRADSubgroupMessage"/> is not known.</exception>
+		public static void AddSubgroup(Connection connection, int dataMinerID, string groupName, RadSubgroupSettings subgroupInfo)
+		{
+			AddSubgroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, subgroupInfo);
+		}
+
+		/// <summary>
+		/// Add a new subgroup to a shared model group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMinerID of the group.</param>
+		/// <param name="groupName">The name of the shared model group.</param>
+		/// <param name="subgroupInfo">The new subgroup settings.</param>
+		/// <exception cref="TypeLoadException">Thrown if <see cref="AddRADSubgroupMessage"/> is not known.</exception>
+		public static void AddSubgroup(IEngine engine, int dataMinerID, string groupName, RadSubgroupSettings subgroupInfo)
+		{
+			AddSubgroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, subgroupInfo);
 		}
 
 		/// <summary>
@@ -277,13 +329,7 @@
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			RadSharedModelGroupSettings settings)
 		{
-			var subgroups = new List<RADSubgroupInfo>(settings.Subgroups.Count);
-			foreach (var s in settings.Subgroups)
-			{
-				var parameters = s.Parameters.Select(p => new RADParameter(p.Key, p.Label)).ToList();
-				subgroups.Add(new RADSubgroupInfo(s.Name, parameters, s.Options.AnomalyThreshold, s.Options.MinimalDuration));
-			}
-
+			var subgroups = settings.Subgroups.Select(s => s.ToRADSubgroupInfo()).ToList();
 			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
 				settings.Options.MinimalDuration);
 			var request = new AddRADSharedModelGroupMessage(groupInfo);
@@ -441,6 +487,40 @@
 				DataMinerID = dataMinerID,
 			};
 			return sendMessageFunc(request) as RenameRADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static AddRADParameterGroupResponseMessage AddSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
+			RadSubgroupSettings subgroupInfo)
+		{
+			var request = new AddRADSubgroupMessage(subgroupInfo.ToRADSubgroupInfo())
+			{
+				DataMinerID = dataMinerID,
+				SharedModelGroupName = groupName,
+			};
+			return sendMessageFunc(request) as AddRADParameterGroupResponseMessage;
+		}
+
+		private static RemoveRADParameterGroupResponseMessage RemoveSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
+			Guid subgroupID)
+		{
+			var request = new RemoveRADSubgroupMessage(groupName, subgroupID)
+			{
+				DataMinerID = dataMinerID,
+			};
+			return sendMessageFunc(request) as RemoveRADParameterGroupResponseMessage;
+		}
+
+		private static RADSubgroupInfo ToRADSubgroupInfo(this RadSubgroupSettings subgroupInfo)
+		{
+			if (subgroupInfo == null)
+				return null;
+
+			var parameters = subgroupInfo.Parameters.Select(p => new RADParameter(p?.Key, p?.Label)).ToList();
+			return new RADSubgroupInfo(subgroupInfo.Name, parameters, subgroupInfo.Options.AnomalyThreshold, subgroupInfo.Options.MinimalDuration);
 		}
 	}
 
