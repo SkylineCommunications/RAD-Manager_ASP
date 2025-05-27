@@ -6,6 +6,7 @@
 	using System.Text;
 	using System.Text.RegularExpressions;
 	using RadUtils;
+	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -284,6 +285,38 @@
 			}
 
 			return result;
+		}
+
+		public static string ToHumanReadableString(this ParameterKey key, IEngine engine)
+		{//TODO: use cache
+			if (key == null)
+				return string.Empty;
+
+			var element = engine.FindElement(key.DataMinerID, key.ElementID);
+			string elementName = element?.ElementName ?? $"{key.DataMinerID}/{key.ElementID}";
+			var paramInfo = FetchParameterInfo(engine, key.DataMinerID, key.ElementID, key.ParameterID);
+			string parameterName = paramInfo?.DisplayName ?? key.ParameterID.ToString();
+			if (!string.IsNullOrEmpty(key?.DisplayInstance))
+				return $"{elementName}/{parameterName}/{key.DisplayInstance}";
+			else if (!string.IsNullOrEmpty(key?.Instance))
+				return $"{elementName}/{parameterName}/{key.Instance}";
+			else
+				return $"{elementName}/{parameterName}";
+		}
+
+		/// <summary>
+		/// Gets the parameter description of a subgroup. This is a human readable string containing the parameters in the group.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <param name="info">The subgroup info.</param>
+		/// <returns>The parameter description.</returns>
+		public static string GetParameterDescription(IEngine engine, RadSubgroupInfo info)
+		{
+			var parameterStrs = new List<string>();
+			foreach (var p in info.Parameters)//TODO: use cache?
+				parameterStrs.Add(p?.Key.ToHumanReadableString(engine));
+
+			return parameterStrs.Select(s => $"'{s}'").HumanReadableJoin();
 		}
 
 		/// <summary>

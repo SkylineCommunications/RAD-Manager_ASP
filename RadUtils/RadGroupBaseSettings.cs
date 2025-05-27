@@ -2,6 +2,7 @@
 {
 	public interface IRadGroupBaseInfo
 	{
+		string GroupName { get; set; }
 	}
 
 	/// <summary>

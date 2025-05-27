@@ -33,21 +33,21 @@ public class Script
 				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
 				return;
 			}
-			else if (groupIDs.Count > 1)
+
+			var parentGroups = groupIDs.Select(id => new RadGroupID(id.DataMinerID, id.GroupName)).Distinct();
+			if (parentGroups.Count() > 1)
 			{
-				//TODO: is OK when multiple subgroups of the same parent group are selected
 				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
 				return;
 			}
 
-			if (groupIDs[0] is RadGroupID groupID)
-			{
-				var dialog = new RetrainRadModelDialog(engine, groupID); //TODO
-				dialog.Accepted += Dialog_Accepted;
-				dialog.Cancelled += Dialog_Cancelled;
+			var groupID = parentGroups.First();
+			var groupInfo = RadMessageHelper.FetchParameterGroupInfo(engine, groupID.DataMinerID, groupID.GroupName);
+			var dialog = new RetrainRadModelDialog(engine, groupID, groupInfo);
+			dialog.Accepted += Dialog_Accepted;
+			dialog.Cancelled += Dialog_Cancelled;
 
-				_app.ShowDialog(dialog);
-			}
+			_app.ShowDialog(dialog);
 		}
 		catch (ScriptAbortException)
 		{
@@ -84,7 +84,11 @@ public class Script
 
 		try
 		{
-			RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
+			var excludedSubgroups = dialog.ExcludedSubgroupIDs;
+			if (excludedSubgroups.Count > 0)
+				RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
+			else
+				RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
 		}
 		catch (Exception ex)
 		{

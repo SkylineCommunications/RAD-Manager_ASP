@@ -179,34 +179,8 @@
 			{
 				Name = s.Name,
 				ID = s.ID,
-				ParameterDescription = string.IsNullOrEmpty(s.Name) ? GetParameterDescription(engine, s) : string.Empty,
+				ParameterDescription = string.IsNullOrEmpty(s.Name) ? RadWidgets.Utils.GetParameterDescription(engine, s) : string.Empty,
 			}).ToList();
-		}
-
-		/// <summary>
-		/// Gets the parameter description of a subgroup. This is a human readable string containing the parameters in the group.
-		/// </summary>
-		/// <param name="engine">The engine.</param>
-		/// <param name="info">The subgroup info.</param>
-		/// <returns>The parameter description.</returns>
-		private static string GetParameterDescription(IEngine engine, RadSubgroupInfo info)
-		{
-			var parameterStrs = new List<string>();
-			foreach (var p in info.Parameters)//TODO: use cache?
-			{
-				var element = engine.FindElement(p.Key.DataMinerID, p.Key.ElementID);
-				string elementName = element?.ElementName ?? $"Unkown element";
-				var paramInfo = RadWidgets.Utils.FetchParameterInfo(engine, p.Key.DataMinerID, p.Key.ElementID, p.Key.ParameterID);
-				string parameterName = paramInfo?.DisplayName ?? $"Unknown parameter";
-				if (!string.IsNullOrEmpty(p.Key?.DisplayInstance))
-					parameterStrs.Add($"{elementName}/{parameterName}/{p.Key.DisplayInstance}");
-				else if (!string.IsNullOrEmpty(p.Key?.Instance))
-					parameterStrs.Add($"{elementName}/{parameterName}/{p.Key.Instance}");
-				else
-					parameterStrs.Add($"{elementName}/{parameterName}");
-			}
-
-			return parameterStrs.Select(s => $"'{s}'").HumanReadableJoin();
 		}
 	}
 }

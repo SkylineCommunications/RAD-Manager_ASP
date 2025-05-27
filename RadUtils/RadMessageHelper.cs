@@ -249,6 +249,32 @@
 			RetrainParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, timeRanges);
 		}
 
+		/// <summary>
+		/// Retrain a parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
+		/// <param name="groupName">The name of the group to retrain.</param>
+		/// <exception cref="TypeLoadException">Thrown if the <see cref="RetrainRADModelMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="RetrainRADModelMessage" /> is not known.</exception>
+		public static void RetrainParameterGroup(Connection connection, int dataMinerID, string groupName, IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
+		{
+			RetrainParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, timeRanges, excludedSubgroupIDs);
+		}
+
+		/// <summary>
+		/// Retrain a parameter group. Supported from TODO: version
+		/// </summary>
+		/// <param name="engine">The engine object to use to send the message.</param>
+		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
+		/// <param name="groupName">The name of the group to retrain.</param>
+		/// <exception cref="TypeLoadException">Thrown if the <see cref="RetrainRADModelMessage"/> is not known.</exception>
+		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="RetrainRADModelMessage" /> is not known.</exception>
+		public static void RetrainParameterGroup(IEngine engine, int dataMinerID, string groupName, IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
+		{
+			RetrainParameterGroup(engine.SendSLNetSingleResponseMessage, dataMinerID, groupName, timeRanges, excludedSubgroupIDs);
+		}
+
 #pragma warning disable CS0618 // Type or member is obsolete: messages are obsolete since 10.5.5, but replacements were only added in that version
 		private static List<string> FetchParameterGroups(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID)
 		{
@@ -496,14 +522,17 @@
 		private static AddRADParameterGroupResponseMessage AddSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
 			RadSubgroupSettings subgroupInfo)
 		{
-			var request = new AddRADSubgroupMessage(subgroupInfo.ToRADSubgroupInfo())
+			var request = new AddRADSubgroupMessage(groupName, subgroupInfo.ToRADSubgroupInfo())
 			{
 				DataMinerID = dataMinerID,
-				SharedModelGroupName = groupName,
 			};
 			return sendMessageFunc(request) as AddRADParameterGroupResponseMessage;
 		}
 
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static RemoveRADParameterGroupResponseMessage RemoveSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
 			Guid subgroupID)
 		{
@@ -512,6 +541,21 @@
 				DataMinerID = dataMinerID,
 			};
 			return sendMessageFunc(request) as RemoveRADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static RetrainMADModelResponseMessage RetrainParameterGroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
+			IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
+		{
+			var request = new RetrainRADModelMessage(groupName, timeRanges.Select(r => new Skyline.DataMiner.Analytics.Rad.TimeRange(r.Start, r.End)).ToList())
+			{
+				DataMinerID = dataMinerID,
+				ExcludedSubgroupIDs = excludedSubgroupIDs, //TODO: is it indeed a MissingMethodException if the property is not known?
+			};
+			return sendMessageFunc(request) as RetrainMADModelResponseMessage;
 		}
 
 		private static RADSubgroupInfo ToRADSubgroupInfo(this RadSubgroupSettings subgroupInfo)
