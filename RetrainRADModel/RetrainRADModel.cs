@@ -27,7 +27,7 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupIDs = RadWidgets.Utils.ParseGroupIDParameters(_app);
+			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
@@ -35,15 +35,19 @@ public class Script
 			}
 			else if (groupIDs.Count > 1)
 			{
+				//TODO: is OK when multiple subgroups of the same parent group are selected
 				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
 				return;
 			}
 
-			var dialog = new RetrainRadModelDialog(engine, groupIDs[0]);
-			dialog.Accepted += Dialog_Accepted;
-			dialog.Cancelled += Dialog_Cancelled;
+			if (groupIDs[0] is RadGroupID groupID)
+			{
+				var dialog = new RetrainRadModelDialog(engine, groupID); //TODO
+				dialog.Accepted += Dialog_Accepted;
+				dialog.Cancelled += Dialog_Cancelled;
 
-			_app.ShowDialog(dialog);
+				_app.ShowDialog(dialog);
+			}
 		}
 		catch (ScriptAbortException)
 		{

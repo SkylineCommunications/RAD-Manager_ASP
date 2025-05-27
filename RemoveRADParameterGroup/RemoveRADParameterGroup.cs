@@ -28,7 +28,7 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupIDs = RadWidgets.Utils.ParseGroupIDParameters(_app);
+			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to remove first");
@@ -75,7 +75,7 @@ public class Script
 			throw new ArgumentException("Invalid sender type");
 
 		var failedGroups = new List<Tuple<string, Exception>>();
-		foreach (var group in dialog.GroupIDs)
+		foreach (var group in dialog.GroupsToRemove)
 		{
 			try
 			{
@@ -85,6 +85,18 @@ public class Script
 			{
 				_app.Engine.GenerateInformation($"Failed to remove parameter group '{group.GroupName}': {ex}");
 				failedGroups.Add(Tuple.Create(group.GroupName, ex));
+			}
+		}
+		foreach (var subgroup in dialog.SubgroupsToRemove)
+		{
+			try
+			{
+				RadMessageHelper.RemoveSubgroup(_app.Engine, subgroup.DataMinerID, subgroup.GroupName, subgroup.SubgroupID.Value);
+			}
+			catch (Exception ex)
+			{
+				_app.Engine.GenerateInformation($"Failed to remove subgroup '{subgroup.SubgroupID}' from group '{subgroup.GroupName}': {ex}");
+				failedGroups.Add(Tuple.Create($"{subgroup.GroupName}/{subgroup.SubgroupID}", ex));
 			}
 		}
 

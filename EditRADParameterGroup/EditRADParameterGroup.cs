@@ -29,7 +29,7 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupIDs = RadWidgets.Utils.ParseGroupIDParameters(_app);
+			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
@@ -38,26 +38,6 @@ public class Script
 			else if (groupIDs.Count > 1)
 			{
 				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
-				return;
-			}
-
-			var subgroupNames = RadWidgets.Utils.ParseScriptParameterValue(_app.Engine.GetScriptParam("SubgroupName")?.Value);
-			if (subgroupNames.Count > 1)
-			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple subgroups selected", "Please select at most one subgroup you want to edit.");
-				return;
-			}
-
-			var subgroupIDs = RadWidgets.Utils.ParseScriptParameterValue(_app.Engine.GetScriptParam("SubgroupID")?.Value);
-			if (subgroupIDs.Count > 1)
-			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple subgroups selected", "Please select at most one subgroup you want to edit.");
-				return;
-			}
-
-			if (subgroupIDs.Count >= 1 && subgroupNames.Count >= 1)
-			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Subgroup name and ID selected", "Please select either a subgroup name or ID, not both.");
 				return;
 			}
 
@@ -82,36 +62,21 @@ public class Script
 			}
 			else if (settings is RadSharedModelGroupInfo sharedModelGroupSettings)
 			{
-				Guid? subgroupID = null;
-				if (subgroupIDs.Count == 1)
+				Guid? subgroupGUID = null;
+				if (groupID is RadSubgroupID subgroupID)
 				{
-					if (!Guid.TryParse(subgroupIDs.First(), out var parsedSubgroupID))
+					if (subgroupID.SubgroupID != null)
 					{
-						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup ID", $"The provided subgroup ID {subgroupIDs.First()} could not be parsed.");
-						return;
+						subgroupGUID = subgroupID.SubgroupID;
 					}
-
-					if (!sharedModelGroupSettings.Subgroups.Any(s => s.ID == parsedSubgroupID))
+					else
 					{
-						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup ID", $"No subgroup with the provided ID {subgroupIDs.First()} found in the shared model group {groupID.GroupName}.");
-						return;
+						var subgroup = sharedModelGroupSettings.Subgroups.FirstOrDefault(s => string.Equals(s.Name, subgroupID.GroupName, StringComparison.OrdinalIgnoreCase));
+						subgroupGUID = subgroup?.ID;
 					}
-
-					subgroupID = parsedSubgroupID;
-				}
-				else if (subgroupNames.Count == 1)
-				{
-					var subgroup = sharedModelGroupSettings.Subgroups.FirstOrDefault(s => string.Equals(s.Name, subgroupNames.First(), StringComparison.OrdinalIgnoreCase));
-					if (subgroup == null)
-					{
-						RadWidgets.Utils.ShowMessageDialog(_app, "Invalid subgroup name", $"No subgroup with the provided name {subgroupNames.First()} found in the shared model group {groupID.GroupName}.");
-						return;
-					}
-
-					subgroupID = subgroup.ID;
 				}
 
-				var dialog = new EditSharedModelGroupDialog(engine, sharedModelGroupSettings, subgroupID, groupID.DataMinerID);
+				var dialog = new EditSharedModelGroupDialog(engine, sharedModelGroupSettings, subgroupGUID, groupID.DataMinerID);
 				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditSharedModelGroupDialog, sharedModelGroupSettings);
 				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 				_app.ShowDialog(dialog);

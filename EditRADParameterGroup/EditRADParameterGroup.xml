@@ -15,16 +15,7 @@
 
 	<Parameters>
 		<ScriptParameter id="1" type="string" values="">
-			<Description>GroupName</Description>
-		</ScriptParameter>
-		<ScriptParameter id="2" type="string" values="">
-			<Description>DataMinerID</Description>
-		</ScriptParameter>
-		<ScriptParameter id="4" type="string" values="">
-			<Description>SubgroupName</Description>
-		</ScriptParameter>
-		<ScriptParameter id="5" type="string" values="">
-			<Description>SubgroupID</Description>
+			<Description>Group ID</Description>
 		</ScriptParameter>
 	</Parameters>
 

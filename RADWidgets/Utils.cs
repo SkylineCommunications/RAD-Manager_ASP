@@ -4,8 +4,8 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
+	using System.Text.RegularExpressions;
 	using RadUtils;
-	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -13,7 +13,14 @@
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public struct RadGroupID
+	public interface IRadGroupID
+	{
+		int DataMinerID { get; set; }
+
+		string GroupName { get; set; }
+	}
+
+	public struct RadGroupID : IRadGroupID
 	{
 		public RadGroupID(int dataMinerID, string groupName)
 		{
@@ -26,6 +33,33 @@
 		public string GroupName { get; set; }
 	}
 
+	public struct RadSubgroupID : IRadGroupID
+	{
+		public RadSubgroupID(int dataMinerID, string groupName, Guid subgroupID)
+		{
+			DataMinerID = dataMinerID;
+			GroupName = groupName;
+			SubgroupID = subgroupID;
+			SubgroupName = null;
+		}
+
+		public RadSubgroupID(int dataMinerID, string groupName, string subgroupName)
+		{
+			DataMinerID = dataMinerID;
+			GroupName = groupName;
+			SubgroupID = null;
+			SubgroupName = subgroupName;
+		}
+
+		public int DataMinerID { get; set; }
+
+		public string GroupName { get; set; }
+
+		public Guid? SubgroupID { get; set; }
+
+		public string SubgroupName { get; set; }
+	}
+
 	public static class Utils
 	{
 		/// <summary>
@@ -34,23 +68,27 @@
 		/// <param name="app">The app.</param>
 		/// <returns>A list with the DataMiner IDs and names of the provided groups, or an empty list if none were provided.</returns>
 		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
-		public static List<RadGroupID> ParseGroupIDParameters(InteractiveController app)
+		public static List<IRadGroupID> ParseGroupIDParameter(InteractiveController app)
 		{
-			var groupNames = ParseScriptParameterValue(app.Engine.GetScriptParam("GroupName")?.Value);
-			var dataMinerIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("DataMinerID")?.Value);
-			if (groupNames.IsNullOrEmpty() || dataMinerIDs.IsNullOrEmpty())
-				return new List<RadGroupID>();
+			var groupIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("Group ID")?.Value);
 
-			if (groupNames.Count != dataMinerIDs.Count)
-				throw new FormatException("The number of group names and DataMiner IDs must be equal");
-
-			var result = new List<RadGroupID>(groupNames.Count);
-			for (int i = 0; i < groupNames.Count; ++i)
+			var result = new List<IRadGroupID>();
+			Regex regex = new Regex(@"^(?<DataMinerID>\d+)/(?<GroupName>.+)/(?<SubgroupID>[-A-Za-z0-9]*?)$");
+			foreach (var groupIDStr in groupIDs)
 			{
-				if (!int.TryParse(dataMinerIDs[i], out int dataMinerID))
-					throw new FormatException($"DataMinerID parameter is not a valid number, got '{dataMinerIDs[i]}'");
+				var match = regex.Match(groupIDStr);
+				if (!match.Success)
+					throw new FormatException($"Group ID parameter '{groupIDStr}' is not in the correct format. Expected format: 'DataMinerID/GroupName/SubgroupID'");
 
-				result.Add(new RadGroupID(dataMinerID, groupNames[i]));
+				if (!int.TryParse(match.Groups["DataMinerID"].Value, out int dataMinerID))
+					throw new FormatException($"DataMinerID parameter is not a valid number, got '{match.Groups["DataMinerID"].Value}'");
+				string groupName = match.Groups["GroupName"].Value;
+				if (Guid.TryParse(match.Groups["SubgroupID"].Value, out var subgroupID))
+					result.Add(new RadSubgroupID(dataMinerID, groupName, subgroupID));
+				else if (string.IsNullOrEmpty(match.Groups["SubgroupID"].Value))
+					result.Add(new RadGroupID(dataMinerID, groupName));
+				else
+					throw new FormatException($"SubgroupID parameter is not a valid GUID, got '{match.Groups["SubgroupID"].Value}'");
 			}
 
 			return result;
