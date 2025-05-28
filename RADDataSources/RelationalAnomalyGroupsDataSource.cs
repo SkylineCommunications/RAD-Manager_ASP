@@ -39,7 +39,7 @@ namespace RadDataSources
 				new GQIDoubleColumn("Anomaly Threshold"),
 				new GQITimeSpanColumn("Minimum Anomaly Duration"),
 				new GQIBooleanColumn("Is Monitored"),
-				new GQIStringColumn("Parent Group"), //TODO: or model?
+				new GQIStringColumn("Parent Group"),
 				new GQIStringColumn("Subgroup ID"),
 			};
 		}

@@ -23,7 +23,7 @@ namespace RemoveRADParameterGroup
 				if (lastWrap + maxLineLength > text.Length)
 					currentIndex = text.Length;
 				else
-					currentIndex = text.LastIndexOfAny(new[] { ' ', ',', '.', '?', '!', ':', ';', '-', '\n', '\r', '\t' }, Math.Min(text.Length - 1, lastWrap + maxLineLength)) + 1;//TODO: probably not what I want?
+					currentIndex = text.LastIndexOfAny(new[] { ' ', ',', '.', '?', '!', ':', ';', '-', '\n', '\r', '\t' }, Math.Min(text.Length - 1, lastWrap + maxLineLength)) + 1;
 				if (currentIndex <= lastWrap)
 					currentIndex = Math.Min(lastWrap + maxLineLength, text.Length);
 				list.Add(text.Substring(lastWrap, currentIndex - lastWrap).Trim(whitespace));

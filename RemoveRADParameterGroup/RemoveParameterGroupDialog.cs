@@ -46,7 +46,7 @@
 
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
 			_extraGroupsToRemove = new List<RadGroupID>();
-			var parameterGroups = groupIDs.GroupBy(g => new RadGroupID(g.DataMinerID, g.GroupName));//TODO: does this work, or do I need an EqualityComparer?
+			var parameterGroups = groupIDs.GroupBy(g => new RadGroupID(g.DataMinerID, g.GroupName));
 			var parametersCache = new EngineParametersCache(engine);
 			if (parameterGroups.Count() == 1)
 			{

@@ -37,7 +37,6 @@
 
 			AddWidget(_cancelButton, row, 0);
 			AddWidget(_okButton, row, 1, 1, _subgroupEditor.ColumnCount - 1);
-			//TODO: check for duplicate parameters (also check the code in SLAnalytics to check that I have everything)
 		}
 
 		public event EventHandler Accepted;

@@ -265,8 +265,5 @@
 			UpdateDetailsLabel();
 			UpdateIsValid();
 		}
-		//TODO: also add shared group edit method
-		//TODO: remove group: either remove whole group, or only specific subgroup
-		//TODO: Retraining: exclude elements or subgroups for retraining
 	}
 }
