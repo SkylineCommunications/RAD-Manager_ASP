@@ -62,8 +62,6 @@
 
 	public class RadGroupByProtocolCreator : VisibilitySection
 	{
-		private const string GROUP_PREFIX_TOOLTIP = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
-		private const string SHARED_MODEL_GROUP_NAME_TOOLTIP = "The name of the shared model group. Each subgroup's name will be this name followed by the element name between brackets";
 		private readonly IEngine _engine;
 		private readonly ParametersCache _parametersCache;
 		private readonly List<string> _existingGroupNames;
@@ -80,12 +78,10 @@
 			_parametersCache = parametersCache;
 			_existingGroupNames = existingGroupNames;
 
-			string groupPrefixTooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
 			_groupPrefixLabel = new Label();
 			_groupPrefixTextBox = new TextBox()
 			{
 				MinWidth = 600,
-				Tooltip = groupPrefixTooltip,
 			};
 			_groupPrefixTextBox.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
 			_groupPrefixTextBox.ValidationText = "Provide a valid prefix";
@@ -408,14 +404,16 @@
 			if (_sharedModelCheckBox?.IsChecked == true)
 			{
 				_groupPrefixLabel.Text = "Group name";
-				_groupPrefixLabel.Tooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
-				_groupPrefixTextBox.Tooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
+				var tooltip = "The name of the shared model group. Each subgroup's name will be this name followed by the element name between brackets";
+				_groupPrefixLabel.Tooltip = tooltip;
+				_groupPrefixTextBox.Tooltip = tooltip;
 			}
 			else
 			{
 				_groupPrefixLabel.Text = "Group name prefix";
-				_groupPrefixLabel.Tooltip = GROUP_PREFIX_TOOLTIP;
-				_groupPrefixTextBox.Tooltip = GROUP_PREFIX_TOOLTIP;
+				var tooltip = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
+				_groupPrefixLabel.Tooltip = tooltip;
+				_groupPrefixTextBox.Tooltip = tooltip;
 			}
 
 			UpdateIsValid();
