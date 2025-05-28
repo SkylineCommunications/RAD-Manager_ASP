@@ -84,7 +84,6 @@
 				MinWidth = 600,
 			};
 			_groupPrefixTextBox.Changed += (sender, args) => OnGroupPrefixTextBoxChanged();
-			_groupPrefixTextBox.ValidationText = "Provide a valid prefix";
 
 			_parameterSelector = new MultiParameterPerProtocolSelector(engine)
 			{
@@ -240,6 +239,25 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		private void UpdateGroupPrefixCheckboxValidity()
+		{
+			if (string.IsNullOrEmpty(_groupPrefixTextBox.Text))
+			{
+				_groupPrefixTextBox.ValidationState = UIValidationState.Invalid;
+				_groupPrefixTextBox.ValidationText = _sharedModelCheckBox?.IsChecked == true ? "Provide a group name" : "Provide a group name prefix";
+			}
+			else if (_sharedModelCheckBox?.IsChecked == true && _existingGroupNames.Any(s => string.Equals(s, _groupPrefixTextBox.Text, StringComparison.OrdinalIgnoreCase)))
+			{
+				_groupPrefixTextBox.ValidationState = UIValidationState.Invalid;
+				_groupPrefixTextBox.ValidationText = "Group name already exists";
+			}
+			else
+			{
+				_groupPrefixTextBox.ValidationState = UIValidationState.Valid;
+				_groupPrefixTextBox.ValidationText = string.Empty;
+			}
+		}
+
 		private List<ParameterSelectorItemMatchInfo> GetSelectedParametersForElement(Element element)
 		{
 			if (!_parametersCache.TryGet(element.DmaId, element.ElementId, out var parametersOnElement))
@@ -391,10 +409,7 @@
 
 		private void OnGroupPrefixTextBoxChanged()
 		{
-			UIValidationState newState = string.IsNullOrEmpty(_groupPrefixTextBox.Text) ? UIValidationState.Invalid : UIValidationState.Valid;
-			if (newState != _groupPrefixTextBox.ValidationState)
-				_groupPrefixTextBox.ValidationState = newState;
-
+			UpdateGroupPrefixCheckboxValidity();
 			UpdateDetailsLabelVisibility();
 			UpdateIsValid();
 		}
@@ -416,6 +431,8 @@
 				_groupPrefixTextBox.Tooltip = tooltip;
 			}
 
+			UpdateGroupPrefixCheckboxValidity();
+			UpdateDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 	}

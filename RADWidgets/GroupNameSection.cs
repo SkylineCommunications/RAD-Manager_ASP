@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -60,7 +61,7 @@
 					_groupNameTextBox.ValidationText = string.Empty;
 				}
 			}
-			else if (_existingGroupNames.Contains(_groupNameTextBox.Text))
+			else if (_existingGroupNames.Any(s => string.Equals(_groupNameTextBox.Text, s, StringComparison.OrdinalIgnoreCase)))
 			{
 				_groupNameTextBox.ValidationState = UIValidationState.Invalid;
 				_groupNameTextBox.ValidationText = "Group name already exists";
