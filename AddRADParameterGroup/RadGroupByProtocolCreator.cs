@@ -81,7 +81,7 @@
 			_existingGroupNames = existingGroupNames;
 
 			string groupPrefixTooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
-			_groupPrefixLabel = new Label("Group name prefix");
+			_groupPrefixLabel = new Label();
 			_groupPrefixTextBox = new TextBox()
 			{
 				MinWidth = 600,
@@ -96,13 +96,16 @@
 			};
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			_sharedModelCheckBox = new CheckBox("Share model between subgroups")
+			if (Compatibility.HasSharedModelGroups())//TODO: test
 			{
-				Tooltip = "If checked, one shared model group will be created with subgroups for each element. If unchecked, separate groups will be created for " +
-				"each element.",
-				IsChecked = true,
-			};
-			_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
+				_sharedModelCheckBox = new CheckBox("Share model between subgroups")
+				{
+					Tooltip = "If checked, one shared model group will be created with subgroups for each element. If unchecked, separate groups will be created for " +
+					"each element.",
+					IsChecked = true,
+				};
+				_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
+			}
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
 
@@ -112,6 +115,7 @@
 			};
 
 			OnGroupPrefixTextBoxChanged();
+			OnSharedModelCheckBoxChanged();
 
 			int row = 0;
 			AddWidget(_groupPrefixLabel, row, 0);
@@ -121,8 +125,11 @@
 			AddSection(_parameterSelector, row, 0);
 			row += _parameterSelector.RowCount;
 
-			AddWidget(_sharedModelCheckBox, row, 0, 1, _parameterSelector.ColumnCount);
-			row++;
+			if (_sharedModelCheckBox != null)
+			{
+				AddWidget(_sharedModelCheckBox, row, 0, 1, _parameterSelector.ColumnCount);
+				row++;
+			}
 
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
@@ -151,7 +158,8 @@
 				_groupPrefixLabel.IsVisible = value;
 				_groupPrefixTextBox.IsVisible = value;
 				_parameterSelector.IsVisible = value;
-				_sharedModelCheckBox.IsVisible = value;
+				if (_sharedModelCheckBox != null)
+					_sharedModelCheckBox.IsVisible = value;
 				_optionsEditor.IsVisible = value;
 				UpdateDetailsLabelVisibility();
 			}
@@ -161,7 +169,7 @@
 		{
 			var groupInfos = GetSelectedGroupInfo();
 
-			if (_sharedModelCheckBox.IsChecked)
+			if (_sharedModelCheckBox?.IsChecked == true)
 			{
 				var subgroups = new List<RadSubgroupSettings>(groupInfos.Count);
 				foreach (var g in groupInfos)
@@ -222,7 +230,7 @@
 			UpdateDetailsLabel(groups);
 
 			bool hasValidGroup;
-			if (_sharedModelCheckBox.IsChecked)
+			if (_sharedModelCheckBox?.IsChecked == true)
 				hasValidGroup = groups.Any(g => g.ValidSubgroup);
 			else
 				hasValidGroup = groups.Any(g => g.ValidStandalone);
@@ -317,7 +325,7 @@
 				return;
 			}
 
-			bool sharedModelGroup = _sharedModelCheckBox.IsChecked;
+			bool sharedModelGroup = _sharedModelCheckBox?.IsChecked ?? false;
 			List<GroupByProtocolInfo> validGroups;
 			if (sharedModelGroup)
 				validGroups = groups.Where(g => g.ValidSubgroup).ToList();
@@ -397,16 +405,19 @@
 
 		private void OnSharedModelCheckBoxChanged()
 		{
-			if (_sharedModelCheckBox.IsChecked)
+			if (_sharedModelCheckBox?.IsChecked == true)
 			{
+				_groupPrefixLabel.Text = "Group name";
 				_groupPrefixLabel.Tooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
 				_groupPrefixTextBox.Tooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
 			}
 			else
 			{
+				_groupPrefixLabel.Text = "Group name prefix";
 				_groupPrefixLabel.Tooltip = GROUP_PREFIX_TOOLTIP;
 				_groupPrefixTextBox.Tooltip = GROUP_PREFIX_TOOLTIP;
 			}
+
 			UpdateIsValid();
 		}
 	}

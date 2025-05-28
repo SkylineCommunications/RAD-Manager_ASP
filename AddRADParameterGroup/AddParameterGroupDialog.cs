@@ -37,7 +37,10 @@
 			{
 				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
 			};
-			_addTypeDropDown = new EnumDropDown<AddGroupType>()
+			List<AddGroupType> excludedTypes = new List<AddGroupType>();
+			if (!Compatibility.HasSharedModelGroups())
+				excludedTypes.Add(AddGroupType.SharedModel);//TODO: test this
+			_addTypeDropDown = new EnumDropDown<AddGroupType>(excludedTypes)
 			{
 				Selected = AddGroupType.Single,
 			};
@@ -138,7 +141,7 @@
 				OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 			}
 			else
-			{//TODO: only show this option when available
+			{
 				_groupEditor.IsVisible = false;
 				_groupByProtocolCreator.IsVisible = false;
 				_sharedModelGroupEditor.IsVisible = true;
