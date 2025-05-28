@@ -5,7 +5,6 @@
 	using System.Linq;
 	using RadUtils;
 	using RadWidgets;
-	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -29,7 +28,8 @@
 
 			if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
 			{
-				var options = sharedModelGroupInfo.Subgroups.Select(s => new Option<Guid>(string.IsNullOrEmpty(s.Name) ? RadWidgets.Utils.GetParameterDescription(engine, s) : s.Name, s.ID))
+				var parametersCache = new EngineParametersCache(engine);
+				var options = sharedModelGroupInfo.Subgroups.Select(s => new Option<Guid>(SubgroupToString(engine, parametersCache, s), s.ID))
 					.OrderBy(o => o.DisplayValue);
 				_excludedSubgroupsList = new CollapsibleCheckboxList<Guid>(options)
 				{
@@ -81,6 +81,11 @@
 		public IEnumerable<TimeRange> GetSelectedTimeRanges()
 		{
 			return _timeRangeSelector.GetSelected().Select(i => i.TimeRange);
+		}
+
+		private static string SubgroupToString(IEngine engine, ParametersCache parametersCache, RadSubgroupInfo s)
+		{
+			return string.IsNullOrEmpty(s.Name) ? RadWidgets.Utils.GetParameterDescription(engine, parametersCache, s) : s.Name;
 		}
 
 		private void OnTimeRangeSelectorChanged()

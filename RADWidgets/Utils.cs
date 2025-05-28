@@ -222,17 +222,17 @@
 		/// Fetches the parameter info for the given element and parameter ID. Returns null and logs an exception if the parameter info could not be fetched.
 		/// </summary>
 		/// <param name="engine">The engine.</param>
+		/// <param name="cache">The parameters cache.</param>
 		/// <param name="dataMinerID">The DataMiner ID of the element.</param>
 		/// <param name="elementID">The element ID.</param>
 		/// <param name="parameterID">The parameter ID.</param>
 		/// <returns>The parameter info, or null if the parameter could not be found.</returns>
-		public static ParameterInfo FetchParameterInfo(IEngine engine, int dataMinerID, int elementID, int parameterID)
+		public static ParameterInfo FetchParameterInfo(IEngine engine, ParametersCache cache, int dataMinerID, int elementID, int parameterID)
 		{
-			var protocol = FetchElementProtocol(engine, dataMinerID, elementID);
-			if (protocol == null)
+			if (!cache.TryGet(dataMinerID, elementID, out var parameterInfos))
 				return null;
 
-			var paramInfo = protocol.Parameters?.FirstOrDefault(p => p.ID == parameterID);
+			var paramInfo = parameterInfos?.FirstOrDefault(p => p.ID == parameterID);
 			if (paramInfo == null)
 			{
 				engine.Log($"Could not find parameter {parameterID} in protocol for element {dataMinerID}/{elementID}");
@@ -287,14 +287,14 @@
 			return result;
 		}
 
-		public static string ToHumanReadableString(this ParameterKey key, IEngine engine)
-		{//TODO: use cache
+		public static string ToHumanReadableString(this ParameterKey key, IEngine engine, ParametersCache parametersCache)
+		{
 			if (key == null)
 				return string.Empty;
 
 			var element = engine.FindElement(key.DataMinerID, key.ElementID);
 			string elementName = element?.ElementName ?? $"{key.DataMinerID}/{key.ElementID}";
-			var paramInfo = FetchParameterInfo(engine, key.DataMinerID, key.ElementID, key.ParameterID);
+			var paramInfo = FetchParameterInfo(engine, parametersCache, key.DataMinerID, key.ElementID, key.ParameterID);
 			string parameterName = paramInfo?.DisplayName ?? key.ParameterID.ToString();
 			if (!string.IsNullOrEmpty(key?.DisplayInstance))
 				return $"{elementName}/{parameterName}/{key.DisplayInstance}";
@@ -308,13 +308,14 @@
 		/// Gets the parameter description of a subgroup. This is a human readable string containing the parameters in the group.
 		/// </summary>
 		/// <param name="engine">The engine.</param>
+		/// <param name="parametersCache">The parameters cache.</param>
 		/// <param name="info">The subgroup info.</param>
 		/// <returns>The parameter description.</returns>
-		public static string GetParameterDescription(IEngine engine, RadSubgroupInfo info)
+		public static string GetParameterDescription(IEngine engine, ParametersCache parametersCache, RadSubgroupInfo info)
 		{
 			var parameterStrs = new List<string>();
-			foreach (var p in info.Parameters)//TODO: use cache?
-				parameterStrs.Add(p?.Key.ToHumanReadableString(engine));
+			foreach (var p in info.Parameters)
+				parameterStrs.Add(p?.Key.ToHumanReadableString(engine, parametersCache));
 
 			return parameterStrs.Select(s => $"'{s}'").HumanReadableJoin();
 		}

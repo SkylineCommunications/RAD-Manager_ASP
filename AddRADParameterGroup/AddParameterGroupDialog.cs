@@ -14,7 +14,7 @@
 	{
 		[Description("Add single group")]
 		Single,
-		[Description("Add group for each element with given connector")]//TODO: also add shared model checkbox here and select it by default
+		[Description("Add group for each element with given connector")]
 		MultipleOnProtocol,
 		[Description("Add group with shared model")]
 		SharedModel,
@@ -27,9 +27,11 @@
 		private readonly RadGroupByProtocolCreator _groupByProtocolCreator;
 		private readonly RadSharedModelGroupEditor _sharedModelGroupEditor;
 		private readonly Button _okButton;
+		private readonly EngineParametersCache _parametersCache;
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{
+			_parametersCache = new EngineParametersCache(engine);
 			ShowScriptAbortPopup = false;
 			Title = "Add Parameter Group";
 
@@ -47,13 +49,13 @@
 			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
 			var existingGroupNames = RadWidgets.Utils.FetchRadGroupNames(engine).Select(id => id.GroupName).Distinct().ToList();
-			_groupEditor = new RadGroupEditor(engine, existingGroupNames);
+			_groupEditor = new RadGroupEditor(engine, existingGroupNames, _parametersCache);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
-			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames);
+			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames, _parametersCache);
 			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
-			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames);
+			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames, _parametersCache);
 			_sharedModelGroupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 
 			_okButton = new Button()

@@ -18,9 +18,9 @@
 		private bool _moreThanMinParametersSelected = false;
 		private bool _lessThanMaxParametersSelected = false;
 
-		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, RadGroupSettings settings = null)
+		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache, RadGroupSettings settings = null)
 		{
-			_parameterSelector = new MultiParameterSelector(engine, settings?.Parameters);
+			_parameterSelector = new MultiParameterSelector(engine, parametersCache, settings?.Parameters);
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, _parameterSelector.ColumnCount - 1);

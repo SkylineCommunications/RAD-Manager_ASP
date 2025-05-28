@@ -106,6 +106,7 @@
 		private readonly Button _removeButton;
 		private readonly WhiteSpace _whitespace;
 		private readonly Button _addButton;
+		private readonly ParametersCache _parametersCache;
 		private List<string> _parameterLabels;
 		private RadGroupOptions _parentOptions;
 		private Dictionary<Guid, RadSubgroupSelectorItem> _subgroups;
@@ -115,12 +116,13 @@
 		private List<string> _duplicatedSubgroupNames;
 		private List<string> _subgroupsWithSameParameters;
 
-		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, List<RadSubgroupInfo> subgroups = null,
-			Guid? selectedSubgroup = null)
+		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
+			List<RadSubgroupInfo> subgroups = null, Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
 			_parentOptions = parentOptions;
 			_parameterLabels = parameterLabels;
+			_parametersCache = parametersCache;
 
 			_noSubgroupsLabel = new Label("Add a subgroup by selecting 'Add subgroup...' below")
 			{
@@ -284,7 +286,7 @@
 				foreach (var p in subgroup.Parameters)
 				{
 					var element = _engine.FindElement(p.Key.DataMinerID, p.Key.ElementID);
-					var paramInfo = Utils.FetchParameterInfo(_engine, p.Key.DataMinerID, p.Key.ElementID, p.Key.ParameterID);
+					var paramInfo = Utils.FetchParameterInfo(_engine, _parametersCache, p.Key.DataMinerID, p.Key.ElementID, p.Key.ParameterID);
 					parameters.Add(new RadSubgroupSelectorParameter
 					{
 						Key = p.Key,

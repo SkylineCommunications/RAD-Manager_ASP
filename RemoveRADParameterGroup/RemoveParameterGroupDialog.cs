@@ -47,6 +47,7 @@
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
 			_extraGroupsToRemove = new List<RadGroupID>();
 			var parameterGroups = groupIDs.GroupBy(g => new RadGroupID(g.DataMinerID, g.GroupName));//TODO: does this work, or do I need an EqualityComparer?
+			var parametersCache = new EngineParametersCache(engine);
 			if (parameterGroups.Count() == 1)
 			{
 				Title = "Remove parameter group";
@@ -61,7 +62,7 @@
 				}
 				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
 				{
-					var subgroups = GetMatchingSubgroups(engine, sharedModelGroupInfo, groupIDs.OfType<RadSubgroupID>());
+					var subgroups = GetMatchingSubgroups(engine, parametersCache, sharedModelGroupInfo, groupIDs.OfType<RadSubgroupID>());
 
 					if (subgroups.Count == 1)
 					{
@@ -105,7 +106,7 @@
 					}
 					else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
 					{
-						var subgroups = GetMatchingSubgroups(engine,sharedModelGroupInfo, group.OfType<RadSubgroupID>());
+						var subgroups = GetMatchingSubgroups(engine, parametersCache, sharedModelGroupInfo, group.OfType<RadSubgroupID>());
 						var section = new SharedModelRemoveCheckBox(group.Key, subgroups, subgroups.Count == sharedModelGroupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
 						_groupRemoveWidgets.Add(section);
 					}
@@ -170,7 +171,8 @@
 			}
 		}
 
-		private static List<LiteRadSubgroupInfo> GetMatchingSubgroups(IEngine engine, RadSharedModelGroupInfo groupInfo, IEnumerable<RadSubgroupID> subgroupIDs)
+		private static List<LiteRadSubgroupInfo> GetMatchingSubgroups(IEngine engine, ParametersCache parametersCache, RadSharedModelGroupInfo groupInfo,
+			IEnumerable<RadSubgroupID> subgroupIDs)
 		{
 			var subgroupGUIDs = subgroupIDs.Select(id => id.SubgroupID).Where(id => id != null).ToHashSet();
 			var subgroupNames = subgroupIDs.Select(id => id.GroupName).Where(n => n != null).ToHashSet();
@@ -179,7 +181,7 @@
 			{
 				Name = s.Name,
 				ID = s.ID,
-				ParameterDescription = string.IsNullOrEmpty(s.Name) ? RadWidgets.Utils.GetParameterDescription(engine, s) : string.Empty,
+				ParameterDescription = string.IsNullOrEmpty(s.Name) ? RadWidgets.Utils.GetParameterDescription(engine, parametersCache, s) : string.Empty,
 			}).ToList();
 		}
 	}

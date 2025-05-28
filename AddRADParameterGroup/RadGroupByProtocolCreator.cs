@@ -65,19 +65,19 @@
 		private const string GROUP_PREFIX_TOOLTIP = "The prefix for the group names. The resulting group name will be the prefix followed by the element name between brackets.";
 		private const string SHARED_MODEL_GROUP_NAME_TOOLTIP = "The name of the shared model group. Each subgroup's name will be this name followed by the element name between brackets";
 		private readonly IEngine _engine;
-		private readonly ParametersCache _parametersCache;//TODO: do I want this for shared model groups as well?
+		private readonly ParametersCache _parametersCache;
 		private readonly List<string> _existingGroupNames;
 		private readonly Label _groupPrefixLabel;
 		private readonly TextBox _groupPrefixTextBox;
 		private readonly MultiParameterPerProtocolSelector _parameterSelector;
-		private readonly CheckBox _sharedModelCheckBox;
+		private readonly CheckBox _sharedModelCheckBox = null;
 		private readonly RadGroupOptionsEditor _optionsEditor;
 		private readonly Label _detailsLabel;
 
-		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames)
+		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache)
 		{
 			_engine = engine;
-			_parametersCache = new ParametersCache(engine);
+			_parametersCache = parametersCache;
 			_existingGroupNames = existingGroupNames;
 
 			string groupPrefixTooltip = SHARED_MODEL_GROUP_NAME_TOOLTIP;
