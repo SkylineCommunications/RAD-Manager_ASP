@@ -5,7 +5,7 @@
 	using System.Linq;
 	using System.Runtime.CompilerServices;
 	using Skyline.DataMiner.Analytics.Mad;
-	using Skyline.DataMiner.Analytics.Rad;//TODO: am I allowed to include this one in a 10.5.4? (I think I do when compiling and then it does run)
+	using Skyline.DataMiner.Analytics.Rad; // TODO: am I allowed to include this one in a 10.5.4? (I think I do when compiling and then it does run)
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Messages;
@@ -48,12 +48,12 @@
 		}
 
 		/// <summary>
-		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
 		/// <param name="groupName">The name of the shared model group.</param>
-		/// <param name="subGroupName">The name of the subgroup</param>
+		/// <param name="subGroupName">The name of the subgroup.</param>
 		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
 		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
 		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
@@ -66,12 +66,12 @@
 		}
 
 		/// <summary>
-		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
 		/// <param name="groupName">The name of the shared model group.</param>
-		/// <param name="subGroupName">The name of the subgroup</param>
+		/// <param name="subGroupName">The name of the subgroup.</param>
 		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
 		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
 		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
@@ -84,12 +84,12 @@
 		}
 
 		/// <summary>
-		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
 		/// <param name="groupName">The name of the shared model group.</param>
-		/// <param name="subGroupID">The id of the subgroup</param>
+		/// <param name="subGroupID">The id of the subgroup.</param>
 		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
 		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
 		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
@@ -102,12 +102,12 @@
 		}
 
 		/// <summary>
-		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version
+		/// Fetch the anomaly score data for a subgroup of a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
 		/// <param name="groupName">The name of the shared model group.</param>
-		/// <param name="subGroupID">The id of the subgroup</param>
+		/// <param name="subGroupID">The id of the subgroup.</param>
 		/// <param name="startTime">The start time of the time range to fetch the anomaly score from.</param>
 		/// <param name="endTime">The end time of the time range to fetch the anomaly score from.</param>
 		/// <exception cref="TypeLoadException">Thrown if <see cref="GetRADDataMessage"/> is not known.</exception>
@@ -130,7 +130,7 @@
 		}
 
 		/// <summary>
-		/// Remove a subgroup from a shared model group. Supported from TODO: version
+		/// Remove a subgroup from a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
@@ -143,7 +143,7 @@
 		}
 
 		/// <summary>
-		/// Remove a subgroup from a shared model group. Supported from TODO: version
+		/// Remove a subgroup from a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
@@ -166,7 +166,7 @@
 		}
 
 		/// <summary>
-		/// Add a shared model parameter group. Supported from TODO: version
+		/// Add a shared model parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="groupInfo">The group information.</param>
@@ -177,7 +177,7 @@
 		}
 
 		/// <summary>
-		/// Add a shared model parameter group. Supported from TODO: version
+		/// Add a shared model parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="groupInfo">The group information.</param>
@@ -188,7 +188,7 @@
 		}
 
 		/// <summary>
-		/// Add a new subgroup to a shared model group. Supported from TODO: version
+		/// Add a new subgroup to a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
@@ -201,7 +201,7 @@
 		}
 
 		/// <summary>
-		/// Add a new subgroup to a shared model group. Supported from TODO: version
+		/// Add a new subgroup to a shared model group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMinerID of the group.</param>
@@ -214,7 +214,7 @@
 		}
 
 		/// <summary>
-		/// Rename a parameter group. Supported from TODO: version
+		/// Rename a parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
@@ -227,7 +227,7 @@
 		}
 
 		/// <summary>
-		/// Rename a parameter group. Supported from TODO: version
+		/// Rename a parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
@@ -250,24 +250,29 @@
 		}
 
 		/// <summary>
-		/// Retrain a parameter group. Supported from TODO: version
+		/// Retrain a parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
 		/// <param name="groupName">The name of the group to retrain.</param>
+		/// <param name="timeRanges">Time ranges to use for retraining the model.</param>
+		/// <param name="excludedSubgroupIDs">The list of subgroups to excluded for training the model.</param>
 		/// <exception cref="TypeLoadException">Thrown if the <see cref="RetrainRADModelMessage"/> is not known.</exception>
 		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="RetrainRADModelMessage" /> is not known.</exception>
-		public static void RetrainParameterGroup(Connection connection, int dataMinerID, string groupName, IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
+		public static void RetrainParameterGroup(Connection connection, int dataMinerID, string groupName,
+			IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
 		{
 			RetrainParameterGroup(connection.HandleSingleResponseMessage, dataMinerID, groupName, timeRanges, excludedSubgroupIDs);
 		}
 
 		/// <summary>
-		/// Retrain a parameter group. Supported from TODO: version
+		/// Retrain a parameter group. Supported from TODO: version.
 		/// </summary>
 		/// <param name="engine">The engine object to use to send the message.</param>
 		/// <param name="dataMinerID">The DataMiner ID of the group.</param>
 		/// <param name="groupName">The name of the group to retrain.</param>
+		/// <param name="timeRanges">Time ranges to use for retraining the model.</param>
+		/// <param name="excludedSubgroupIDs">The list of subgroups to excluded for training the model.</param>
 		/// <exception cref="TypeLoadException">Thrown if the <see cref="RetrainRADModelMessage"/> is not known.</exception>
 		/// <exception cref="MissingMethodException">Thrown if the correct constructor of <see cref="RetrainRADModelMessage" /> is not known.</exception>
 		public static void RetrainParameterGroup(IEngine engine, int dataMinerID, string groupName, IEnumerable<TimeRange> timeRanges, List<Guid> excludedSubgroupIDs)
@@ -347,21 +352,6 @@
 			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
 		}
 
-		/// <summary>
-		/// Supported from TODO: version
-		/// </summary>
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static AddMADParameterGroupResponseMessage AddParameterGroup(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			RadSharedModelGroupSettings settings)
-		{
-			var subgroups = settings.Subgroups.Select(s => s.ToRADSubgroupInfo()).ToList();
-			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
-				settings.Options.MinimalDuration);
-			var request = new AddRADSharedModelGroupMessage(groupInfo);
-			return sendMessageFunc(request) as AddMADParameterGroupResponseMessage;
-		}
-
 		private static RetrainMADModelResponseMessage RetrainParameterGroup(
 			Func<DMSMessage, DMSMessage> sendMessageFunc,
 			int dataMinerID,
@@ -377,13 +367,23 @@
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static IRadGroupBaseInfo FetchRADParameterGroupInfo(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName)
+		private static AddRADParameterGroupResponseMessage AddParameterGroup(Func<DMSMessage, DMSMessage> sendMessageFunc, RadSharedModelGroupSettings settings)
+		{
+			var subgroups = settings.Subgroups.Select(s => s.ToRADSubgroupInfo()).ToList();
+			var groupInfo = new RADSharedModelGroupInfo(settings.GroupName, subgroups, settings.Options.UpdateModel, settings.Options.AnomalyThreshold,
+				settings.Options.MinimalDuration);
+			var request = new AddRADSharedModelGroupMessage(groupInfo);
+			return sendMessageFunc(request) as AddRADParameterGroupResponseMessage;
+		}
+
+		/// <summary>
+		/// Supported from TODO: version.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static IRadGroupBaseInfo FetchRADParameterGroupInfo(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName)
 		{
 			GetRADParameterGroupInfoMessage request = new GetRADParameterGroupInfoMessage(groupName)
 			{
@@ -448,10 +448,7 @@
 			}
 		}
 
-		private static IRadGroupBaseInfo FetchParameterGroupInfo(
-			Func<DMSMessage, DMSMessage> sendMessageFunc,
-			int dataMinerID,
-			string groupName)
+		private static IRadGroupBaseInfo FetchParameterGroupInfo(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName)
 		{
 			try
 			{
@@ -469,7 +466,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static List<KeyValuePair<DateTime, double>> FetchRADAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
@@ -484,7 +481,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static List<KeyValuePair<DateTime, double>> FetchRADAnomalyScoreData(Func<DMSMessage, DMSMessage> sendMessageFunc,
@@ -499,7 +496,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static RenameRADParameterGroupResponseMessage RenameParameterGroup(
@@ -516,7 +513,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static AddRADParameterGroupResponseMessage AddSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
@@ -530,7 +527,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static RemoveRADParameterGroupResponseMessage RemoveSubgroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
@@ -544,7 +541,7 @@
 		}
 
 		/// <summary>
-		/// Supported from TODO: version
+		/// Supported from TODO: version.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static RetrainMADModelResponseMessage RetrainParameterGroup(Func<DMSMessage, DMSMessage> sendMessageFunc, int dataMinerID, string groupName,
@@ -553,7 +550,7 @@
 			var request = new RetrainRADModelMessage(groupName, timeRanges.Select(r => new Skyline.DataMiner.Analytics.Rad.TimeRange(r.Start, r.End)).ToList())
 			{
 				DataMinerID = dataMinerID,
-				ExcludedSubgroupIDs = excludedSubgroupIDs, //TODO: is it indeed a MissingMethodException if the property is not known?
+				ExcludedSubgroupIDs = excludedSubgroupIDs,
 			};
 			return sendMessageFunc(request) as RetrainMADModelResponseMessage;
 		}

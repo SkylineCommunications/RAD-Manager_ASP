@@ -26,9 +26,9 @@
 			var parametersLabel = new Label("Parameter");
 			_parametersDropDown = new RadParametersDropDown(engine);
 			if (parameter != null)
-			_parametersDropDown.Changed += (sender, args) => OnParametersDropDownChanged();
+				_parametersDropDown.Changed += (sender, args) => OnParametersDropDownChanged();
 
-			var instanceLabel = new Label("Display key filter");
+			var instanceLabel = new Label("Display key");
 			_instanceDropDown = new DropDown<DynamicTableIndex>()
 			{
 				IsDisplayFilterShown = true,
@@ -152,7 +152,7 @@
 		{
 			var element = _elementsDropDown.Selected;
 			var parameter = _parametersDropDown.Selected;
-			if (parameter?.IsTableColumn != true)
+			if (element == null || parameter?.IsTableColumn != true)
 			{
 				_instanceDropDown.Options = new List<Option<DynamicTableIndex>>();
 				_instanceDropDown.IsEnabled = false;

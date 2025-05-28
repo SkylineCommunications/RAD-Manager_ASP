@@ -174,7 +174,7 @@ public class Script
 			{
 				if (matchedOldSubgroups[i])
 					continue;
-				if (oldSubgroups[i].HasSameParameters(subgroup))
+				if (oldSubgroups[i].HasSameOrderedParameters(subgroup))
 				{
 					matchedOldSubgroups[i] = true;
 					matched = true;

@@ -7,7 +7,6 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	//TODO: make task for duplication of subgroups and groups if Dennis didn't make one already
 	public class RadSharedModelGroupEditor : VisibilitySection
 	{
 		private readonly IEngine _engine;
@@ -23,14 +22,14 @@
 		private List<string> _duplicatedParameterLabels;
 		private bool _hasMissingParameterLabels;
 
-		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache, RadSharedModelGroupInfo settings = null,
-			Guid? selectedSubgroup = null)
+		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache,
+			RadSharedModelGroupInfo settings = null, Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
-			const string parametersPerSubgroupTooltip = "For each subgroup you will be able to add this many subgroups";
+			const string parametersPerSubgroupTooltip = "Each subgroup will have this many parameters";
 			_parametersCountLabel = new Label("Number of parameters per subgroup")
 			{
 				Tooltip = parametersPerSubgroupTooltip,
@@ -136,7 +135,7 @@
 
 		private void UpdateParameterLabelsValid()
 		{
-			_hasMissingParameterLabels = !_parameterLabels.All(s => !string.IsNullOrEmpty(s)) && !_parameterLabels.All(s => string.IsNullOrEmpty(s));
+			_hasMissingParameterLabels = _parameterLabels.Any(s => !string.IsNullOrEmpty(s)) && _parameterLabels.Any(s => string.IsNullOrEmpty(s));
 			_duplicatedParameterLabels = _parameterLabels.Where(s => !string.IsNullOrEmpty(s))
 				.GroupBy(s => s, StringComparer.OrdinalIgnoreCase)
 				.Where(g => g.Count() > 1)

@@ -27,7 +27,7 @@
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the section itself is visible. Setting this to true will not show any of the child widgets or sections.
+		/// Gets or sets a value indicating whether the section itself is visible. Changing this property will not show or hide any of the child widgets or sections.
 		/// </summary>
 		protected bool IsSectionVisible { get; set; } = true;
 

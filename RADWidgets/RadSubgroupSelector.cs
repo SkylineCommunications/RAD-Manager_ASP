@@ -99,9 +99,7 @@
 		private readonly IEngine _engine;
 		private readonly TreeView _selectorTreeView;
 		private readonly Label _noSubgroupsLabel;
-		private readonly Label _groupNameLabel;
-		private readonly Label _invalidSelectionLabel;
-		private readonly Label _detailsLabel;
+		private readonly RadSubgroupDetailsView _detailsView;
 		private readonly Button _editButton;
 		private readonly Button _removeButton;
 		private readonly WhiteSpace _whitespace;
@@ -137,22 +135,7 @@
 			};
 			_selectorTreeView.Changed += (sender, args) => OnSelectorTreeViewChanged();
 
-			_groupNameLabel = new Label()
-			{
-				Tooltip = "The name of the selected subgroup.",
-				Style = TextStyle.Heading,
-			};
-
-			_invalidSelectionLabel = new Label()
-			{
-				Tooltip = "Invalid selection.",
-			};
-
-			_detailsLabel = new Label()
-			{
-				Tooltip = "The parameters and options of the selected subgroup.",
-				MinWidth = 300,
-			};
+			_detailsView = new RadSubgroupDetailsView();
 
 			_editButton = new Button("Edit subgroup...")
 			{
@@ -179,11 +162,9 @@
 
 			SetSubgroups(subgroups, selectedSubgroup);
 
-			AddWidget(_noSubgroupsLabel, 0, 0, 1, 2);
-			AddWidget(_selectorTreeView, 1, 0, 4, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_groupNameLabel, 1, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 2, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 3, 1, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_noSubgroupsLabel, 0, 0, 1, 1 + _detailsView.ColumnCount);
+			AddWidget(_selectorTreeView, 1, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top);
+			AddSection(_detailsView, 1, 1);
 			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_whitespace, 4, 2);
@@ -226,6 +207,8 @@
 			_parameterLabels = parameterLabels;
 
 			CalculateSubgroupsWithMissingParameters();
+			CalculateSubgroupsWithDuplicatedParameters();
+			CalculateSubgroupsWithSameParameters();
 			UpdateIsValid();
 
 			// We might need to append the missing parameters suffix to the display value, hence recalculate all items
@@ -240,9 +223,7 @@
 
 		private void SetInvalidSelection(string detailsText, bool removeButtonEnabled)
 		{
-			_groupNameLabel.Text = string.Empty;
-			_invalidSelectionLabel.Text = detailsText;
-			_detailsLabel.Text = string.Empty;
+			_detailsView.ShowError(detailsText);
 			_editButton.IsEnabled = false;
 			_removeButton.IsEnabled = removeButtonEnabled;
 		}
@@ -253,9 +234,7 @@
 			int selectedCount = _selectorTreeView.Items.Count(i => i.IsChecked);
 			_noSubgroupsLabel.IsVisible = IsSectionVisible && count == 0;
 			_selectorTreeView.IsVisible = IsSectionVisible && count > 0;
-			_detailsLabel.IsVisible = IsSectionVisible && count > 0 && selectedCount == 1;
-			_groupNameLabel.IsVisible = IsSectionVisible && count > 0 && selectedCount == 1;
-			_invalidSelectionLabel.IsVisible = IsSectionVisible && count > 0 && selectedCount != 1;
+			_detailsView.IsVisible = IsSectionVisible && count > 0;
 		}
 
 		private string GetSubgroupPlaceHolderName(int count)
@@ -354,34 +333,13 @@
 			var settings = GetSelectedSubgroup();
 			if (settings == null)
 			{
-				_detailsLabel.Text = "Invalid state";
+				SetInvalidSelection("Selected subgroup not found.", false);
 				return;
 			}
 
-			_groupNameLabel.Text = settings.DisplayValue;
-			_invalidSelectionLabel.Text = string.Empty;
 			_editButton.IsEnabled = true;
 			_removeButton.IsEnabled = true;
-
-			List<string> parameterTexts = new List<string>(_parameterLabels.Count);
-			for (int i = 0; i < _parameterLabels.Count; ++i)
-			{
-				string label = string.IsNullOrEmpty(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i];
-				if (i < settings.Parameters.Count && settings.Parameters[i] != null)
-					parameterTexts.Add($"  {label}: {settings.Parameters[i].ToString()}");
-				else
-					parameterTexts.Add($"  {label}: Not set");
-			}
-
-			var parameterText = string.Join("\n", parameterTexts);
-			double anomalyThreshold = settings.Options.GetAnomalyThresholdOrDefault(_parentOptions.AnomalyThreshold);
-			string anomalyThresholdText = settings.Options.AnomalyThreshold.HasValue ? anomalyThreshold.ToString() : $"{anomalyThreshold} (same as parent group)";
-			int minimalDuration = settings.Options.GetMinimalDurationOrDefault(_parentOptions.MinimalDuration);
-			string minimalDurationText = settings.Options.MinimalDuration.HasValue ? $"{minimalDuration} minutes" : $"{minimalDuration} minutes (same as parent group)";
-			_detailsLabel.Text = $"Parameters:\n{parameterText}\n\n" +
-				$"Options:\n" +
-				$"  Anomaly threshold: {anomalyThresholdText}\n" +
-				$"  Minimal anomaly duration: {minimalDurationText}";
+			_detailsView.ShowSubgroup(settings, _parameterLabels, _parentOptions);
 		}
 
 		private void CalculateSubgroupsWithMissingParameters()

@@ -87,6 +87,7 @@ public class Script
 				failedGroups.Add(Tuple.Create(group.GroupName, ex));
 			}
 		}
+
 		foreach (var subgroup in dialog.SubgroupsToRemove)
 		{
 			try

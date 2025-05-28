@@ -26,7 +26,7 @@
 			_subgroupID = settings?.ID ?? Guid.NewGuid();
 			_otherSubgroups = allSubgroups;
 			if (settings != null)
-				_otherSubgroups.RemoveAll(s => s.ID == settings.ID);
+				_otherSubgroups = _otherSubgroups.Where(s => s.ID == settings.ID).ToList();
 
 			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(parameterLabels.Count);
 			for (int i = 0; i < parameterLabels.Count; i++)

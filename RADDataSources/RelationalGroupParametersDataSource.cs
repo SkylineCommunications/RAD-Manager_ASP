@@ -79,7 +79,7 @@ namespace RadDataSources
 				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
 				{
 					RadSubgroupInfo subgroupInfo = null;
-					if (_subGroupID != Guid.Empty && _subGroupID != null)
+					if (_subGroupID != Guid.Empty)
 						subgroupInfo = sharedModelGroupInfo.Subgroups.FirstOrDefault(s => s.ID == _subGroupID);
 					else if (!string.IsNullOrEmpty(_subGroupName))
 						subgroupInfo = sharedModelGroupInfo.Subgroups.FirstOrDefault(s => s.Name.Equals(_subGroupName, StringComparison.OrdinalIgnoreCase));

@@ -46,12 +46,12 @@
 		public bool GroupNameExists { get; set; }
 
 		/// <summary>
-		/// Gets a value indicating whether there is a single item in the parameter selector that matches multiple instances
+		/// Gets a value indicating whether there is a single item in the parameter selector that matches multiple instances.
 		/// </summary>
 		public bool SelectorItemWithMultipleInstances { get; private set; }
 
 		/// <summary>
-		/// Gets a value indicating whether there is a single item in the parameter selector that matches no instances
+		/// Gets a value indicating whether there is a single item in the parameter selector that matches no instances.
 		/// </summary>
 		public bool SelectorItemWithNoInstances { get; private set; }
 
@@ -91,7 +91,7 @@
 			};
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			if (Compatibility.HasSharedModelGroups())//TODO: test
+			if (Compatibility.HasSharedModelGroups()) // TODO: test
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between subgroups")
 				{

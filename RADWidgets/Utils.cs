@@ -10,65 +10,17 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Automation;
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
-	using Skyline.DataMiner.Net.Helper;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	public interface IRadGroupID
-	{
-		int DataMinerID { get; set; }
-
-		string GroupName { get; set; }
-	}
-
-	public struct RadGroupID : IRadGroupID
-	{
-		public RadGroupID(int dataMinerID, string groupName)
-		{
-			DataMinerID = dataMinerID;
-			GroupName = groupName;
-		}
-
-		public int DataMinerID { get; set; }
-
-		public string GroupName { get; set; }
-	}
-
-	public struct RadSubgroupID : IRadGroupID
-	{
-		public RadSubgroupID(int dataMinerID, string groupName, Guid subgroupID)
-		{
-			DataMinerID = dataMinerID;
-			GroupName = groupName;
-			SubgroupID = subgroupID;
-			SubgroupName = null;
-		}
-
-		public RadSubgroupID(int dataMinerID, string groupName, string subgroupName)
-		{
-			DataMinerID = dataMinerID;
-			GroupName = groupName;
-			SubgroupID = null;
-			SubgroupName = subgroupName;
-		}
-
-		public int DataMinerID { get; set; }
-
-		public string GroupName { get; set; }
-
-		public Guid? SubgroupID { get; set; }
-
-		public string SubgroupName { get; set; }
-	}
 
 	public static class Utils
 	{
 		/// <summary>
-		/// Get the group name and DataMiner ID from the script parameters.
+		/// Get the group name, DataMiner ID and (if provided) subgroup ID from the script parameters.
 		/// </summary>
 		/// <param name="app">The app.</param>
-		/// <returns>A list with the DataMiner IDs and names of the provided groups, or an empty list if none were provided.</returns>
-		/// <exception cref="FormatException">Thrown when the DataMiner ID script parameter could not be parsed, or when the number of group names and data miner IDs provided do not match.</exception>
+		/// <returns>A list of IRadGroupIDs representing the IDs of the groups provided in the script arguments.</returns>
+		/// <exception cref="FormatException">Thrown when the provided group IDs could not be parsed.</exception>
 		public static List<IRadGroupID> ParseGroupIDParameter(InteractiveController app)
 		{
 			var groupIDs = ParseScriptParameterValue(app.Engine.GetScriptParam("Group ID")?.Value);
@@ -84,10 +36,10 @@
 				if (!int.TryParse(match.Groups["DataMinerID"].Value, out int dataMinerID))
 					throw new FormatException($"DataMinerID parameter is not a valid number, got '{match.Groups["DataMinerID"].Value}'");
 				string groupName = match.Groups["GroupName"].Value;
-				if (Guid.TryParse(match.Groups["SubgroupID"].Value, out var subgroupID))
-					result.Add(new RadSubgroupID(dataMinerID, groupName, subgroupID));
-				else if (string.IsNullOrEmpty(match.Groups["SubgroupID"].Value))
+				if (string.IsNullOrEmpty(match.Groups["SubgroupID"].Value))
 					result.Add(new RadGroupID(dataMinerID, groupName));
+				else if (Guid.TryParse(match.Groups["SubgroupID"].Value, out var subgroupID))
+					result.Add(new RadSubgroupID(dataMinerID, groupName, subgroupID));
 				else
 					throw new FormatException($"SubgroupID parameter is not a valid GUID, got '{match.Groups["SubgroupID"].Value}'");
 			}
@@ -177,6 +129,11 @@
 			app.ShowDialog(exceptionDialog);
 		}
 
+		/// <summary>
+		/// Fetches all elements (including hidden, paused, stopped and service elements) from the DataMiner system. Returns an empty list and logs an exception if the elements could not be fetched.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <returns>A list of elements, or an empty list when an error occured..</returns>
 		public static List<LiteElementInfoEvent> FetchElements(IEngine engine)
 		{
 			try
@@ -242,6 +199,13 @@
 			return paramInfo;
 		}
 
+		/// <summary>
+		/// Fetches the protocol information for the given protocol name and version. Returns null and logs an exception if the protocol could not be fetched.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <param name="protocolName">The name of the protocol.</param>
+		/// <param name="protocolVersion">The version of the protocol.</param>
+		/// <returns>The protocol information, or null.</returns>
 		public static GetProtocolInfoResponseMessage FetchProtocol(IEngine engine, string protocolName, string protocolVersion)
 		{
 			try
@@ -256,13 +220,28 @@
 			}
 		}
 
+		/// <summary>
+		/// Fetches all trended instances of a table based on the given DataMiner ID, element ID and parameter info of a table column.
+		/// Returns an empty list and logs an exception if the instances could not be fetched.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <param name="dataMinerID">The DataMiner ID.</param>
+		/// <param name="elementID">The element ID.</param>
+		/// <param name="parameterInfo">The parameter info of the table column.</param>
+		/// <param name="displayKeyFilter">The filter to use on the display keys.</param>
+		/// <returns>A list of all matching, trended parameters. Or an empty list when an error occured.</returns>
 		public static IEnumerable<DynamicTableIndex> FetchInstancesWithTrending(IEngine engine, int dataMinerID, int elementID, ParameterInfo parameterInfo, string displayKeyFilter = null)
 		{
 			return FetchInstances(engine, dataMinerID, elementID, parameterInfo.ParentTablePid, displayKeyFilter)
 				.Where(i => parameterInfo.IsRealTimeTrended(i.DisplayValue) || parameterInfo.IsAverageTrended(i.DisplayValue));
 		}
 
-		public static List<RadGroupID> FetchRadGroupNames(IEngine engine)
+		/// <summary>
+		/// Fetch the IDs of all RAD groups in the system.
+		/// </summary>
+		/// <param name="engine">The engine.</param>
+		/// <returns>A list of RAD group IDs.</returns>
+		public static List<RadGroupID> FetchRadGroupIDs(IEngine engine)
 		{
 			var result = new List<RadGroupID>();
 			foreach (var agent in engine.GetDms().GetAgents())
@@ -287,6 +266,13 @@
 			return result;
 		}
 
+		/// <summary>
+		/// Convert a parameter to a string of the form "ElementName/ParameterName/Instance". If the parameter has no instance, it will be "ElementName/ParameterName".
+		/// </summary>
+		/// <param name="key">The parameter key.</param>
+		/// <param name="engine">The engine object.</param>
+		/// <param name="parametersCache">The cache object.</param>
+		/// <returns>A string representing the current parameter key.</returns>
 		public static string ToHumanReadableString(this ParameterKey key, IEngine engine, ParametersCache parametersCache)
 		{
 			if (key == null)
@@ -296,9 +282,9 @@
 			string elementName = element?.ElementName ?? $"{key.DataMinerID}/{key.ElementID}";
 			var paramInfo = FetchParameterInfo(engine, parametersCache, key.DataMinerID, key.ElementID, key.ParameterID);
 			string parameterName = paramInfo?.DisplayName ?? key.ParameterID.ToString();
-			if (!string.IsNullOrEmpty(key?.DisplayInstance))
+			if (!string.IsNullOrEmpty(key.DisplayInstance))
 				return $"{elementName}/{parameterName}/{key.DisplayInstance}";
-			else if (!string.IsNullOrEmpty(key?.Instance))
+			else if (!string.IsNullOrEmpty(key.Instance))
 				return $"{elementName}/{parameterName}/{key.Instance}";
 			else
 				return $"{elementName}/{parameterName}";
@@ -313,6 +299,9 @@
 		/// <returns>The parameter description.</returns>
 		public static string GetParameterDescription(IEngine engine, ParametersCache parametersCache, RadSubgroupInfo info)
 		{
+			if (info == null)
+				return string.Empty;
+
 			var parameterStrs = new List<string>();
 			foreach (var p in info.Parameters)
 				parameterStrs.Add(p?.Key.ToHumanReadableString(engine, parametersCache));
@@ -328,17 +317,22 @@
 		/// <returns>True if both groups has the same parameter, false otherwise.</returns>
 		public static bool HasSameParameters(this RadGroupSettings a, RadGroupSettings b)
 		{
+			if (a?.Parameters == null && b?.Parameters == null)
+				return true;
+			if (a?.Parameters == null || b?.Parameters == null)
+				return false;
+
 			return a.Parameters.ToHashSet(new ParameterKeyEqualityComparer()).SetEquals(b.Parameters);
 		}
 
 		/// <summary>
 		/// Return true if <paramref name="a"/> has the same parameters as <paramref name="b"/>, taking the order into account. For a good comparison,
-		/// the parameters need to be normalized wit <see cref="NormalizeParameters(RadSubgroupSettings)"/>.
+		/// the parameters need to be normalized with <see cref="NormalizeParameters(RadSubgroupSettings)"/>.
 		/// </summary>
 		/// <param name="a">The first group settings.</param>
 		/// <param name="b">The second group settings.</param>
 		/// <returns>True if both groups has the same parameter, false otherwise.</returns>
-		public static bool HasSameParameters(this RadSubgroupSettings a, RadSubgroupSettings b)
+		public static bool HasSameOrderedParameters(this RadSubgroupSettings a, RadSubgroupSettings b)
 		{
 			if (a?.Parameters == null && b?.Parameters == null)
 				return true;
@@ -366,12 +360,12 @@
 		/// <summary>
 		/// Normalizes the parameters of the given RadSubgroupSettings by ordering the parameters by their label names (if any are provided).
 		/// </summary>
-		/// <param name="settings">The subgroup settings</param>
+		/// <param name="settings">The subgroup settings.</param>
 		public static void NormalizeParameters(this RadSubgroupSettings settings)
 		{
 			if (settings?.Parameters == null)
 				return;
-			if (string.IsNullOrEmpty(settings.Parameters.FirstOrDefault()?.Label))
+			if (!string.IsNullOrEmpty(settings.Parameters.FirstOrDefault()?.Label))
 				settings.Parameters = settings.Parameters.OrderBy(p => p?.Label, StringComparer.OrdinalIgnoreCase).ToList();
 		}
 
@@ -440,7 +434,8 @@
 				{
 					indicesRequest.KeyFilter = displayKeyFilter;
 					indicesRequest.KeyFilterType = GetDynamicTableIndicesKeyFilterType.DisplayKey;
-				};
+				}
+
 				var indicesResponse = engine.SendSLNetSingleResponseMessage(indicesRequest) as DynamicTableIndicesResponse;
 				if (indicesResponse == null)
 				{

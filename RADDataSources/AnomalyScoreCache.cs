@@ -96,8 +96,12 @@
 				if (!string.IsNullOrEmpty(subGroupName))
 					return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, subGroupName, startTime, endTime);
 			}
-			catch (TypeLoadException) { }
-			catch (MissingMethodException) { }
+			catch (TypeLoadException)
+			{
+			}
+			catch (MissingMethodException)
+			{
+			}
 
 			return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, startTime, endTime);
 		}

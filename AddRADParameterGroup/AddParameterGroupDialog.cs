@@ -41,14 +41,14 @@
 			};
 			List<AddGroupType> excludedTypes = new List<AddGroupType>();
 			if (!Compatibility.HasSharedModelGroups())
-				excludedTypes.Add(AddGroupType.SharedModel);//TODO: test this
+				excludedTypes.Add(AddGroupType.SharedModel); // TODO: test this
 			_addTypeDropDown = new EnumDropDown<AddGroupType>(excludedTypes)
 			{
 				Selected = AddGroupType.Single,
 			};
 			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
-			var existingGroupNames = RadWidgets.Utils.FetchRadGroupNames(engine).Select(id => id.GroupName).Distinct().ToList();
+			var existingGroupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct().ToList();
 			_groupEditor = new RadGroupEditor(engine, existingGroupNames, _parametersCache);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 

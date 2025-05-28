@@ -13,9 +13,9 @@
 		public LabelEditor(int index, string parameterLabel = null)
 		{
 			string tooltip = $"The label of the parameter {index + 1}.";
-			var label = new Label($"Parameter ")
+			var label = new Label($"Parameter {index + 1}")
 			{
-				Tooltip = "The label of the parameter.",
+				Tooltip = tooltip,
 			};
 
 			_textBox = new TextBox
@@ -115,13 +115,14 @@
 
 		private void OnLabelChanged(LabelEditor editor)
 		{
+			SetLabelEditorsValid();
+
 			bool isEmpty = string.IsNullOrEmpty(editor.Label);
 			if (_labelEditors.Any(e => string.IsNullOrEmpty(e.Label) != isEmpty))
 			{
 				_detailsLabel.Text = "You should either provide a label for all parameters or for none.";
 				_detailsLabel.IsVisible = true;
 				_okButton.Tooltip = "Set the parameter labels above. Note that before submitting the group, you should make sure to either provide a label for all parameters, or for none.";
-				SetLabelEditorsValid();
 				return;
 			}
 			else if (!isEmpty)
@@ -150,7 +151,6 @@
 				_okButton.Tooltip = "Set no parameter labels for the current group."; // Here all labels are empty
 			else
 				_okButton.Tooltip = "Set the parameter labels above for the current group."; // Here a label is provided for all parameters and no duplicates are found
-			SetLabelEditorsValid();
 		}
 	}
 }
