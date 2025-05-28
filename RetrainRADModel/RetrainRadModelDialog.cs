@@ -31,7 +31,7 @@
 				var parametersCache = new EngineParametersCache(engine);
 				var options = sharedModelGroupInfo.Subgroups.Select(s => new Option<Guid>(SubgroupToString(engine, parametersCache, s), s.ID))
 					.OrderBy(o => o.DisplayValue);
-				_excludedSubgroupsList = new CollapsibleCheckboxList<Guid>(options)
+				_excludedSubgroupsList = new CollapsibleCheckboxList<Guid>(options, _timeRangeSelector.ColumnCount)
 				{
 					Text = "Exclude specific subgroups",
 					Tooltip = "Data from the selected subgroups will not be taken into account while retraining the model. This can be used to exclude subgroups that had anomalous behavior during the " +
