@@ -40,8 +40,8 @@
 				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
 			};
 			List<AddGroupType> excludedTypes = new List<AddGroupType>();
-			if (!Compatibility.HasSharedModelGroups())
-				excludedTypes.Add(AddGroupType.SharedModel); // TODO: test this
+			if (!Compatibility.HasSharedModelGroups(engine))
+				excludedTypes.Add(AddGroupType.SharedModel);
 			_addTypeDropDown = new EnumDropDown<AddGroupType>(excludedTypes)
 			{
 				Selected = AddGroupType.Single,

@@ -4,7 +4,6 @@ using System.Linq;
 using EditRADParameterGroup;
 using RadUtils;
 using RadWidgets;
-using Skyline.DataMiner.Analytics.Mad;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 

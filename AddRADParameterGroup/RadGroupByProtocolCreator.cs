@@ -91,7 +91,7 @@
 			};
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			if (Compatibility.HasSharedModelGroups()) // TODO: test
+			if (Compatibility.HasSharedModelGroups(engine))
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between subgroups")
 				{
