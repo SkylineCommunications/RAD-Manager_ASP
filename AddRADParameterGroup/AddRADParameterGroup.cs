@@ -73,12 +73,7 @@ public class Script
 		{
 			try
 			{
-				if (group is RadGroupSettings singleGroup)
-					_app.Engine.GetRadHelper().AddParameterGroup(singleGroup);
-				else if (group is RadSharedModelGroupSettings sharedGroup)
-					_app.Engine.GetRadHelper().AddParameterGroup(sharedGroup);
-				else
-					throw new Exception($"Invalid group type: {group.GetType()}");
+				_app.Engine.GetRadHelper().AddParameterGroup(group);
 			}
 			catch (Exception ex)
 			{
@@ -90,7 +85,7 @@ public class Script
 		if (failedGroups.Count > 0)
 		{
 			var ex = new AggregateException("Failed to add parameter group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
-			RadWidgets.Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
+			Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
 
 			return;
 		}

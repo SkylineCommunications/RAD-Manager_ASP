@@ -13,7 +13,7 @@
 		private readonly Button _okButton;
 		private readonly EngineParametersCache _parametersCache;
 
-		public EditParameterGroupDialog(IEngine engine, RadGroupSettings groupSettings, int dataMinerID) : base(engine)
+		public EditParameterGroupDialog(IEngine engine, RadGroupInfo groupSettings, int dataMinerID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;

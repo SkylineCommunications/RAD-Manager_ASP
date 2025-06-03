@@ -72,33 +72,26 @@ namespace RadDataSources
 			try
 			{
 				var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(_dataMinerID, _groupName);
-				if (groupInfo is RadGroupInfo parameterGroupInfo)
+				RadSubgroupInfo subgroupInfo = null;
+				if (_subGroupID != Guid.Empty)
 				{
-					_parameters = parameterGroupInfo.Parameters.Select(p => new RadParameter() { Key = p }).ToList();
+					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.ID == _subGroupID);
 				}
-				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
+				else if (!string.IsNullOrEmpty(_subGroupName))
 				{
-					RadSubgroupInfo subgroupInfo = null;
-					if (_subGroupID != Guid.Empty)
-						subgroupInfo = sharedModelGroupInfo.Subgroups.FirstOrDefault(s => s.ID == _subGroupID);
-					else if (!string.IsNullOrEmpty(_subGroupName))
-						subgroupInfo = sharedModelGroupInfo.Subgroups.FirstOrDefault(s => s.Name.Equals(_subGroupName, StringComparison.OrdinalIgnoreCase));
-
-					if (subgroupInfo == null)
-					{
-						_logger.Error("Could not find subgroup. Provide either a valid subgroup ID or a valid subgroup name.");
-						_parameters = new List<RadParameter>();
-						return default;
-					}
-
-					_parameters = subgroupInfo.Parameters;
+					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.Name.Equals(_subGroupName, StringComparison.OrdinalIgnoreCase));
+				}
+				else if (groupInfo.Subgroups.Count == 1)
+				{
+					subgroupInfo = groupInfo.Subgroups.FirstOrDefault();
 				}
 				else
 				{
-					_logger.Error("Group not found, or group is of unknown type.");
-					_parameters = new List<RadParameter>();
+					_logger.Error("No subgroup specified and multiple subgroups found. Please provide either a valid subgroup ID or a valid subgroup name.");
 					return default;
 				}
+
+				_parameters = subgroupInfo.Parameters;
 			}
 			catch (Exception ex)
 			{

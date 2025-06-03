@@ -42,12 +42,7 @@
 		{
 			get
 			{
-				return new RadGroupOptions
-				{
-					UpdateModel = UpdateModel,
-					AnomalyThreshold = _baseOptionsEditor.AnomalyThreshold,
-					MinimalDuration = _baseOptionsEditor.MinimalDuration,
-				};
+				return new RadGroupOptions(UpdateModel, _baseOptionsEditor.AnomalyThreshold, _baseOptionsEditor.MinimalDuration);
 			}
 		}
 

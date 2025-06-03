@@ -76,44 +76,22 @@ namespace RadDataSources
 			foreach (var groupName in groupNames)
 			{
 				var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
-				if (groupInfo is RadGroupInfo parameterGroupInfo)
+				bool sharedModelGroup = groupInfo.Subgroups.Count > 1;
+				foreach (var subgroupInfo in groupInfo.Subgroups)
 				{
 					rows.Add(new GQIRow(
 						new GQICell[]
 						{
 							new GQICell() { Value = groupName },
 							new GQICell() { Value = dataMinerID },
-							new GQICell() { Value = ParameterKeysToString(parameterGroupInfo.Parameters) },
-							new GQICell() { Value = parameterGroupInfo.Options.UpdateModel },
-							new GQICell() { Value = parameterGroupInfo.Options.GetAnomalyThresholdOrDefault() },
-							new GQICell() { Value = TimeSpan.FromMinutes(parameterGroupInfo.Options.GetMinimalDurationOrDefault()) },
-							new GQICell() { Value = parameterGroupInfo.IsMonitored },
+							new GQICell() { Value = ParameterKeysToString(subgroupInfo.Parameters.Select(p => p?.Key)) },
+							new GQICell() { Value = groupInfo.Options.UpdateModel },
+							new GQICell() { Value = subgroupInfo.Options.GetAnomalyThresholdOrDefault(groupInfo.Options.AnomalyThreshold) },
+							new GQICell() { Value = TimeSpan.FromMinutes(subgroupInfo.Options.GetMinimalDurationOrDefault(groupInfo.Options.MinimalDuration)) },
+							new GQICell() { Value = subgroupInfo.IsMonitored },
 							new GQICell() { Value = groupName }, // Parent group
-							new GQICell() { Value = string.Empty }, // Subgroup ID
+							new GQICell() { Value = sharedModelGroup ? subgroupInfo.ID.ToString() : string.Empty }, // Subgroup ID
 						}));
-				}
-				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
-				{
-					foreach (var subgroupInfo in sharedModelGroupInfo.Subgroups)
-					{
-						rows.Add(new GQIRow(
-							new GQICell[]
-							{
-								new GQICell() { Value = subgroupInfo.GetName(sharedModelGroupInfo.GroupName) },
-								new GQICell() { Value = dataMinerID },
-								new GQICell() { Value = ParameterKeysToString(subgroupInfo.Parameters.Select(p => p.Key)) },
-								new GQICell() { Value = sharedModelGroupInfo.Options.UpdateModel },
-								new GQICell() { Value = subgroupInfo.Options.GetAnomalyThresholdOrDefault(sharedModelGroupInfo.Options.AnomalyThreshold) },
-								new GQICell() { Value = TimeSpan.FromMinutes(subgroupInfo.Options.GetMinimalDurationOrDefault(sharedModelGroupInfo.Options.MinimalDuration)) },
-								new GQICell() { Value = subgroupInfo.IsMonitored },
-								new GQICell() { Value = sharedModelGroupInfo.GroupName }, // Parent group
-								new GQICell() { Value = subgroupInfo.ID.ToString() }, // Subgroup ID
-							}));
-					}
-				}
-				else
-				{
-					_logger.Error($"Could not fetch RAD group info for group {groupName}: no response or response of the wrong type received");
 				}
 			}
 
@@ -125,6 +103,9 @@ namespace RadDataSources
 
 		private string ParameterKeyToString(ParameterKey pKey)
 		{
+			if (pKey == null)
+				return string.Empty;
+
 			string elementName;
 			if (!_elementNames.TryGet(pKey.DataMinerID, pKey.ElementID, out elementName))
 				elementName = $"{pKey.DataMinerID}/{pKey.ElementID}";

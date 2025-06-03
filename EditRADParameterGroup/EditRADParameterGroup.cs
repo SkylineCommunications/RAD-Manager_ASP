@@ -41,7 +41,7 @@ public class Script
 			}
 
 			var groupID = groupIDs.First();
-			IRadGroupBaseInfo settings = null;
+			RadGroupInfo settings = null;
 			try
 			{
 				settings = _app.Engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
@@ -52,14 +52,14 @@ public class Script
 				return;
 			}
 
-			if (settings is RadGroupInfo groupSettings)
+			if (settings.Subgroups?.Count == 0)
 			{
-				var dialog = new EditParameterGroupDialog(engine, groupSettings, groupID.DataMinerID);
-				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, groupSettings);
+				var dialog = new EditParameterGroupDialog(engine, settings, groupID.DataMinerID);
+				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
 				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 				_app.ShowDialog(dialog);
 			}
-			else if (settings is RadSharedModelGroupInfo sharedModelGroupSettings)
+			else
 			{
 				Guid? subgroupGUID = null;
 				if (groupID is RadSubgroupID subgroupID)
@@ -70,23 +70,15 @@ public class Script
 					}
 					else
 					{
-						var subgroup = sharedModelGroupSettings.Subgroups.FirstOrDefault(s => string.Equals(s.Name, subgroupID.GroupName, StringComparison.OrdinalIgnoreCase));
+						var subgroup = settings.Subgroups.FirstOrDefault(s => string.Equals(s.Name, subgroupID.GroupName, StringComparison.OrdinalIgnoreCase));
 						subgroupGUID = subgroup?.ID;
 					}
 				}
 
-				var dialog = new EditSharedModelGroupDialog(engine, sharedModelGroupSettings, subgroupGUID, groupID.DataMinerID);
-				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditSharedModelGroupDialog, sharedModelGroupSettings);
+				var dialog = new EditSharedModelGroupDialog(engine, settings, subgroupGUID, groupID.DataMinerID);
+				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditSharedModelGroupDialog, settings);
 				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 				_app.ShowDialog(dialog);
-			}
-			else
-			{
-				Utils.ShowMessageDialog(
-					_app,
-					"Failed to fetch parameter group information",
-					"Failed to fetch parameter group information: no response or a response of the wrong type received");
-				return;
 			}
 		}
 		catch (ScriptAbortException)
@@ -116,7 +108,7 @@ public class Script
 		_app.Engine.ExitSuccess("Editing parameter group cancelled");
 	}
 
-	private void Dialog_Accepted(EditParameterGroupDialog dialog, RadGroupSettings originalSettings)
+	private void Dialog_Accepted(EditParameterGroupDialog dialog, RadGroupInfo originalSettings)
 	{
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
@@ -127,7 +119,8 @@ public class Script
 			var radHelper = _app.Engine.GetRadHelper();
 			if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
 			{
-				if (originalSettings.HasSameParameters(newSettings))
+				var originalParameters = originalSettings.Subgroups.First().Parameters.Select(p => p.Key).ToHashSet(new ParameterKeyEqualityComparer());
+				if (originalParameters.SetEquals(newSettings?.Subgroups.First().Parameters.Select(p => p.Key)))
 				{
 					try
 					{
@@ -193,7 +186,7 @@ public class Script
 		}
 	}
 
-	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadSharedModelGroupInfo originalSettings)
+	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
 	{
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");

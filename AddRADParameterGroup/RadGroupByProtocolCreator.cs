@@ -161,7 +161,7 @@
 			}
 		}
 
-		public List<RadGroupBaseSettings> GetGroupsToAdd()
+		public List<RadGroupSettings> GetGroupsToAdd()
 		{
 			var groupInfos = GetSelectedGroupInfo();
 
@@ -173,38 +173,25 @@
 					if (!g.ValidSubgroup)
 						continue;
 
-					var subgroup = new RadSubgroupSettings()
-					{
-						Name = g.GroupName,
-						ID = Guid.NewGuid(),
-						Parameters = g.ParameterKeys.Select(p => new RadParameter() { Key = p, Label = null }).ToList(),
-						Options = new RadSubgroupOptions(),
-					};
+					var subgroup = new RadSubgroupSettings(g.GroupName, Guid.NewGuid(),
+						g.ParameterKeys.Select(p => new RadParameter(p, null)).ToList(), new RadSubgroupOptions());
 					subgroups.Add(subgroup);
 				}
 
-				var group = new RadSharedModelGroupSettings()
-				{
-					GroupName = _groupPrefixTextBox.Text,
-					Subgroups = subgroups,
-					Options = _optionsEditor.Options,
-				};
-				return new List<RadGroupBaseSettings>() { group };
+				var group = new RadGroupSettings(_groupPrefixTextBox.Text, _optionsEditor.Options, subgroups);
+				return new List<RadGroupSettings>() { group };
 			}
 			else
 			{
-				var groups = new List<RadGroupBaseSettings>(groupInfos.Count);
+				var groups = new List<RadGroupSettings>(groupInfos.Count);
 				foreach (var g in groupInfos)
 				{
 					if (!g.ValidStandalone)
 						continue;
 
-					var group = new RadGroupSettings()
-					{
-						GroupName = g.GroupName,
-						Parameters = g.ParameterKeys,
-						Options = _optionsEditor.Options,
-					};
+					var subgroup = new RadSubgroupSettings(g.GroupName, Guid.NewGuid(),
+						g.ParameterKeys.Select(p => new RadParameter(p, null)).ToList(), new RadSubgroupOptions());
+					var group = new RadGroupSettings(g.GroupName, _optionsEditor.Options, new List<RadSubgroupSettings> { subgroup });
 					groups.Add(group);
 				}
 

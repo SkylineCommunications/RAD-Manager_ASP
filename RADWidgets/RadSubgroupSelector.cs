@@ -20,7 +20,7 @@
 
 		public RadParameter ToRadParameter(string label = null)
 		{
-			return new RadParameter() { Key = Key, Label = label };
+			return new RadParameter(Key, label);
 		}
 
 		public override string ToString()
@@ -62,13 +62,7 @@
 			for (int i = 0; i < labels.Count && i < Parameters.Count; i++)
 				parameters.Add(Parameters[i].ToRadParameter(labels[i]));
 
-			return new RadSubgroupSettings
-			{
-				ID = ID,
-				Name = string.IsNullOrEmpty(Name) ? null : Name, // Analytics requires null and not an empty string
-				Parameters = parameters,
-				Options = Options,
-			};
+			return new RadSubgroupSettings(string.IsNullOrEmpty(Name) ? null : Name, ID, parameters, Options);
 		}
 
 		public bool HasMissingParameters(List<string> labels)

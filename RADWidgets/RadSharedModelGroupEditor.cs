@@ -24,7 +24,7 @@
 		private bool _hasMissingParameterLabels;
 
 		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache,
-			RadSharedModelGroupInfo settings = null, Guid? selectedSubgroup = null)
+			RadGroupInfo settings = null, Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
@@ -96,16 +96,11 @@
 
 		public event EventHandler ValidationChanged;
 
-		public RadSharedModelGroupSettings Settings
+		public RadGroupSettings Settings
 		{
 			get
 			{
-				return new RadSharedModelGroupSettings
-				{
-					GroupName = _groupNameSection.GroupName,
-					Subgroups = _subgroupSelector.Subgroups,
-					Options = _optionsEditor.Options,
-				};
+				return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, _subgroupSelector.Subgroups);
 			}
 		}
 

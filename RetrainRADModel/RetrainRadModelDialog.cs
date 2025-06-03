@@ -15,7 +15,7 @@
 		private readonly MultiTimeRangeSelector _timeRangeSelector;
 		private readonly CollapsibleCheckboxList<Guid> _excludedSubgroupsList = null;
 
-		public RetrainRadModelDialog(IEngine engine, RadGroupID groupID, IRadGroupBaseInfo groupInfo) : base(engine)
+		public RetrainRadModelDialog(IEngine engine, RadGroupID groupID, RadGroupInfo groupInfo) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			GroupID = groupID;
@@ -27,10 +27,10 @@
 			_timeRangeSelector = new MultiTimeRangeSelector(engine);
 			_timeRangeSelector.Changed += (sender, args) => OnTimeRangeSelectorChanged();
 
-			if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
+			if (groupInfo.Subgroups?.Count > 1)
 			{
 				var parametersCache = new EngineParametersCache(engine);
-				var options = sharedModelGroupInfo.Subgroups.Select(s => new Option<Guid>(SubgroupToString(engine, parametersCache, s), s.ID))
+				var options = groupInfo.Subgroups.Select(s => new Option<Guid>(SubgroupToString(engine, parametersCache, s), s.ID))
 					.OrderBy(o => o.DisplayValue);
 				_excludedSubgroupsList = new CollapsibleCheckboxList<Guid>(options, _timeRangeSelector.ColumnCount)
 				{

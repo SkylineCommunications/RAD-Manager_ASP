@@ -312,22 +312,6 @@
 		}
 
 		/// <summary>
-		/// Returns true if <paramref name="a"/> has the same parameters as <paramref name="b"/>, ignoring the order and multiple parameters.
-		/// </summary>
-		/// <param name="a">The first group settings.</param>
-		/// <param name="b">The second group settings.</param>
-		/// <returns>True if both groups has the same parameter, false otherwise.</returns>
-		public static bool HasSameParameters(this RadGroupSettings a, RadGroupSettings b)
-		{
-			if (a?.Parameters == null && b?.Parameters == null)
-				return true;
-			if (a?.Parameters == null || b?.Parameters == null)
-				return false;
-
-			return a.Parameters.ToHashSet(new ParameterKeyEqualityComparer()).SetEquals(b.Parameters);
-		}
-
-		/// <summary>
 		/// Return true if <paramref name="a"/> has the same parameters as <paramref name="b"/>, taking the order into account. For a good comparison,
 		/// the parameters need to be normalized with <see cref="NormalizeParameters(RadSubgroupSettings)"/>.
 		/// </summary>

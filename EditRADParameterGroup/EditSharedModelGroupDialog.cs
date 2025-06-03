@@ -12,7 +12,7 @@
 		private readonly RadSharedModelGroupEditor _sharedGroupEditor;
 		private readonly Button _okButton;
 
-		public EditSharedModelGroupDialog(IEngine engine, RadSharedModelGroupInfo groupSettings, Guid? selectedSubgroup, int dataMinerID) : base(engine)
+		public EditSharedModelGroupDialog(IEngine engine, RadGroupInfo groupSettings, Guid? selectedSubgroup, int dataMinerID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
@@ -48,7 +48,7 @@
 
 		public int DataMinerID { get; private set; }
 
-		public RadSharedModelGroupSettings GroupSettings => _sharedGroupEditor.Settings;
+		public RadGroupSettings GroupSettings => _sharedGroupEditor.Settings;
 
 		private void OnGroupEditorValidationChanged()
 		{

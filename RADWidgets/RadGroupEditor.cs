@@ -19,13 +19,21 @@
 		private bool _moreThanMinParametersSelected = false;
 		private bool _lessThanMaxParametersSelected = false;
 
-		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache, RadGroupSettings settings = null)
+		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache, RadGroupInfo settings = null)
 		{
-			_parameterSelector = new MultiParameterSelector(engine, parametersCache, settings?.Parameters);
+			_parameterSelector = new MultiParameterSelector(engine, parametersCache, settings?.Subgroups?.FirstOrDefault()?.Parameters?.Select(p => p?.Key));
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, _parameterSelector.ColumnCount - 1);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
+
+			var options = settings?.Options;
+			var subgroupOptions = settings?.Subgroups?.FirstOrDefault()?.Options;
+			if (subgroupOptions != null)//TODO:test
+			{
+				options = new RadGroupOptions(options?.UpdateModel ?? true, subgroupOptions?.AnomalyThreshold ?? options?.AnomalyThreshold,
+					subgroupOptions?.MinimalDuration ?? options.MinimalDuration);
+			}
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount, settings?.Options);
 
@@ -53,12 +61,9 @@
 		{
 			get
 			{
-				return new RadGroupSettings
-				{
-					GroupName = _groupNameSection.GroupName,
-					Parameters = _parameterSelector.GetSelectedParameters(),
-					Options = _optionsEditor.Options,
-				};
+				var parameters = _parameterSelector.GetSelectedParameters().Select(p => new RadParameter(p, string.Empty)).ToList();
+				var subgroup = new RadSubgroupSettings(_groupNameSection.GroupName, Guid.NewGuid(), parameters, new RadSubgroupOptions());
+				return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, new List<RadSubgroupSettings> { subgroup });
 			}
 		}
 

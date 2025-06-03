@@ -54,16 +54,9 @@
 				Title = "Remove parameter group";
 				var groupID = parameterGroups.First().Key;
 				var groupInfo = FetchGroupInfo(engine, groupID);
-				if (groupInfo is RadGroupInfo parameterGroupInfo)
+				if (groupInfo.Subgroups.Count > 1)
 				{
-					label.Text = $"Are you sure you want to remove the parameter group '{groupID.GroupName}' from Relational Anomaly Detection?";
-					acceptButton.Text = "Yes";
-					rejectButton.Text = "No";
-					_extraGroupsToRemove.Add(groupID);
-				}
-				else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
-				{
-					var subgroups = GetMatchingSubgroups(engine, parametersCache, sharedModelGroupInfo, groupIDs.OfType<RadSubgroupID>());
+					var subgroups = GetMatchingSubgroups(engine, parametersCache, groupInfo, groupIDs.OfType<RadSubgroupID>());
 
 					if (subgroups.Count == 1)
 					{
@@ -81,13 +74,15 @@
 					acceptButton.Text = "OK";
 					rejectButton.Text = "Cancel";
 
-					var section = new SharedModelRemoveRadioButtonList(groupID, subgroups, subgroups.Count == sharedModelGroupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
+					var section = new SharedModelRemoveRadioButtonList(groupID, subgroups, subgroups.Count == groupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
 					_groupRemoveWidgets.Add(section);
 				}
 				else
 				{
-					engine.Log($"Failed to fetch group info for group {parameterGroups.First().Key.DataMinerID}/{parameterGroups.First().Key.GroupName}: no response received or response of unexpected type received.");
-					throw new Exception($"Failed to fetch group info");
+					label.Text = $"Are you sure you want to remove the parameter group '{groupID.GroupName}' from Relational Anomaly Detection?";
+					acceptButton.Text = "Yes";
+					rejectButton.Text = "No";
+					_extraGroupsToRemove.Add(groupID);
 				}
 			}
 			else
@@ -100,20 +95,16 @@
 				foreach (var group in parameterGroups)
 				{
 					var groupInfo = FetchGroupInfo(engine, group.Key);
-					if (groupInfo is RadGroupInfo parameterGroupInfo)
+					if (groupInfo.Subgroups.Count > 1)
 					{
-						var checkBox = new GroupRemoveCheckBox(group.Key, 4);
-						_groupRemoveWidgets.Add(checkBox);
-					}
-					else if (groupInfo is RadSharedModelGroupInfo sharedModelGroupInfo)
-					{
-						var subgroups = GetMatchingSubgroups(engine, parametersCache, sharedModelGroupInfo, group.OfType<RadSubgroupID>());
-						var section = new SharedModelRemoveCheckBox(group.Key, subgroups, subgroups.Count == sharedModelGroupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
+						var subgroups = GetMatchingSubgroups(engine, parametersCache, groupInfo, group.OfType<RadSubgroupID>());
+						var section = new SharedModelRemoveCheckBox(group.Key, subgroups, subgroups.Count == groupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
 						_groupRemoveWidgets.Add(section);
 					}
 					else
 					{
-						engine.Log($"Failed to fetch group info for group {group.Key.DataMinerID}/{group.Key.GroupName}: no response received or response of unexpected type received.");
+						var checkBox = new GroupRemoveCheckBox(group.Key, 4);
+						_groupRemoveWidgets.Add(checkBox);
 					}
 				}
 			}
@@ -159,7 +150,7 @@
 
 		public List<RadSubgroupID> SubgroupsToRemove => _groupRemoveWidgets.SelectMany(g => g.SubgroupsToRemove).ToList();
 
-		private static IRadGroupBaseInfo FetchGroupInfo(IEngine engine, RadGroupID groupID)
+		private static RadGroupInfo FetchGroupInfo(IEngine engine, RadGroupID groupID)
 		{
 			try
 			{
@@ -172,7 +163,7 @@
 			}
 		}
 
-		private static List<LiteRadSubgroupInfo> GetMatchingSubgroups(IEngine engine, ParametersCache parametersCache, RadSharedModelGroupInfo groupInfo,
+		private static List<LiteRadSubgroupInfo> GetMatchingSubgroups(IEngine engine, ParametersCache parametersCache, RadGroupInfo groupInfo,
 			IEnumerable<RadSubgroupID> subgroupIDs)
 		{
 			var subgroupGUIDs = subgroupIDs.Select(id => id.SubgroupID).Where(id => id != null).ToHashSet();

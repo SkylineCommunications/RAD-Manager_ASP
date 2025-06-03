@@ -91,14 +91,14 @@
 
 		public event EventHandler Cancelled;
 
-		public List<RadGroupBaseSettings> GetGroupsToAdd()
+		public List<RadGroupSettings> GetGroupsToAdd()
 		{
 			if (_addTypeDropDown.Selected == AddGroupType.Single)
-				return new List<RadGroupBaseSettings>() { _groupEditor.Settings };
+				return new List<RadGroupSettings>() { _groupEditor.Settings };
 			else if (_addTypeDropDown.Selected == AddGroupType.MultipleOnProtocol)
 				return _groupByProtocolCreator.GetGroupsToAdd();
 			else
-				return new List<RadGroupBaseSettings>() { _sharedModelGroupEditor.Settings };
+				return new List<RadGroupSettings>() { _sharedModelGroupEditor.Settings };
 		}
 
 		private void OnEditorValidationChanged(bool isValid, string validationText)
