@@ -1,8 +1,8 @@
 ﻿namespace RadWidgets
 {
 	using System;
-	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// Editor for RAD group options.

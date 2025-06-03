@@ -3,10 +3,10 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// We return a table with the group names, their parameters, updateModel value and AnomalyThreshold for all configured groups.
@@ -24,7 +24,7 @@ namespace RadDataSources
 		{
 			_dms = args.DMS;
 			_logger = args.Logger;
-			ConnectionHelper.InitializeConnection(_dms);
+			ConnectionHelper.InitializeConnection(_dms, _logger);
 			return default;
 		}
 
@@ -65,7 +65,7 @@ namespace RadDataSources
 				return new GQIPage(Array.Empty<GQIRow>());
 
 			int dataMinerID = _dmaIDEnumerator.Current;
-			var groupNames = RadMessageHelper.FetchParameterGroups(ConnectionHelper.Connection, dataMinerID);
+			var groupNames = ConnectionHelper.RadHelper.FetchParameterGroups(dataMinerID);
 			if (groupNames == null)
 			{
 				_logger.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
@@ -75,7 +75,7 @@ namespace RadDataSources
 			var rows = new List<GQIRow>(groupNames.Count);
 			foreach (var groupName in groupNames)
 			{
-				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, dataMinerID, groupName);
+				var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
 				if (groupInfo is RadGroupInfo parameterGroupInfo)
 				{
 					rows.Add(new GQIRow(

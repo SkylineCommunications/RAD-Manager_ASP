@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using RadUtils;
 using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -42,7 +42,7 @@ public class Script
 			}
 
 			var groupID = parentGroups.First();
-			var groupInfo = RadMessageHelper.FetchParameterGroupInfo(engine, groupID.DataMinerID, groupID.GroupName);
+			var groupInfo = engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 			var dialog = new RetrainRadModelDialog(engine, groupID, groupInfo);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
@@ -86,9 +86,9 @@ public class Script
 		{
 			var excludedSubgroups = dialog.ExcludedSubgroupIDs;
 			if (excludedSubgroups.Count > 0)
-				RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
+				_app.Engine.GetRadHelper().RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
 			else
-				RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
+				_app.Engine.GetRadHelper().RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
 		}
 		catch (Exception ex)
 		{

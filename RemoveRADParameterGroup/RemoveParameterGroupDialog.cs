@@ -7,6 +7,7 @@
 	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class LiteRadSubgroupInfo
 	{
@@ -162,7 +163,7 @@
 		{
 			try
 			{
-				return RadMessageHelper.FetchParameterGroupInfo(engine, groupID.DataMinerID, groupID.GroupName);
+				return engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 			}
 			catch (Exception e)
 			{

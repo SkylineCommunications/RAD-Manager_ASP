@@ -5,10 +5,10 @@
 	using System.ComponentModel;
 	using System.Linq;
 	using AddRadParameterGroup;
-	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public enum AddGroupType
 	{
@@ -40,7 +40,7 @@
 				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
 			};
 			List<AddGroupType> excludedTypes = new List<AddGroupType>();
-			if (!Compatibility.HasSharedModelGroups(engine))
+			if (!engine.GetRadHelper().AllowSharedModelGroups)
 				excludedTypes.Add(AddGroupType.SharedModel);
 			_addTypeDropDown = new EnumDropDown<AddGroupType>(excludedTypes)
 			{

@@ -31,7 +31,7 @@ namespace RadDataSources
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			ConnectionHelper.InitializeConnection(args.DMS);
+			ConnectionHelper.InitializeConnection(args.DMS, args.Logger);
 			_logger = args.Logger;
 			return default;
 		}

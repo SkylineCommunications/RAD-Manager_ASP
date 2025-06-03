@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadUtils;
 	using Skyline.DataMiner.Net.Exceptions;
 
 	public class AnomalyScoreData
@@ -92,18 +91,15 @@
 			try
 			{
 				if (subGroupID != Guid.Empty)
-					return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, subGroupID, startTime, endTime);
+					return ConnectionHelper.RadHelper.FetchAnomalyScoreData(dataMinerID, groupName, subGroupID, startTime, endTime);
 				if (!string.IsNullOrEmpty(subGroupName))
-					return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, subGroupName, startTime, endTime);
+					return ConnectionHelper.RadHelper.FetchAnomalyScoreData(dataMinerID, groupName, subGroupName, startTime, endTime);
 			}
-			catch (TypeLoadException)
-			{
-			}
-			catch (MissingMethodException)
+			catch (NotSupportedException)
 			{
 			}
 
-			return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, startTime, endTime);
+			return ConnectionHelper.RadHelper.FetchAnomalyScoreData(dataMinerID, groupName, startTime, endTime);
 		}
 
 		private DateTime Min(DateTime time1, DateTime time2)

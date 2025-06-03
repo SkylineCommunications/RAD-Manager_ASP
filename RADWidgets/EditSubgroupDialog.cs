@@ -2,9 +2,9 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using RadUtils;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class EditSubgroupDialog : Dialog
 	{

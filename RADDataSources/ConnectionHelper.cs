@@ -7,12 +7,14 @@
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public static class ConnectionHelper
 	{
 		private const string APPLICATION_NAME = "GQI RAD data sources";
 		private static readonly object _connectionLock = new object();
 		private static Connection _connection = null;
+		private static RadHelper _radHelper;
 
 		/// <summary>
 		/// Gets the connection to the DataMiner Agent.
@@ -22,7 +24,12 @@
 			get => _connection;
 		}
 
-		public static void InitializeConnection(GQIDMS dms)
+		public static RadHelper RadHelper
+		{
+			get => _radHelper;
+		}
+
+		public static void InitializeConnection(GQIDMS dms, IGQILogger logger)
 		{
 			lock (_connectionLock)
 			{
@@ -38,6 +45,8 @@
 					_connection = ConnectionSettings.GetConnection("localhost", attributes);
 					_connection.ClientApplicationName = APPLICATION_NAME;
 					_connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
+
+					_radHelper = new RadHelper(_connection, new Logger(logger));
 				}
 				catch (Exception ex)
 				{

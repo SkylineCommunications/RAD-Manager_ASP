@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EditRADParameterGroup;
-using RadUtils;
 using RadWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -28,15 +28,15 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
+			var groupIDs = Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
+				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
 				return;
 			}
 			else if (groupIDs.Count > 1)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
+				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
 				return;
 			}
 
@@ -44,11 +44,11 @@ public class Script
 			IRadGroupBaseInfo settings = null;
 			try
 			{
-				settings = RadMessageHelper.FetchParameterGroupInfo(_app.Engine, groupID.DataMinerID, groupID.GroupName);
+				settings = _app.Engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 			}
 			catch (Exception ex)
 			{
-				RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
+				Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
 				return;
 			}
 
@@ -82,7 +82,7 @@ public class Script
 			}
 			else
 			{
-				RadWidgets.Utils.ShowMessageDialog(
+				Utils.ShowMessageDialog(
 					_app,
 					"Failed to fetch parameter group information",
 					"Failed to fetch parameter group information: no response or a response of the wrong type received");
@@ -124,31 +124,32 @@ public class Script
 		try
 		{
 			var newSettings = dialog.GroupSettings;
+			var radHelper = _app.Engine.GetRadHelper();
 			if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
 			{
 				if (originalSettings.HasSameParameters(newSettings))
 				{
 					try
 					{
-						RadMessageHelper.RenameParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+						radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
 					}
-					catch (TypeLoadException)
+					catch (NotSupportedException)
 					{
 						// We can't rename, so remove the old group instead
-						RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+						radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 					}
 				}
 				else
 				{
-					RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+					radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 				}
 			}
 
-			RadMessageHelper.AddParameterGroup(_app.Engine, newSettings);
+			radHelper.AddParameterGroup(newSettings);
 		}
 		catch (Exception ex)
 		{
-			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
 			return;
 		}
 
@@ -200,31 +201,32 @@ public class Script
 		try
 		{
 			var newSettings = dialog.GroupSettings;
+			var radHelper = _app.Engine.GetRadHelper();
 
 			GetAddedAndRemovedSubgroups(newSettings.Subgroups, originalSettings.Subgroups,
 				out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups);
 			if (addedSubgroups.Count == newSettings.Subgroups.Count)
 			{
 				// No subgroup is preserved, so we remove the entire group
-				RadMessageHelper.RemoveParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName);
+				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 			}
 			else
 			{
 				// Add least one of the original subgroups is preserved, so do not remove the entire group
 				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
-					RadMessageHelper.RenameParameterGroup(_app.Engine, dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+					radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
 
 				foreach (var removedSubgroup in removedSubgroups)
-					RadMessageHelper.RemoveSubgroup(_app.Engine, dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
+					radHelper.RemoveSubgroup(dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
 				foreach (var addedSubgroup in addedSubgroups)
-					RadMessageHelper.AddSubgroup(_app.Engine, dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
+					radHelper.AddSubgroup(dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
 			}
 
-			RadMessageHelper.AddParameterGroup(_app.Engine, newSettings);
+			radHelper.AddParameterGroup(newSettings);
 		}
 		catch (Exception ex)
 		{
-			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
 			return;
 		}
 

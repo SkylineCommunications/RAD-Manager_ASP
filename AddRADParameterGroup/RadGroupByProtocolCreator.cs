@@ -9,6 +9,7 @@
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class ParameterSelectorItemMatchInfo
 	{
@@ -91,7 +92,7 @@
 			};
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
-			if (Compatibility.HasSharedModelGroups(engine))
+			if (engine.GetRadHelper().AllowSharedModelGroups)
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between subgroups")
 				{

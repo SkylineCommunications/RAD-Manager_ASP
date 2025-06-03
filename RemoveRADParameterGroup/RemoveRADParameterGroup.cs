@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RadUtils;
 using RadWidgets;
 using RemoveRADParameterGroup;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -74,12 +74,13 @@ public class Script
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
 
+		var radHelper = _app.Engine.GetRadHelper();
 		var failedGroups = new List<Tuple<string, Exception>>();
 		foreach (var group in dialog.GroupsToRemove)
 		{
 			try
 			{
-				RadMessageHelper.RemoveParameterGroup(_app.Engine, group.DataMinerID, group.GroupName);
+				radHelper.RemoveParameterGroup(group.DataMinerID, group.GroupName);
 			}
 			catch (Exception ex)
 			{
@@ -92,7 +93,7 @@ public class Script
 		{
 			try
 			{
-				RadMessageHelper.RemoveSubgroup(_app.Engine, subgroup.DataMinerID, subgroup.GroupName, subgroup.SubgroupID.Value);
+				radHelper.RemoveSubgroup(subgroup.DataMinerID, subgroup.GroupName, subgroup.SubgroupID.Value);
 			}
 			catch (Exception ex)
 			{

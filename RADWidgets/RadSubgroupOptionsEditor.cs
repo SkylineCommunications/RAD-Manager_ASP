@@ -1,7 +1,7 @@
 ﻿namespace RadWidgets
 {
-	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class RadSubgroupOptionsEditor : Section
     {

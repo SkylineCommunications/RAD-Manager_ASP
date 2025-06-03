@@ -12,6 +12,7 @@
 	using Skyline.DataMiner.Core.DataMinerSystem.Common;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public static class Utils
 	{
@@ -244,11 +245,12 @@
 		public static List<RadGroupID> FetchRadGroupIDs(IEngine engine)
 		{
 			var result = new List<RadGroupID>();
+			var radHelper = engine.GetRadHelper();
 			foreach (var agent in engine.GetDms().GetAgents())
 			{
 				try
 				{
-					var groupNames = RadMessageHelper.FetchParameterGroups(engine, agent.Id);
+					var groupNames = radHelper.FetchParameterGroups(agent.Id);
 					if (groupNames == null)
 					{
 						engine.Log("Could not fetch RAD group names: no response or response of the wrong type received", LogType.Error, 5);

@@ -1,9 +1,8 @@
 ﻿namespace RadWidgets
 {
 	using System.Collections.Generic;
-	using System.Runtime;
-	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class RadSubgroupDetailsView : VisibilitySection
 	{

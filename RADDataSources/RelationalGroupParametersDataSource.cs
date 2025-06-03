@@ -3,11 +3,11 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadUtils;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// The input is a group name. We return a table with the parameter keys, element names and parameter names for the selected group.
@@ -30,7 +30,7 @@ namespace RadDataSources
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			ConnectionHelper.InitializeConnection(args.DMS);
+			ConnectionHelper.InitializeConnection(args.DMS, args.Logger);
 			_logger = args.Logger;
 			return default;
 		}
@@ -71,7 +71,7 @@ namespace RadDataSources
 
 			try
 			{
-				var groupInfo = RadMessageHelper.FetchParameterGroupInfo(ConnectionHelper.Connection, _dataMinerID, _groupName);
+				var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(_dataMinerID, _groupName);
 				if (groupInfo is RadGroupInfo parameterGroupInfo)
 				{
 					_parameters = parameterGroupInfo.Parameters.Select(p => new RadParameter() { Key = p }).ToList();

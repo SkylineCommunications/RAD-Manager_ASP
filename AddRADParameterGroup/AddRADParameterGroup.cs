@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AddParameterGroup;
-using RadUtils;
 using RadWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -74,9 +74,9 @@ public class Script
 			try
 			{
 				if (group is RadGroupSettings singleGroup)
-					RadMessageHelper.AddParameterGroup(_app.Engine, singleGroup);
+					_app.Engine.GetRadHelper().AddParameterGroup(singleGroup);
 				else if (group is RadSharedModelGroupSettings sharedGroup)
-					RadMessageHelper.AddParameterGroup(_app.Engine, sharedGroup);
+					_app.Engine.GetRadHelper().AddParameterGroup(sharedGroup);
 				else
 					throw new Exception($"Invalid group type: {group.GetType()}");
 			}
