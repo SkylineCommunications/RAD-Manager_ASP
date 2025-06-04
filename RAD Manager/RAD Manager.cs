@@ -24,9 +24,11 @@ internal class Script
             var installer = new AppInstaller(Engine.SLNetRaw, context);
             installer.InstallDefaultContent();
 
-            // Custom installation logic can be added here for each individual install package.
-        }
-        catch (Exception e)
+			// Custom installation logic can be added here for each individual install package.
+
+			//TODO: block installation if GQI DxM is not installed (contact Jens Vandewalle)
+		}
+		catch (Exception e)
         {
             engine.ExitFail($"Exception encountered during installation: {e}");
         }
