@@ -88,9 +88,9 @@
 
 		private void UpdateVisibility()
 		{
-			_detailsLabel.IsVisible = string.IsNullOrEmpty(_invalidSelectionLabel.Text);
-			_groupNameLabel.IsVisible = string.IsNullOrEmpty(_invalidSelectionLabel.Text);
-			_invalidSelectionLabel.IsVisible = !string.IsNullOrEmpty(_invalidSelectionLabel.Text);
+			_detailsLabel.IsVisible = IsSectionVisible && string.IsNullOrEmpty(_invalidSelectionLabel.Text);
+			_groupNameLabel.IsVisible = IsSectionVisible && string.IsNullOrEmpty(_invalidSelectionLabel.Text);
+			_invalidSelectionLabel.IsVisible = IsSectionVisible && !string.IsNullOrEmpty(_invalidSelectionLabel.Text);
 		}
 	}
 }
