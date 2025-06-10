@@ -52,7 +52,13 @@ public class Script
 				return;
 			}
 
-			if (settings.Subgroups?.Count == 0)
+			if (settings?.Subgroups == null || settings.Subgroups.Count == 0)
+			{
+				Utils.ShowMessageDialog(_app, "No subgroups found", "The selected parameter group does not contain any subgroups to edit.");
+				return;
+			}
+
+			if (settings.Subgroups?.Count == 1)
 			{
 				var dialog = new EditParameterGroupDialog(engine, settings, groupID.DataMinerID);
 				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
@@ -117,10 +123,10 @@ public class Script
 		{
 			var newSettings = dialog.GroupSettings;
 			var radHelper = _app.Engine.GetRadHelper();
-			if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
+			var originalParameters = originalSettings.Subgroups.First().Parameters.Select(p => p.Key).ToHashSet(new ParameterKeyEqualityComparer());
+			if (originalParameters.SetEquals(newSettings?.Subgroups.First().Parameters.Select(p => p.Key)))
 			{
-				var originalParameters = originalSettings.Subgroups.First().Parameters.Select(p => p.Key).ToHashSet(new ParameterKeyEqualityComparer());
-				if (originalParameters.SetEquals(newSettings?.Subgroups.First().Parameters.Select(p => p.Key)))
+				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
 				{
 					try
 					{
@@ -132,10 +138,10 @@ public class Script
 						radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 					}
 				}
-				else
-				{
-					radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
-				}
+			}
+			else
+			{
+				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 			}
 
 			radHelper.AddParameterGroup(newSettings);
