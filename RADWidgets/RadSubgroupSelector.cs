@@ -269,7 +269,7 @@
 					});
 				}
 
-				string displayValue = string.IsNullOrEmpty(subgroup.Name) ? GetSubgroupPlaceHolderName(_unnamedSubgroupCount++) : subgroup.Name;
+				string displayValue = string.IsNullOrEmpty(subgroup.Name) ? GetSubgroupPlaceHolderName(++_unnamedSubgroupCount) : subgroup.Name;
 				_subgroups[subgroup.ID] = new RadSubgroupSelectorItem(subgroup.ID, subgroup.Name, subgroup.Options, parameters, displayValue);
 			}
 
