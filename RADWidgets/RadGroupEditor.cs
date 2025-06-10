@@ -29,7 +29,7 @@
 
 			var options = settings?.Options;
 			var subgroupOptions = settings?.Subgroups?.FirstOrDefault()?.Options;
-			if (subgroupOptions != null)//TODO:test
+			if (subgroupOptions != null)
 			{
 				options = new RadGroupOptions(options?.UpdateModel ?? true, subgroupOptions?.AnomalyThreshold ?? options?.AnomalyThreshold,
 					subgroupOptions?.MinimalDuration ?? options.MinimalDuration);
