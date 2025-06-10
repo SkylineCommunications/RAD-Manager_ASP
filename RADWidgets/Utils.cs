@@ -411,6 +411,16 @@
 			return char.ToUpper(s[0]) + s.Substring(1);
 		}
 
+		public static RadHelper GetRadHelper(this IEngine engine)
+		{
+			if (engine == null)
+				throw new ArgumentNullException(nameof(engine));
+			var radHelper = new RadHelper(Engine.SLNetRaw, new Logger(s => engine.Log(s, LogType.Error, 0)));
+			if (radHelper == null)
+				throw new InvalidOperationException("Could not get RadHelper from the engine. Make sure the RAD Toolkit is properly initialized.");
+			return radHelper;
+		}
+
 		private static DynamicTableIndex[] FetchInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter = null)
 		{
 			try
