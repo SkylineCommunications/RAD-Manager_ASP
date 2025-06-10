@@ -42,14 +42,18 @@
 				var attributes = ConnectionAttributes.AllowMessageThrottling;
 				try
 				{
-					_connection = ConnectionSettings.GetConnection("localhost", attributes);
-					_connection.ClientApplicationName = APPLICATION_NAME;
-					_connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
+					var connection = ConnectionSettings.GetConnection("localhost", attributes);
+					connection.ClientApplicationName = APPLICATION_NAME;
+					connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
 
-					_radHelper = new RadHelper(_connection, new Logger(logger));
+					var radHelper = new RadHelper(connection, new Logger(s => logger.Error(s)));
+
+					_connection = connection;
+					_radHelper = radHelper;
 				}
 				catch (Exception ex)
 				{
+					logger.Error(ex, "Failed to setup a connection with the DataMiner Agent: " + ex.Message);
 					throw new InvalidOperationException("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
 				}
 			}
