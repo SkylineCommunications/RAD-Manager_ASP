@@ -62,6 +62,7 @@
 			for (int i = 0; i < labels.Count && i < Parameters.Count; i++)
 				parameters.Add(Parameters[i].ToRadParameter(labels[i]));
 
+			// Note that the name of the subgroup should be null instead of empty for SLAnalytics
 			return new RadSubgroupSettings(string.IsNullOrEmpty(Name) ? null : Name, ID, parameters, Options);
 		}
 
