@@ -77,8 +77,6 @@ namespace RadDataSources
 				if (groupInfo.Subgroups == null || groupInfo.Subgroups.Count == 0)
 					throw new DataMinerCommunicationException($"Group '{_groupName}' on {_dataMinerID} has no subgroups");
 
-				_logger.Error($"Found {groupInfo.Subgroups.Count} subgroups");//TODO
-				_logger.Error($"subgroupID: {_subGroupID} ({_subGroupID != Guid.Empty}), subgroupName: {_subGroupName} ({!string.IsNullOrEmpty(_subGroupName)})");
 				RadSubgroupInfo subgroupInfo = null;
 				if (_subGroupID != Guid.Empty)
 					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.ID == _subGroupID);

@@ -127,7 +127,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddSection(_detailsLabel, row, 0);//TODO: do I need the stretch horizontal alignment?
+			AddSection(_detailsLabel, row, 0);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
