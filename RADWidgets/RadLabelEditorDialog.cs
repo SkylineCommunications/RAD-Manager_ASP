@@ -133,7 +133,7 @@
 				{
 					_detailsLabel.Text = $"The labels {duplicateLabels.Select(g => g.Key).HumanReadableJoin()} are duplicated.";
 					_detailsLabel.IsVisible = true;
-					_okButton.Tooltip = "Set the parameter labels above. Note that before submitting the group, you will have to remove the duplicated labels.";
+					_okButton.Tooltip = "Set the parameter labels above. Note that before submitting the group, you will have to remove the duplicate labels.";
 
 					foreach (var e in duplicateLabels.SelectMany(g => g))
 					{

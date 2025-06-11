@@ -91,7 +91,7 @@
 		{
 			try
 			{
-				if (subGroupID != Guid.Empty && subGroupID != null)
+				if (subGroupID != Guid.Empty)
 					return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, subGroupID, startTime, endTime);
 				if (!string.IsNullOrEmpty(subGroupName))
 					return RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, subGroupName, startTime, endTime);

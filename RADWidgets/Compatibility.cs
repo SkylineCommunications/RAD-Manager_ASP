@@ -2,7 +2,7 @@
 {
 	using System;
 	using System.Runtime.CompilerServices;
-	using Skyline.DataMiner.Analytics.Rad;//TODO: am I allowed to include RAD here?
+	using Skyline.DataMiner.Analytics.Rad;
 	using Skyline.DataMiner.Automation;
 
 	public static class Compatibility
@@ -41,7 +41,7 @@
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static void CheckAddRADSharedModelGroupMessage(IEngine engine)
 		{
-			Type type = typeof(AddRADSharedModelGroupMessage);
+			Type type = typeof(AddRADSubgroupMessage);
 			engine.Log($"Found type {type.FullName}", LogType.Information, 5);
 		}
 	}
