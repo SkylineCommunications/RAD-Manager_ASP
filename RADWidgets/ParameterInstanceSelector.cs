@@ -25,8 +25,7 @@
 
 			var parametersLabel = new Label("Parameter");
 			_parametersDropDown = new RadParametersDropDown(engine);
-			if (parameter != null)
-				_parametersDropDown.Changed += (sender, args) => OnParametersDropDownChanged();
+			_parametersDropDown.Changed += (sender, args) => OnParametersDropDownChanged();
 
 			var instanceLabel = new Label("Display key");
 			_instanceDropDown = new DropDown<DynamicTableIndex>()
@@ -68,7 +67,7 @@
 				{
 					ElementName = element.Name,
 					ParameterName = parameter.DisplayName,
-					Key = new ParameterKey(element.DataMinerID, element.ElementID, parameter.ID, instance?.IndexValue, instance?.DisplayValue),
+					Key = new ParameterKey(element.DataMinerID, element.ElementID, parameter.ID, instance?.IndexValue ?? string.Empty, instance?.DisplayValue ?? string.Empty),
 				};
 			}
 		}
