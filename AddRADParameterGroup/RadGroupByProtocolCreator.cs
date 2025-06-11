@@ -105,10 +105,7 @@
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
 
-			_detailsLabel = new MarginLabel(null, _parameterSelector.ColumnCount, 10)
-			{
-				MaxWidth = 900,
-			};
+			_detailsLabel = new MarginLabel(null, _parameterSelector.ColumnCount, 10);
 
 			OnGroupPrefixTextBoxChanged();
 			OnSharedModelCheckBoxChanged();
@@ -363,29 +360,34 @@
 			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithMultipleInstancesPerSelectorItem).Except(groupsWithNoInstancesPerSelectorItem).ToList();
 
 			List<string> lines = new List<string>();
+			const int wordWrapLength = 200;
 			if (validGroups.Count > 0)
 			{
 				if (sharedModelGroup)
 					lines.Add($"The following shared model group will be created with {validGroups.Count} subgroups:");
 				else
 					lines.Add($"The following groups will be created:");
-				lines.AddRange(validGroups.OrderBy(g => g.GroupName).Select(g => $"\t'{g.GroupName}' with {g.ParameterKeys.Count} instances").Take(5));
+				var groupTexts = validGroups.OrderBy(g => g.GroupName)
+					.Take(5)
+					.SelectMany(g => $"'{g.GroupName}' with {g.ParameterKeys.Count} instances".WordWrap(wordWrapLength))
+					.Select(s => $"\t{s}");
+				lines.AddRange(groupTexts);
 				if (validGroups.Count > 5)
 					lines.Add($"\t... and {validGroups.Count - 5} more");
 			}
 
 			if (groupsWithInvalidName.Count > 0)
-				lines.Add($"Not overwriting existing groups with the same name for {groupsWithInvalidName.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Not overwriting existing groups with the same name for {groupsWithInvalidName.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 			if (groupsWithTooFewInstances.Count > 0)
-				lines.Add($"Too few instances have been selected, or instances are not trended for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Too few instances have been selected, or instances are not trended for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 			if (groupsWithTooManyInstances.Count > 0)
-				lines.Add($"Too many instances have been selected for {groupsWithTooManyInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Too many instances have been selected for {groupsWithTooManyInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 			if (groupsWithMultipleInstancesPerSelectorItem.Count > 0)
-				lines.Add($"Some parameters selected above match multiple instances on {groupsWithMultipleInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Some parameters selected above match multiple instances on {groupsWithMultipleInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 			if (groupsWithNoInstancesPerSelectorItem.Count > 0)
-				lines.Add($"Some parameters selected above match no instances on {groupsWithNoInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Some parameters selected above match no instances on {groupsWithNoInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 			if (remainingInvalidGroups.Count > 0)
-				lines.Add($"Groups on the following elements can not be created due to unknown reasons {remainingInvalidGroups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}");
+				lines.AddRange($"Groups on the following elements can not be created due to unknown reasons {remainingInvalidGroups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
 
 			_detailsLabel.Text = string.Join("\n", lines);
 		}

@@ -48,7 +48,10 @@
 
 			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
 
-			_detailsLabel = new MarginLabel(string.Empty, 2, 10);
+			_detailsLabel = new MarginLabel(string.Empty, 2, 10)
+			{
+				MaxTextWidth = 200,
+			};
 
 			OnGroupNameSectionValidationChanged();
 			OnParameterSelectorChanged();

@@ -51,7 +51,7 @@
 	public class RadLabelEditorDialog : Dialog
 	{
 		private readonly List<LabelEditor> _labelEditors;
-		private readonly Label _detailsLabel;
+		private readonly WrappingLabel _detailsLabel;
 		private readonly Button _okButton;
 
 		public RadLabelEditorDialog(IEngine engine, List<string> labels) : base(engine)
@@ -65,7 +65,7 @@
 				_labelEditors.Add(editor);
 			}
 
-			_detailsLabel = new Label();
+			_detailsLabel = new WrappingLabel(200);
 
 			var cancelButton = new Button("Cancel")
 			{

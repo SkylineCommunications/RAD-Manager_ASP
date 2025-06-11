@@ -399,6 +399,40 @@
 		}
 
 		/// <summary>
+		/// Wrap the text to the specified maximum line length. Source: https://gist.github.com/anderssonjohan/660952.
+		/// </summary>
+		/// <param name="text">The text to wrap.</param>
+		/// <param name="maxLineLength">The maximal line length.</param>
+		/// <returns>The wrapped text.</returns>
+		public static List<string> WordWrap(this string text, int maxLineLength)
+		{
+			var list = new List<string>();
+			if (string.IsNullOrEmpty(text))
+				return list;
+			if (maxLineLength <= 0)
+				throw new ArgumentOutOfRangeException(nameof(maxLineLength), "Max line length must be greater than 0.");
+
+			int currentIndex;
+			var lastWrap = 0;
+			var whitespace = new[] { ' ', '\r', '\n', '\t' };
+			var breakChars = new[] { ' ', ',', '.', '?', '!', ':', ';', '-', '\n', '\r', '\t' };
+			do
+			{
+				if (lastWrap + maxLineLength > text.Length)
+					currentIndex = text.Length;
+				else
+					currentIndex = text.LastIndexOfAny(breakChars, Math.Min(text.Length - 1, lastWrap + maxLineLength)) + 1;
+				if (currentIndex <= lastWrap)
+					currentIndex = Math.Min(lastWrap + maxLineLength, text.Length);
+				list.Add(text.Substring(lastWrap, currentIndex - lastWrap).Trim(whitespace));
+				lastWrap = currentIndex;
+			}
+			while (currentIndex < text.Length);
+
+			return list;
+		}
+
+		/// <summary>
 		/// Capitalize the first letter of the string. If the provided string is null, null will be returned. If the provided string is empty,
 		/// an empty string will be returned.
 		/// </summary>

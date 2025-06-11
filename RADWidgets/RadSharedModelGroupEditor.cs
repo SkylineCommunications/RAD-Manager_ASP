@@ -70,7 +70,10 @@
 			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
-			_detailsLabel = new MarginLabel(string.Empty, 3, 10);
+			_detailsLabel = new MarginLabel(string.Empty, 3, 10)
+			{
+				MaxTextWidth = 200,
+			};
 
 			UpdateParameterLabelsValid();
 			UpdateDetailsLabel();

@@ -1,26 +1,24 @@
-﻿namespace RemoveRADParameterGroup
+﻿namespace RadWidgets
 {
-	using System;
-	using System.Collections.Generic;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public class WrappingLabel : Label
 	{
-		private int _maxTextWidth;
+		private int? _maxTextWidth;
 		private string _text;
 
-		public WrappingLabel(int maxTextWidth = 120) : this(string.Empty, maxTextWidth)
+		public WrappingLabel(int? maxTextWidth = 120) : this(string.Empty, maxTextWidth)
 		{
 		}
 
-		public WrappingLabel(string text, int maxTextWidth = 120)
+		public WrappingLabel(string text, int? maxTextWidth = 120)
 		{
 			_maxTextWidth = maxTextWidth;
 			_text = text;
 			UpdateText();
 		}
 
-		public int MaxTextWidth
+		public int? MaxTextWidth
 		{
 			get => _maxTextWidth;
 			set
@@ -45,7 +43,10 @@
 
 		private void UpdateText()
 		{
-			base.Text = string.Join("\n", Utils.WordWrap(_text, _maxTextWidth));
+			if (_maxTextWidth.HasValue)
+				base.Text = string.Join("\n", RadWidgets.Utils.WordWrap(_text, _maxTextWidth.Value));
+			else
+				base.Text = _text;
 		}
 	}
 }
