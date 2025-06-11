@@ -72,26 +72,31 @@ namespace RadDataSources
 			try
 			{
 				var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(_dataMinerID, _groupName);
+				if (groupInfo == null)
+					throw new DataMinerCommunicationException($"Group '{_groupName}' not found on DataMiner ID {_dataMinerID}");
+				if (groupInfo.Subgroups == null || groupInfo.Subgroups.Count == 0)
+					throw new DataMinerCommunicationException($"Group '{_groupName}' on {_dataMinerID} has no subgroups");
+
+				_logger.Error($"Found {groupInfo.Subgroups.Count} subgroups");//TODO
+				_logger.Error($"subgroupID: {_subGroupID} ({_subGroupID != Guid.Empty}), subgroupName: {_subGroupName} ({!string.IsNullOrEmpty(_subGroupName)})");
 				RadSubgroupInfo subgroupInfo = null;
 				if (_subGroupID != Guid.Empty)
-				{
 					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.ID == _subGroupID);
-				}
 				else if (!string.IsNullOrEmpty(_subGroupName))
-				{
-					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.Name.Equals(_subGroupName, StringComparison.OrdinalIgnoreCase));
-				}
+					subgroupInfo = groupInfo.Subgroups.FirstOrDefault(s => s.Name?.Equals(_subGroupName, StringComparison.OrdinalIgnoreCase) ?? false);
 				else if (groupInfo.Subgroups.Count == 1)
-				{
 					subgroupInfo = groupInfo.Subgroups.FirstOrDefault();
-				}
 				else
-				{
-					_logger.Error("No subgroup specified and multiple subgroups found. Please provide either a valid subgroup ID or a valid subgroup name.");
-					return default;
-				}
+					throw new DataMinerCommunicationException($"Multiple subgroups found for group '{_groupName}' on DataMiner ID {_dataMinerID}. Please specify a subgroup by name or ID.");
+
+				if (subgroupInfo == null)
+					throw new DataMinerCommunicationException($"Subgroup not found for group '{_groupName}' on DataMiner ID {_dataMinerID} with specified name or ID.");
 
 				_parameters = subgroupInfo.Parameters;
+			}
+			catch (DataMinerCommunicationException)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{
