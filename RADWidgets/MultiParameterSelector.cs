@@ -24,6 +24,10 @@
 				{
 					var element = engine.FindElement(parameter.DataMinerID, parameter.ElementID);
 					var paramInfo = Utils.FetchParameterInfo(engine, parametersCache, parameter.DataMinerID, parameter.ElementID, parameter.ParameterID);
+					string displayKeyFilter = parameter.DisplayInstance;
+					if (paramInfo?.IsTableColumn == true && string.IsNullOrEmpty(parameter.DisplayInstance))
+						displayKeyFilter = parameter.Instance;
+
 					selection.Add(new ParameterSelectorInfo()
 					{
 						ElementName = element?.ElementName ?? "Unknown element",
@@ -31,7 +35,7 @@
 						DataMinerID = parameter.DataMinerID,
 						ElementID = parameter.ElementID,
 						ParameterID = parameter.ParameterID,
-						DisplayKeyFilter = parameter.DisplayInstance,
+						DisplayKeyFilter = displayKeyFilter,
 						MatchingInstances = new List<DynamicTableIndex>() { new DynamicTableIndex(parameter.Instance, parameter.DisplayInstance) },
 						IsTableColumn = paramInfo?.IsTableColumn ?? false,
 					});
