@@ -71,7 +71,7 @@
 		private readonly MultiParameterPerProtocolSelector _parameterSelector;
 		private readonly CheckBox _sharedModelCheckBox = null;
 		private readonly RadGroupOptionsEditor _optionsEditor;
-		private readonly Label _detailsLabel;
+		private readonly MarginLabel _detailsLabel;
 
 		public RadGroupByProtocolCreator(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache)
 		{
@@ -105,7 +105,7 @@
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
 
-			_detailsLabel = new Label()
+			_detailsLabel = new MarginLabel(null, _parameterSelector.ColumnCount, 10)
 			{
 				MaxWidth = 900,
 			};
@@ -130,7 +130,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_detailsLabel, row, 0, 1, _parameterSelector.ColumnCount, HorizontalAlignment.Stretch);
+			AddSection(_detailsLabel, row, 0);//TODO: do I need the stretch horizontal alignment?
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;

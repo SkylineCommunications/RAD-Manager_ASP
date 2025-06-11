@@ -17,7 +17,7 @@
 		private readonly Numeric _parametersCountNumeric;
 		private readonly Button _parameterLabelsEditorButton;
 		private readonly RadSubgroupSelector _subgroupSelector;
-		private readonly Label _detailsLabel;
+		private readonly MarginLabel _detailsLabel;
 		private List<string> _parameterLabels;
 		private List<string> _oldParameterLabels;
 		private List<string> _duplicatedParameterLabels;
@@ -70,7 +70,7 @@
 			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
-			_detailsLabel = new Label();
+			_detailsLabel = new MarginLabel(string.Empty, 3, 10);
 
 			UpdateParameterLabelsValid();
 			UpdateDetailsLabel();
@@ -91,7 +91,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_detailsLabel, row, 0, 1, 3);
+			AddSection(_detailsLabel, row, 0);
 		}
 
 		public event EventHandler ValidationChanged;

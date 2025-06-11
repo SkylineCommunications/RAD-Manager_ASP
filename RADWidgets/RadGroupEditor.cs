@@ -15,7 +15,7 @@
 		private readonly GroupNameSection _groupNameSection;
 		private readonly MultiParameterSelector _parameterSelector;
 		private readonly RadGroupOptionsEditor _optionsEditor;
-		private readonly Label _detailsLabel;
+		private readonly MarginLabel _detailsLabel;
 		private bool _moreThanMinParametersSelected = false;
 		private bool _lessThanMaxParametersSelected = false;
 
@@ -37,7 +37,7 @@
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount, settings?.Options);
 
-			_detailsLabel = new Label();
+			_detailsLabel = new MarginLabel(string.Empty, _parameterSelector.ColumnCount, 10);
 
 			OnGroupNameSectionValidationChanged();
 			OnParameterSelectorChanged();
@@ -52,7 +52,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_detailsLabel, row, 0, 1, _parameterSelector.ColumnCount);
+			AddSection(_detailsLabel, row, 0);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;

@@ -13,7 +13,7 @@
 		private readonly GroupNameSection _groupNameSection;
 		private readonly List<Tuple<Label, ParameterInstanceSelector>> _parameterSelectors;
 		private readonly RadSubgroupOptionsEditor _optionsEditor;
-		private readonly Label _detailsLabel;
+		private readonly MarginLabel _detailsLabel;
 		private readonly Guid _subgroupID;
 		private readonly List<RadSubgroupSelectorItem> _otherSubgroups;
 		private bool _hasInvalidParameter;
@@ -48,7 +48,7 @@
 
 			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
 
-			_detailsLabel = new Label();
+			_detailsLabel = new MarginLabel(string.Empty, 2, 10);
 
 			OnGroupNameSectionValidationChanged();
 			OnParameterSelectorChanged();
@@ -67,7 +67,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_detailsLabel, row, 0, 1, 2);
+			AddSection(_detailsLabel, row, 0);
 		}
 
 		public event EventHandler ValidationChanged;
