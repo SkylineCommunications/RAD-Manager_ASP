@@ -48,7 +48,7 @@
 
 		public int DataMinerID { get; private set; }
 
-		public RadGroupSettings GroupSettings => _sharedGroupEditor.Settings;
+		public RadGroupSettings GetGroupSettings() => _sharedGroupEditor.GetSettings();
 
 		private void OnGroupEditorValidationChanged()
 		{

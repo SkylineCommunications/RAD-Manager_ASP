@@ -97,6 +97,7 @@
 			}
 			catch (NotSupportedException)
 			{
+				// If the method is not supported, we fall back to the method without fetching on subgroup
 			}
 
 			return ConnectionHelper.RadHelper.FetchAnomalyScoreData(dataMinerID, groupName, startTime, endTime);

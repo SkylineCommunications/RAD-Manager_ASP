@@ -99,17 +99,14 @@
 
 		public event EventHandler ValidationChanged;
 
-		public RadGroupSettings Settings
-		{
-			get
-			{
-				return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, _subgroupSelector.Subgroups);
-			}
-		}
-
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		public RadGroupSettings GetSettings()
+		{
+			return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, _subgroupSelector.GetSubgroups());
+		}
 
 		private void UpdateParameterLabelsValid()
 		{
@@ -190,7 +187,7 @@
 
 				app.Stop();
 
-				_parameterLabels = d.Labels;
+				_parameterLabels = d.GetLabels();
 				_oldParameterLabels = new List<string>();
 				_subgroupSelector.UpdateParameterLabels(_parameterLabels);
 

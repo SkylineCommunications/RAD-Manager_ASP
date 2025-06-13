@@ -10,6 +10,6 @@
 
 		public abstract bool RemoveGroup { get; }
 
-		public abstract List<RadSubgroupID> SubgroupsToRemove { get; }
+		public abstract List<RadSubgroupID> GetSubgroupsToRemove();
 	}
 }

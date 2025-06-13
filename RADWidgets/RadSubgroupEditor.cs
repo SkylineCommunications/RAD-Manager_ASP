@@ -75,19 +75,16 @@
 
 		public event EventHandler ValidationChanged;
 
-		public RadSubgroupSelectorItem Settings
-		{
-			get
-			{
-				return new RadSubgroupSelectorItem(_subgroupID, _groupNameSection.GroupName, _optionsEditor.Options,
-					_parameterSelectors.Select(t => t.Item2.SelectedItem).ToList(),
-					string.IsNullOrEmpty(_groupNameSection.GroupName) ? _groupNameSection.GroupNamePlaceHolder : _groupNameSection.GroupName);
-			}
-		}
-
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		public RadSubgroupSelectorItem GetSettings()
+		{
+			return new RadSubgroupSelectorItem(_subgroupID, _groupNameSection.GroupName, _optionsEditor.Options,
+				_parameterSelectors.Select(t => t.Item2.SelectedItem).ToList(),
+				string.IsNullOrEmpty(_groupNameSection.GroupName) ? _groupNameSection.GroupNamePlaceHolder : _groupNameSection.GroupName);
+		}
 
 		private void UpdateSubgroupWithSameParameters()
 		{
@@ -106,7 +103,7 @@
 
 		private void UpdateDuplicatedParameters()
 		{
-			_duplicatedParameters = _parameterSelectors.GroupBy(p => p.Item2.SelectedItem?.Key, new ParameterKeyEqualityComparer()).Where(g => g.Count() > 1).FirstOrDefault();
+			_duplicatedParameters = _parameterSelectors.GroupBy(p => p.Item2.SelectedItem?.Key, new ParameterKeyEqualityComparer()).FirstOrDefault(g => g.Count() > 1);
 		}
 
 		private void UpdateIsValid()

@@ -68,12 +68,12 @@
 
 		public bool HasMissingParameters(List<string> labels)
 		{
-			return Parameters.Count() < labels.Count() || Parameters.Any(p => p == null);
+			return Parameters.Count < labels.Count || Parameters.Any(p => p == null);
 		}
 
 		public bool HasDuplicatedParameters()
 		{
-			if (Parameters == null || Parameters.Count() < 2)
+			if (Parameters == null || Parameters.Count < 2)
 				return false;
 			return Parameters.GroupBy(p => p?.Key, new ParameterKeyEqualityComparer()).Any(g => g.Count() > 1);
 		}
@@ -169,14 +169,14 @@
 
 		public event EventHandler ValidationChanged;
 
-		public List<RadSubgroupSettings> Subgroups
-		{
-			get => _subgroups.Values.Select(s => s.ToRadSubgroupSettings(_parameterLabels)).ToList();
-		}
-
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
+
+		public List<RadSubgroupSettings> GetSubgroups()
+		{
+			return _subgroups.Values.Select(s => s.ToRadSubgroupSettings(_parameterLabels)).ToList();
+		}
 
 		public void UpdateParameterLabels(List<string> parameterLabels)
 		{
@@ -206,7 +206,7 @@
 
 		private bool GetTreeViewVisible()
 		{
-			return _subgroups.Count() > 0;
+			return _subgroups.Count > 0;
 		}
 
 		private void UpdateTreeViewAndLabelVisibility()
@@ -225,6 +225,9 @@
 		private RadSubgroupSelectorItem GetSelectedSubgroup()
 		{
 			var selectedItem = _selectorTreeView.Items.FirstOrDefault(i => i.IsChecked);
+			if (selectedItem == null)
+				return null;
+
 			return _subgroups.TryGetValue(Guid.Parse(selectedItem.KeyValue), out var subgroup) ? subgroup : null;
 		}
 
@@ -291,7 +294,7 @@
 		private void UpdateSelectedSubgroup()
 		{
 			UpdateTreeViewAndLabelVisibility();
-			if (_subgroups.Count() == 0)
+			if (_subgroups.Count == 0)
 			{
 				_editButton.IsEnabled = false;
 				_removeButton.IsEnabled = false;
@@ -299,12 +302,12 @@
 			}
 
 			var selected = _selectorTreeView.Items.Where(i => i.IsChecked).ToList();
-			if (selected.Count() == 0)
+			if (selected.Count == 0)
 			{
 				SetInvalidSelection("No subgroup selected.", false);
 				return;
 			}
-			else if (selected.Count() >= 2)
+			else if (selected.Count >= 2)
 			{
 				SetInvalidSelection("Multiple subgroups selected.", true);
 				return;
@@ -468,7 +471,7 @@
 
 				app.Stop();
 
-				var newSettings = d.Settings;
+				var newSettings = d.GetSettings();
 				_subgroups[settings.ID] = newSettings;
 				if (string.IsNullOrEmpty(newSettings.Name) && !string.IsNullOrEmpty(settings.Name))
 					_unnamedSubgroupCount++;
@@ -504,7 +507,7 @@
 
 				app.Stop();
 
-				var newSettings = d.Settings;
+				var newSettings = d.GetSettings();
 				_subgroups[newSettings.ID] = newSettings;
 				if (string.IsNullOrEmpty(newSettings.Name))
 					_unnamedSubgroupCount++;

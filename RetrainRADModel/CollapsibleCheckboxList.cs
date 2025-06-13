@@ -29,7 +29,7 @@
 			AddWidget(_collapseButton, row, columnSpan - 1);
 			row++;
 
-			foreach (var (option, checkBox) in _optionCheckBoxes)
+			foreach (var (_, checkBox) in _optionCheckBoxes)
 			{
 				AddWidget(checkBox, row, 0, 1, columnSpan);
 				row++;
@@ -64,15 +64,12 @@
 			}
 		}
 
-		public List<T> Checked
+		public List<T> GetChecked()
 		{
-			get
-			{
-				if (_collapseButton.IsCollapsed)
-					return new List<T>();
+			if (_collapseButton.IsCollapsed)
+				return new List<T>();
 
-				return _optionCheckBoxes.Where(t => t.Item2.IsChecked).Select(t => t.Item1.Value).ToList();
-			}
+			return _optionCheckBoxes.Where(t => t.Item2.IsChecked).Select(t => t.Item1.Value).ToList();
 		}
 	}
 }

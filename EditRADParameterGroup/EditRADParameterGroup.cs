@@ -28,35 +28,8 @@ public class Script
 		{
 			_app = new InteractiveController(engine);
 
-			var groupIDs = Utils.ParseGroupIDParameter(_app);
-			if (groupIDs.Count == 0)
-			{
-				Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
+			if (!TryGetRadGroupID(out var settings, out var groupID))
 				return;
-			}
-			else if (groupIDs.Count > 1)
-			{
-				Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
-				return;
-			}
-
-			var groupID = groupIDs.First();
-			RadGroupInfo settings = null;
-			try
-			{
-				settings = _app.Engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
-			}
-			catch (Exception ex)
-			{
-				Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
-				return;
-			}
-
-			if (settings?.Subgroups == null || settings.Subgroups.Count == 0)
-			{
-				Utils.ShowMessageDialog(_app, "No subgroups found", "The selected parameter group does not contain any subgroups to edit.");
-				return;
-			}
 
 			if (settings.Subgroups?.Count == 1)
 			{
@@ -109,22 +82,59 @@ public class Script
 		}
 	}
 
-	private void Dialog_Cancelled()
+	private bool TryGetRadGroupID(out RadGroupInfo settings, out IRadGroupID groupID)
 	{
-		_app.Engine.ExitSuccess("Editing parameter group cancelled");
+		var groupIDs = Utils.ParseGroupIDParameter(_app);
+		if (groupIDs.Count == 0)
+		{
+			Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
+			settings = null;
+			groupID = null;
+			return false;
+		}
+		else if (groupIDs.Count > 1)
+		{
+			Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
+			settings = null;
+			groupID = null;
+			return false;
+		}
+
+		groupID = groupIDs.First();
+		try
+		{
+			settings = _app.Engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+		}
+		catch (Exception ex)
+		{
+			Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
+			settings = null;
+			return false;
+		}
+
+		if (settings?.Subgroups == null || settings.Subgroups.Count == 0)
+		{
+			Utils.ShowMessageDialog(_app, "No subgroups found", "The selected parameter group does not contain any subgroups to edit.");
+			settings = null;
+			return false;
+		}
+
+		return true;
 	}
 
 	private void Dialog_Accepted(EditParameterGroupDialog dialog, RadGroupInfo originalSettings)
 	{
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
+		var newSettings = dialog.GroupSettings;
+		if (newSettings == null)
+			throw new Exception("New settings cannot be null.");
 
 		try
 		{
-			var newSettings = dialog.GroupSettings;
 			var radHelper = _app.Engine.GetRadHelper();
 			var originalParameters = originalSettings.Subgroups.First().Parameters.Select(p => p.Key).ToHashSet(new ParameterKeyEqualityComparer());
-			if (originalParameters.SetEquals(newSettings?.Subgroups.First().Parameters.Select(p => p.Key)))
+			if (originalParameters.SetEquals(newSettings.Subgroups.First().Parameters.Select(p => p.Key)))
 			{
 				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
 				{
@@ -142,6 +152,48 @@ public class Script
 			else
 			{
 				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
+			}
+
+			radHelper.AddParameterGroup(newSettings);
+		}
+		catch (Exception ex)
+		{
+			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			return;
+		}
+
+		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+	}
+
+	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
+	{
+		if (dialog == null)
+			throw new ArgumentException("Invalid sender type");
+		var newSettings = dialog.GetGroupSettings();
+		if (newSettings == null)
+			throw new Exception("New settings cannot be null.");
+
+		try
+		{
+			var radHelper = _app.Engine.GetRadHelper();
+
+			GetAddedAndRemovedSubgroups(newSettings.Subgroups, originalSettings.Subgroups,
+				out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups);
+			if (addedSubgroups.Count == newSettings.Subgroups.Count)
+			{
+				// No subgroup is preserved, so we remove the entire group
+				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
+			}
+			else
+			{
+				// Add least one of the original subgroups is preserved, so do not remove the entire group
+				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
+					radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+
+				foreach (var removedSubgroup in removedSubgroups)
+					radHelper.RemoveSubgroup(dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
+				foreach (var addedSubgroup in addedSubgroups)
+					radHelper.AddSubgroup(dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
 			}
 
 			radHelper.AddParameterGroup(newSettings);
@@ -192,43 +244,8 @@ public class Script
 		}
 	}
 
-	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
+	private void Dialog_Cancelled()
 	{
-		if (dialog == null)
-			throw new ArgumentException("Invalid sender type");
-
-		try
-		{
-			var newSettings = dialog.GroupSettings;
-			var radHelper = _app.Engine.GetRadHelper();
-
-			GetAddedAndRemovedSubgroups(newSettings.Subgroups, originalSettings.Subgroups,
-				out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups);
-			if (addedSubgroups.Count == newSettings.Subgroups.Count)
-			{
-				// No subgroup is preserved, so we remove the entire group
-				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
-			}
-			else
-			{
-				// Add least one of the original subgroups is preserved, so do not remove the entire group
-				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
-					radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
-
-				foreach (var removedSubgroup in removedSubgroups)
-					radHelper.RemoveSubgroup(dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
-				foreach (var addedSubgroup in addedSubgroups)
-					radHelper.AddSubgroup(dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
-			}
-
-			radHelper.AddParameterGroup(newSettings);
-		}
-		catch (Exception ex)
-		{
-			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
-			return;
-		}
-
-		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Editing parameter group cancelled");
 	}
 }

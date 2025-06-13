@@ -44,7 +44,7 @@
 
 		public override bool RemoveGroup => _checkBox.IsChecked && _radioButtons.RemoveGroup;
 
-		public override List<RadSubgroupID> SubgroupsToRemove => _checkBox.IsChecked ? _radioButtons.SubgroupsToRemove : new List<RadSubgroupID>();
+		public override List<RadSubgroupID> GetSubgroupsToRemove() => _checkBox.IsChecked ? _radioButtons.GetSubgroupsToRemove() : new List<RadSubgroupID>();
 
 		private void OnCheckBoxChanged()
 		{

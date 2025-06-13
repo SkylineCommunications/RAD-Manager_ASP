@@ -11,9 +11,7 @@
 	public class MultiParameterPerProtocolSelector : VisibilitySection
 	{
 		private readonly IEngine _engine;
-		private readonly Label _protocolNameLabel;
 		private readonly DropDown<GetProtocolsResponseMessage> _protocolNameDropDown;
-		private readonly Label _protocolVersionLabel;
 		private readonly DropDown<string> _protocolVersionDropDown;
 		private readonly MultiProtocolParameterSelector _parameterSelector;
 
@@ -22,7 +20,7 @@
 			_engine = engine;
 
 			string protocolNameTooltip = "Make a parameter group for each element that uses this connector.";
-			_protocolNameLabel = new Label("Connector")
+			var protocolNameLabel = new Label("Connector")
 			{
 				Tooltip = protocolNameTooltip,
 			};
@@ -36,7 +34,7 @@
 			_protocolNameDropDown.Changed += (sender, args) => OnSelectedProtocolChanged();
 
 			string protocolVersionTooltip = "Make a parameter group for each element that uses this connector version.";
-			_protocolVersionLabel = new Label("Connector version")
+			var protocolVersionLabel = new Label("Connector version")
 			{
 				Tooltip = protocolVersionTooltip,
 			};
@@ -53,10 +51,10 @@
 			_parameterSelector.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 			OnSelectedProtocolChanged();
 
-			AddWidget(_protocolNameLabel, 0, 0);
+			AddWidget(protocolNameLabel, 0, 0);
 			AddWidget(_protocolNameDropDown, 0, 1, 1, _parameterSelector.ColumnCount - 1);
 
-			AddWidget(_protocolVersionLabel, 1, 0);
+			AddWidget(protocolVersionLabel, 1, 0);
 			AddWidget(_protocolVersionDropDown, 1, 1, 1, _parameterSelector.ColumnCount - 1);
 
 			AddSection(_parameterSelector, 2, 0);

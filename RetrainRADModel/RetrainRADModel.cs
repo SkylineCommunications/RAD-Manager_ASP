@@ -84,7 +84,7 @@ public class Script
 
 		try
 		{
-			var excludedSubgroups = dialog.ExcludedSubgroupIDs;
+			var excludedSubgroups = dialog.GetExcludedSubgroupIDs();
 			if (excludedSubgroups.Count > 0)
 				_app.Engine.GetRadHelper().RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
 			else

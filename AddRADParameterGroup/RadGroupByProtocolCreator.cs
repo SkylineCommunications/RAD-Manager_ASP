@@ -10,6 +10,7 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
+	using SLDataGateway.API.Collections.Linq;
 
 	public class ParameterSelectorItemMatchInfo
 	{
@@ -63,6 +64,7 @@
 
 	public class RadGroupByProtocolCreator : VisibilitySection
 	{
+		private const int WordWrapLength = 200;
 		private readonly IEngine _engine;
 		private readonly ParametersCache _parametersCache;
 		private readonly List<string> _existingGroupNames;
@@ -290,6 +292,120 @@
 			return _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
 		}
 
+		private List<string> GetValidGroupsText(List<GroupByProtocolInfo> groups, bool sharedModelGroup)
+		{
+			List<string> lines = new List<string>();
+
+			if (groups.Count <= 0)
+				return lines;
+
+			if (sharedModelGroup)
+				lines.Add($"The following shared model group will be created with {groups.Count} subgroups:");
+			else
+				lines.Add($"The following groups will be created:");
+			lines.AddRange(groups.OrderBy(g => g.GroupName)
+				.Take(5)
+				.SelectMany(g => $"'{g.GroupName}' with {g.ParameterKeys.Count} instances".WordWrap(WordWrapLength))
+				.Select(s => $"\t{s}"));
+			if (groups.Count > 5)
+				lines.Add($"\t... and {groups.Count - 5} more");
+
+			return lines;
+		}
+
+		private List<string> GetGroupsWithInvalidNamesText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Not overwriting existing groups with the same name for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetGroupsWithTooFewInstancesText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Too few instances have been selected, or instances are not trended for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetGroupsWithTooManyInstancesText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Too many instances have been selected for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetGroupsWithMultipleInstancesPerSelectorItemText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Some parameters selected above match multiple instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetGroupsWithNoInstancesPerSelectorItemText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Some parameters selected above match no instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetGroupsWithUnknownInvalidReasonText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Groups on the following elements can not be created due to unknown reasons {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
+		private List<string> GetDetailsLabelTextSharedModelGroup(List<GroupByProtocolInfo> groups)
+		{
+			var validGroups = groups.Where(g => g.ValidSubgroup).ToList();
+			var remainingInvalidGroups = groups.Except(validGroups).ToList();
+
+			var groupsWithTooFewInstances = remainingInvalidGroups.Where(g => !g.MoreThanMinInstances).ToList();
+			var groupsWithTooManyInstances = remainingInvalidGroups.Where(g => !g.LessThanMaxInstances).ToList();
+			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithTooFewInstances).Except(groupsWithTooManyInstances).ToList();
+
+			var groupsWithMultipleInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithMultipleInstances).ToList();
+			var groupsWithNoInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithNoInstances).ToList();
+
+			List<string> lines = new List<string>();
+			lines.AddRange(GetValidGroupsText(validGroups, true));
+			lines.AddRange(GetGroupsWithTooFewInstancesText(groupsWithTooFewInstances));
+			lines.AddRange(GetGroupsWithTooManyInstancesText(groupsWithTooManyInstances));
+			lines.AddRange(GetGroupsWithMultipleInstancesPerSelectorItemText(groupsWithMultipleInstancesPerSelectorItem));
+			lines.AddRange(GetGroupsWithNoInstancesPerSelectorItemText(groupsWithNoInstancesPerSelectorItem));
+			lines.AddRange(GetGroupsWithUnknownInvalidReasonText(remainingInvalidGroups));
+
+			return lines;
+		}
+
+		private List<string> GetDetailsLabelTextSeparateGroups(List<GroupByProtocolInfo> groups)
+		{
+			var validGroups = groups.Where(g => g.ValidStandalone).ToList();
+			var remainingInvalidGroups = groups.Except(validGroups).ToList();
+
+			var groupsWithInvalidName = remainingInvalidGroups.Where(g => g.GroupNameExists).ToList();
+			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithInvalidName).ToList();
+
+			var groupsWithTooFewInstances = remainingInvalidGroups.Where(g => !g.MoreThanMinInstances).ToList();
+			var groupsWithTooManyInstances = remainingInvalidGroups.Where(g => !g.LessThanMaxInstances).ToList();
+			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithTooFewInstances).Except(groupsWithTooManyInstances).ToList();
+
+			List<string> lines = new List<string>();
+			lines.AddRange(GetValidGroupsText(validGroups, false));
+			lines.AddRange(GetGroupsWithInvalidNamesText(groupsWithInvalidName));
+			lines.AddRange(GetGroupsWithTooFewInstancesText(groupsWithTooFewInstances));
+			lines.AddRange(GetGroupsWithTooManyInstancesText(groupsWithTooManyInstances));
+			lines.AddRange(GetGroupsWithUnknownInvalidReasonText(remainingInvalidGroups));
+
+			return lines;
+		}
+
 		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)
 		{
 			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisibility();
@@ -303,69 +419,11 @@
 			}
 
 			bool sharedModelGroup = _sharedModelCheckBox?.IsChecked ?? false;
-			List<GroupByProtocolInfo> validGroups;
+			List<string> lines;
 			if (sharedModelGroup)
-				validGroups = groups.Where(g => g.ValidSubgroup).ToList();
+				lines = GetDetailsLabelTextSharedModelGroup(groups);
 			else
-				validGroups = groups.Where(g => g.ValidStandalone).ToList();
-
-			List<GroupByProtocolInfo> remainingInvalidGroups = groups.Except(validGroups).ToList();
-
-			List<GroupByProtocolInfo> groupsWithInvalidName;
-			if (sharedModelGroup)
-				groupsWithInvalidName = new List<GroupByProtocolInfo>();
-			else
-				groupsWithInvalidName = remainingInvalidGroups.Where(g => g.GroupNameExists).ToList();
-			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithInvalidName).ToList();
-
-			List<GroupByProtocolInfo> groupsWithTooFewInstances = remainingInvalidGroups.Where(g => !g.MoreThanMinInstances).ToList();
-			List<GroupByProtocolInfo> groupsWithTooManyInstances = remainingInvalidGroups.Where(g => !g.LessThanMaxInstances).ToList();
-			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithTooFewInstances).Except(groupsWithTooManyInstances).ToList();
-
-			List<GroupByProtocolInfo> groupsWithMultipleInstancesPerSelectorItem;
-			List<GroupByProtocolInfo> groupsWithNoInstancesPerSelectorItem;
-			if (sharedModelGroup)
-			{
-				groupsWithMultipleInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithMultipleInstances).ToList();
-				groupsWithNoInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithNoInstances).ToList();
-			}
-			else
-			{
-				groupsWithMultipleInstancesPerSelectorItem = new List<GroupByProtocolInfo>();
-				groupsWithNoInstancesPerSelectorItem = new List<GroupByProtocolInfo>();
-			}
-
-			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithMultipleInstancesPerSelectorItem).Except(groupsWithNoInstancesPerSelectorItem).ToList();
-
-			List<string> lines = new List<string>();
-			const int wordWrapLength = 200;
-			if (validGroups.Count > 0)
-			{
-				if (sharedModelGroup)
-					lines.Add($"The following shared model group will be created with {validGroups.Count} subgroups:");
-				else
-					lines.Add($"The following groups will be created:");
-				var groupTexts = validGroups.OrderBy(g => g.GroupName)
-					.Take(5)
-					.SelectMany(g => $"'{g.GroupName}' with {g.ParameterKeys.Count} instances".WordWrap(wordWrapLength))
-					.Select(s => $"\t{s}");
-				lines.AddRange(groupTexts);
-				if (validGroups.Count > 5)
-					lines.Add($"\t... and {validGroups.Count - 5} more");
-			}
-
-			if (groupsWithInvalidName.Count > 0)
-				lines.AddRange($"Not overwriting existing groups with the same name for {groupsWithInvalidName.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
-			if (groupsWithTooFewInstances.Count > 0)
-				lines.AddRange($"Too few instances have been selected, or instances are not trended for {groupsWithTooFewInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
-			if (groupsWithTooManyInstances.Count > 0)
-				lines.AddRange($"Too many instances have been selected for {groupsWithTooManyInstances.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
-			if (groupsWithMultipleInstancesPerSelectorItem.Count > 0)
-				lines.AddRange($"Some parameters selected above match multiple instances on {groupsWithMultipleInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
-			if (groupsWithNoInstancesPerSelectorItem.Count > 0)
-				lines.AddRange($"Some parameters selected above match no instances on {groupsWithNoInstancesPerSelectorItem.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
-			if (remainingInvalidGroups.Count > 0)
-				lines.AddRange($"Groups on the following elements can not be created due to unknown reasons {remainingInvalidGroups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(wordWrapLength));
+				lines = GetDetailsLabelTextSeparateGroups(groups);
 
 			_detailsLabel.Text = string.Join("\n", lines);
 		}

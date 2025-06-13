@@ -10,7 +10,7 @@
 
 	public class RadParametersDropDown : DropDown<ParameterInfo>
 	{
-		private IEngine _engine;
+		private readonly IEngine _engine;
 
 		public RadParametersDropDown(IEngine engine)
 		{

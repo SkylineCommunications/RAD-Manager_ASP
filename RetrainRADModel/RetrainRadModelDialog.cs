@@ -77,7 +77,7 @@
 
 		public RadGroupID GroupID { get; private set; }
 
-		public List<Guid> ExcludedSubgroupIDs => _excludedSubgroupsList?.Checked.ToList() ?? new List<Guid>();
+		public List<Guid> GetExcludedSubgroupIDs() => _excludedSubgroupsList?.GetChecked().ToList() ?? new List<Guid>();
 
 		public IEnumerable<TimeRange> GetSelectedTimeRanges()
 		{

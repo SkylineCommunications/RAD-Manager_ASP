@@ -27,11 +27,9 @@
 		private readonly RadGroupByProtocolCreator _groupByProtocolCreator;
 		private readonly RadSharedModelGroupEditor _sharedModelGroupEditor;
 		private readonly Button _okButton;
-		private readonly EngineParametersCache _parametersCache;
 
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{
-			_parametersCache = new EngineParametersCache(engine);
 			ShowScriptAbortPopup = false;
 			Title = "Add Parameter Group";
 
@@ -49,13 +47,14 @@
 			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
 			var existingGroupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct().ToList();
-			_groupEditor = new RadGroupEditor(engine, existingGroupNames, _parametersCache);
+			var parametersCache = new EngineParametersCache(engine);
+			_groupEditor = new RadGroupEditor(engine, existingGroupNames, parametersCache);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
-			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames, _parametersCache);
+			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames, parametersCache);
 			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
-			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames, _parametersCache);
+			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames, parametersCache);
 			_sharedModelGroupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 
 			_okButton = new Button()
@@ -98,7 +97,7 @@
 			else if (_addTypeDropDown.Selected == AddGroupType.MultipleOnProtocol)
 				return _groupByProtocolCreator.GetGroupsToAdd();
 			else
-				return new List<RadGroupSettings>() { _sharedModelGroupEditor.Settings };
+				return new List<RadGroupSettings>() { _sharedModelGroupEditor.GetSettings() };
 		}
 
 		private void OnEditorValidationChanged(bool isValid, string validationText)

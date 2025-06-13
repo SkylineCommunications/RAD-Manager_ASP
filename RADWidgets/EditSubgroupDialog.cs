@@ -10,7 +10,6 @@
 	{
 		private readonly RadSubgroupEditor _subgroupEditor;
 		private readonly Button _okButton;
-		private readonly Button _cancelButton;
 
 		public EditSubgroupDialog(IEngine engine, List<RadSubgroupSelectorItem> existingSubgroups, List<string> labels, RadSubgroupSelectorItem settings,
 			string groupNamePlaceHolder, RadGroupOptions parentOptions) : base(engine)
@@ -26,17 +25,17 @@
 			};
 			_okButton.Pressed += (s, e) => Accepted?.Invoke(this, EventArgs.Empty);
 
-			_cancelButton = new Button("Cancel")
+			var cancelButton = new Button("Cancel")
 			{
 				Tooltip = "Do not add the subgroup specified above.",
 			};
-			_cancelButton.Pressed += (s, e) => Cancelled?.Invoke(this, EventArgs.Empty);
+			cancelButton.Pressed += (s, e) => Cancelled?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;
 			AddSection(_subgroupEditor, 0, 0);
 			row += _subgroupEditor.RowCount;
 
-			AddWidget(_cancelButton, row, 0);
+			AddWidget(cancelButton, row, 0);
 			AddWidget(_okButton, row, 1, 1, _subgroupEditor.ColumnCount - 1);
 		}
 
@@ -44,12 +43,9 @@
 
 		public event EventHandler Cancelled;
 
-		public RadSubgroupSelectorItem Settings
+		public RadSubgroupSelectorItem GetSettings()
 		{
-			get
-			{
-				return _subgroupEditor.Settings;
-			}
+			return _subgroupEditor.GetSettings();
 		}
 
 		private void OnSubgroupEditorValidationChanged()

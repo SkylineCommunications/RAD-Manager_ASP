@@ -4,9 +4,9 @@ using Skyline.AppInstaller;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.AppPackages;
 
-internal class GQINotEnabledException : Exception
+public class GqiNotEnabledException : Exception
 {
-	public GQINotEnabledException(string message) : base(message)
+	public GqiNotEnabledException(string message) : base(message)
 	{
 	}
 }
@@ -29,10 +29,10 @@ internal class Script
 			engine.Timeout = new TimeSpan(0, 10, 0);
 			engine.GenerateInformation("Starting installation");
 
-			var gqiEnabled = GQIUtils.IsGqiDxmEnabled();
+			var gqiEnabled = GqiUtils.IsGqiDxmEnabled();
 			if (!gqiEnabled)
 			{
-				throw new GQINotEnabledException("GQI DxM is not enabled. RAD Manager requires the GQI DxM from version 3.0.0 onwards. " +
+				throw new GqiNotEnabledException("GQI DxM is not enabled. RAD Manager requires the GQI DxM from version 3.0.0 onwards. " +
 					"Please make sure the GQI DxM is enabled (see https://aka.dataminer.services/gqi-dxm), or use RAD Manager 2.0.4.");
 			}
 
@@ -41,7 +41,7 @@ internal class Script
 
 			// Custom installation logic can be added here for each individual install package.
 		}
-		catch (GQINotEnabledException ex)
+		catch (GqiNotEnabledException ex)
 		{
 			engine.ExitFail(ex.Message);
 		}

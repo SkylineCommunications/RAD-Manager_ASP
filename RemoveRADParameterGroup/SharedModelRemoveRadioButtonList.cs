@@ -92,24 +92,6 @@
 
 		public override bool RemoveGroup => _radioButtonList.Selected == SharedModelGroupRemoveMode.EntireGroup || (_hasAllSubgroups && _subgroupCheckBoxes.All(c => c.Item2.IsChecked));
 
-		public override List<RadSubgroupID> SubgroupsToRemove
-		{
-			get
-			{
-				if (!RemoveGroup)
-				{
-					if (_singleSubgroupID != null)
-						return new List<RadSubgroupID> { _singleSubgroupID.Value };
-					else
-						return _subgroupCheckBoxes.Where(c => c.Item2.IsChecked).Select(c => c.Item1).ToList();
-				}
-				else
-				{
-					return new List<RadSubgroupID>();
-				}
-			}
-		}
-
 		public new bool IsEnabled
 		{
 			get => _isSelfEnabled;
@@ -122,6 +104,21 @@
 
 				_radioButtonList.IsEnabled = value;
 				UpdateSubgroupCheckBoxesIsEnabled();
+			}
+		}
+
+		public override List<RadSubgroupID> GetSubgroupsToRemove()
+		{
+			if (!RemoveGroup)
+			{
+				if (_singleSubgroupID != null)
+					return new List<RadSubgroupID> { _singleSubgroupID.Value };
+				else
+					return _subgroupCheckBoxes.Where(c => c.Item2.IsChecked).Select(c => c.Item1).ToList();
+			}
+			else
+			{
+				return new List<RadSubgroupID>();
 			}
 		}
 

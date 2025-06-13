@@ -15,7 +15,7 @@
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.SecureCoding.SecureSerialization.Json.Newtonsoft;
 
-	public class GQIUtils
+	public class GqiUtils
 	{
 		public static bool IsGqiDxmEnabled()
 		{
@@ -225,10 +225,10 @@
 	public class ConnectAppAndInfoUsingTicketResponse
 	{
 		[JsonProperty("d")]
-		public DMAConnectAndInfo D { get; set; }
+		public DmaConnectAndInfo D { get; set; }
 	}
 
-	public class DMAConnectAndInfo
+	public class DmaConnectAndInfo
 	{
 		[JsonProperty("connection")]
 		public string Connection { get; set; }

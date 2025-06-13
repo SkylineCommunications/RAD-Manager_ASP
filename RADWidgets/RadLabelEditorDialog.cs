@@ -96,12 +96,9 @@
 
 		public event EventHandler Cancelled;
 
-		public List<string> Labels
+		public List<string> GetLabels()
 		{
-			get
-			{
-				return _labelEditors.Select(e => e.Label).ToList();
-			}
+			return _labelEditors.Select(e => e.Label).ToList();
 		}
 
 		private void SetLabelEditorsValid()

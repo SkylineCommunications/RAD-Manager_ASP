@@ -6,8 +6,8 @@
 
 	public class GroupRemoveCheckBox : AGroupRemoveSection
 	{
-		private CheckBox _checkBox;
-		private RadGroupID _groupID;
+		private readonly CheckBox _checkBox;
+		private readonly RadGroupID _groupID;
 
 		public GroupRemoveCheckBox(RadGroupID groupID, int columnSpan)
 		{
@@ -28,6 +28,6 @@
 
 		public override bool RemoveGroup => _checkBox.IsChecked;
 
-		public override List<RadSubgroupID> SubgroupsToRemove => new List<RadSubgroupID>();
+		public override List<RadSubgroupID> GetSubgroupsToRemove() => new List<RadSubgroupID>();
 	}
 }

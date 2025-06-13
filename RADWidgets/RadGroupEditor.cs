@@ -31,11 +31,11 @@
 			var subgroupOptions = settings?.Subgroups?.FirstOrDefault()?.Options;
 			if (subgroupOptions != null)
 			{
-				options = new RadGroupOptions(options?.UpdateModel ?? true, subgroupOptions?.AnomalyThreshold ?? options?.AnomalyThreshold,
-					subgroupOptions?.MinimalDuration ?? options.MinimalDuration);
+				options = new RadGroupOptions(options?.UpdateModel ?? true, subgroupOptions.AnomalyThreshold ?? options?.AnomalyThreshold,
+					subgroupOptions.MinimalDuration ?? options?.MinimalDuration);
 			}
 
-			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount, settings?.Options);
+			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount, options);
 
 			_detailsLabel = new MarginLabel(string.Empty, _parameterSelector.ColumnCount, 10);
 

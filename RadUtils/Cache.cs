@@ -30,7 +30,7 @@
 	public abstract class Cache<T>
 	{
 		private readonly Dictionary<ElementKey, CacheRecord<T>> _cache = new Dictionary<ElementKey, CacheRecord<T>>();
-		private int _maxCacheSize;
+		private readonly int _maxCacheSize;
 
 		protected Cache(int maxCacheSize)
 		{

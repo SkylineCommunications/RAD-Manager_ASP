@@ -76,7 +76,7 @@ public class Script
 
 		var radHelper = _app.Engine.GetRadHelper();
 		var failedGroups = new List<Tuple<string, Exception>>();
-		foreach (var group in dialog.GroupsToRemove)
+		foreach (var group in dialog.GetGroupsToRemove())
 		{
 			try
 			{
@@ -89,7 +89,7 @@ public class Script
 			}
 		}
 
-		foreach (var subgroup in dialog.SubgroupsToRemove)
+		foreach (var subgroup in dialog.GetSubgroupsToRemove())
 		{
 			try
 			{

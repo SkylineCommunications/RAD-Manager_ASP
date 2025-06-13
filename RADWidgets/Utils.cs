@@ -324,23 +324,8 @@
 				return true;
 			if (a?.Parameters == null || b?.Parameters == null)
 				return false;
-			if (a.Parameters.Count != b.Parameters.Count)
-				return false;
 
-			var comparer = new ParameterKeyEqualityComparer();
-			for (int i = 0; i < a.Parameters.Count; i++)
-			{
-				if (a.Parameters[i] == null && b.Parameters[i] == null)
-					continue;
-				if (a.Parameters[i] == null || b.Parameters[i] == null)
-					return false;
-				if (!string.Equals(a.Parameters[i].Label, b.Parameters[i].Label, StringComparison.OrdinalIgnoreCase))
-					return false;
-				if (!comparer.Equals(a.Parameters[i].Key, b.Parameters[i].Key))
-					return false;
-			}
-
-			return true;
+			return a.Parameters.SequenceEqual(b.Parameters, new RadParameterEqualityComparer());
 		}
 
 		/// <summary>
@@ -449,10 +434,8 @@
 		{
 			if (engine == null)
 				throw new ArgumentNullException(nameof(engine));
-			var radHelper = new RadHelper(Engine.SLNetRaw, new Logger(s => engine.Log(s, LogType.Error, 0)));
-			if (radHelper == null)
-				throw new InvalidOperationException("Could not get RadHelper from the engine. Make sure the RAD Toolkit is properly initialized.");
-			return radHelper;
+
+			return new RadHelper(Engine.SLNetRaw, new Logger(s => engine.Log(s, LogType.Error, 0)));
 		}
 
 		private static DynamicTableIndex[] FetchInstances(IEngine engine, int dataMinerID, int elementID, int tableParameterID, string displayKeyFilter = null)
