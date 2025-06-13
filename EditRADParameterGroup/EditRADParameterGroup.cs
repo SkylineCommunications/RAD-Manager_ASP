@@ -128,7 +128,7 @@ public class Script
 			throw new ArgumentException("Invalid sender type");
 		var newSettings = dialog.GroupSettings;
 		if (newSettings == null)
-			throw new Exception("New settings cannot be null.");
+			throw new ArgumentException($"{nameof(dialog.GroupSettings)} should not return null", nameof(dialog));
 
 		try
 		{
@@ -168,10 +168,10 @@ public class Script
 	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
 	{
 		if (dialog == null)
-			throw new ArgumentException("Invalid sender type");
+			throw new ArgumentNullException(nameof(dialog), "Invalid sender type");
 		var newSettings = dialog.GetGroupSettings();
 		if (newSettings == null)
-			throw new Exception("New settings cannot be null.");
+			throw new ArgumentException($"{nameof(dialog.GetGroupSettings)} should not return null", nameof(dialog));
 
 		try
 		{

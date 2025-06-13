@@ -35,10 +35,10 @@
 				IsSectionVisible = value;
 
 				foreach (var child in _childWidgets)
-					child.Child.IsVisible = IsSectionVisible && (child.VisibilityChecker != null ? child.VisibilityChecker() : true);
+                    child.Child.IsVisible = IsSectionVisible && (child.VisibilityChecker?.Invoke() ?? true);
 
 				foreach (var child in _childSections)
-					child.Child.IsVisible = IsSectionVisible && (child.VisibilityChecker != null ? child.VisibilityChecker() : true);
+					child.Child.IsVisible = IsSectionVisible && (child.VisibilityChecker?.Invoke() ?? true);
 			}
 		}
 
@@ -56,10 +56,7 @@
 		public new void AddSection(Section section, ILayout layout) => AddSection(section, layout, null);
 
 		public void AddSection(Section section, int row, int column, VisibilityChecker visibilityChecker)
-		{
-			_childSections.Add(new VisibilitySectionChildInfo<Section>(section, visibilityChecker));
-			base.AddSection(section, row, column);
-		}
+			=> AddSection(section, new SectionLayout(row, column), visibilityChecker);
 
 		public new void AddSection(Section section, int row, int column) => AddSection(section, row, column, null);
 
@@ -76,12 +73,9 @@
 			int row,
 			int column,
 			VisibilityChecker visibilityChecker,
-			HorizontalAlignment horizontalAlignment,
-			VerticalAlignment verticalAlignment)
-		{
-			_childWidgets.Add(new VisibilitySectionChildInfo<Widget>(widget, visibilityChecker));
-			base.AddWidget(widget, row, column, horizontalAlignment, verticalAlignment);
-		}
+			HorizontalAlignment horizontalAlignment = HorizontalAlignment.Left,
+			VerticalAlignment verticalAlignment = VerticalAlignment.Center)
+			=> AddWidget(widget, new WidgetLayout(row, column, horizontalAlignment, verticalAlignment), visibilityChecker);
 
 		public new void AddWidget(
 			Widget widget,
@@ -91,20 +85,6 @@
 			VerticalAlignment verticalAlignment = VerticalAlignment.Center)
 			=> AddWidget(widget, row, column, null, horizontalAlignment, verticalAlignment);
 
-		public void AddWidget(
-			Widget widget,
-			int row,
-			int column,
-			int rowSpan,
-			int columnSpan,
-			VisibilityChecker visibilityChecker,
-			HorizontalAlignment horizontalAlignment = HorizontalAlignment.Left,
-			VerticalAlignment verticalAlignment = VerticalAlignment.Center)
-		{
-			_childWidgets.Add(new VisibilitySectionChildInfo<Widget>(widget, visibilityChecker));
-			base.AddWidget(widget, row, column, rowSpan, columnSpan, horizontalAlignment, verticalAlignment);
-		}
-
 		public new void AddWidget(
 			Widget widget,
 			int row,
@@ -113,6 +93,15 @@
 			int columnSpan,
 			HorizontalAlignment horizontalAlignment = HorizontalAlignment.Left,
 			VerticalAlignment verticalAlignment = VerticalAlignment.Center)
-			=> AddWidget(widget, row, column, rowSpan, columnSpan, null, horizontalAlignment, verticalAlignment);
+			=> AddWidget(widget, new WidgetLayout(row, column, rowSpan, columnSpan, horizontalAlignment, verticalAlignment), null);
+
+		public void AddWidget(
+			Widget widget,
+			int row,
+			int column,
+			int rowSpan,
+			int columnSpan,
+			VisibilityChecker visibilityChecker)
+			=> AddWidget(widget, new WidgetLayout(row, column, rowSpan, columnSpan), visibilityChecker);
 	}
 }

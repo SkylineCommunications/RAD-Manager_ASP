@@ -4,7 +4,6 @@ using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -92,7 +91,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
 			return;
 		}
 

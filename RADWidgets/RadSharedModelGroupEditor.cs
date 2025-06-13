@@ -13,9 +13,7 @@
 		private readonly IEngine _engine;
 		private readonly GroupNameSection _groupNameSection;
 		private readonly RadGroupOptionsEditor _optionsEditor;
-		private readonly Label _parametersCountLabel;
 		private readonly Numeric _parametersCountNumeric;
-		private readonly Button _parameterLabelsEditorButton;
 		private readonly RadSubgroupSelector _subgroupSelector;
 		private readonly MarginLabel _detailsLabel;
 		private List<string> _parameterLabels;
@@ -31,7 +29,7 @@
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
 			const string parametersPerSubgroupTooltip = "Each subgroup will have this many parameters";
-			_parametersCountLabel = new Label("Number of parameters per subgroup")
+			var parametersCountLabel = new Label("Number of parameters per subgroup")
 			{
 				Tooltip = parametersPerSubgroupTooltip,
 			};
@@ -58,11 +56,11 @@
 
 			_oldParameterLabels = new List<string>();
 
-			_parameterLabelsEditorButton = new Button("Edit labels...")
+			var parameterLabelsEditorButton = new Button("Edit labels...")
 			{
 				Tooltip = "Edit the labels of the parameters in the subgroups. These labels are used to identify the parameters in the subgroups.",
 			};
-			_parameterLabelsEditorButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
+			parameterLabelsEditorButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
 			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
@@ -83,9 +81,9 @@
 			AddSection(_groupNameSection, row, 0);
 			row += _groupNameSection.RowCount;
 
-			AddWidget(_parametersCountLabel, row, 0);
+			AddWidget(parametersCountLabel, row, 0);
 			AddWidget(_parametersCountNumeric, row, 1);
-			AddWidget(_parameterLabelsEditorButton, row, 2);
+			AddWidget(parameterLabelsEditorButton, row, 2);
 			row++;
 
 			AddSection(_subgroupSelector, row, 0);

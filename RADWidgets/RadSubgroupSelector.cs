@@ -10,6 +10,7 @@
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
+
 	public class RadSubgroupSelectorParameter
 	{
 		public ParameterKey Key { get; set; }
@@ -98,8 +99,6 @@
 		private readonly RadSubgroupDetailsView _detailsView;
 		private readonly Button _editButton;
 		private readonly Button _removeButton;
-		private readonly WhiteSpace _whitespace;
-		private readonly Button _addButton;
 		private readonly ParametersCache _parametersCache;
 		private List<string> _parameterLabels;
 		private RadGroupOptions _parentOptions;
@@ -145,26 +144,27 @@
 			};
 			_removeButton.Pressed += (sender, args) => OnRemoveButtonPressed();
 
-			_whitespace = new WhiteSpace()
+			var whitespace = new WhiteSpace()
 			{
 				MinHeight = 100,
 			};
 
-			_addButton = new Button("Add subgroup...")
+			var addButton = new Button("Add subgroup...")
 			{
 				Tooltip = "Add a new subgroup.",
 			};
-			_addButton.Pressed += (sender, args) => OnAddButtonPressed();
+			addButton.Pressed += (sender, args) => OnAddButtonPressed();
 
 			SetSubgroups(subgroups, selectedSubgroup);
 
 			AddWidget(_noSubgroupsLabel, 0, 0, 1, 1 + _detailsView.ColumnCount, () => !GetTreeViewVisible());
-			AddWidget(_selectorTreeView, 1, 0, _detailsView.RowCount, 1, GetTreeViewVisible, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_selectorTreeView, new WidgetLayout(1, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top),
+				GetTreeViewVisible);
 			AddSection(_detailsView, 1, 1, GetTreeViewVisible);
 			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_whitespace, 4, 2);
-			AddWidget(_addButton, 5, 2);
+			AddWidget(whitespace, 4, 2);
+			AddWidget(addButton, 5, 2);
 		}
 
 		public event EventHandler ValidationChanged;

@@ -7,6 +7,7 @@
 	using RadUtils;
 	using RadWidgets;
 	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
@@ -182,7 +183,7 @@
 			catch (Exception e)
 			{
 				_engine.Log($"Failed to fetch group info for parameter group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
-				throw new Exception("Failed to fetch group info for parameter group", e);
+				throw new DataMinerException("Failed to fetch group info for parameter group", e);
 			}
 		}
 
