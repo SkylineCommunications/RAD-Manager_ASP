@@ -87,8 +87,8 @@ namespace RadWidgets
 			AddWidget(_addButton, row + _itemSelector.RowCount - 1, _itemSelector.ColumnCount);
 			row += _itemSelector.RowCount;
 
-			AddWidget(_noItemsSelectedLabel, row, 0, 1, _itemSelector.ColumnCount);
-			AddWidget(_selectedItemsView, row + 1, 0, 2, _itemSelector.ColumnCount);
+			AddWidget(_noItemsSelectedLabel, row, 0, 1, _itemSelector.ColumnCount, () => !GetTreeViewVisible());
+			AddWidget(_selectedItemsView, row + 1, 0, 2, _itemSelector.ColumnCount, GetTreeViewVisible);
 			AddWidget(_removeButton, row, _itemSelector.ColumnCount, 2, 1, verticalAlignment: VerticalAlignment.Top);
 		}
 
@@ -124,25 +124,6 @@ namespace RadWidgets
 			set
 			{
 				_noItemsSelectedLabel.Text = value;
-			}
-		}
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			// Note: we had to override this, since otherwise all child widgets are made visible when this is set to true.
-			get => IsSectionVisible;
-			set
-			{
-				if (value == IsSectionVisible)
-					return;
-
-				IsSectionVisible = value;
-
-				_itemSelector.IsVisible = value;
-				_addButton.IsVisible = value;
-				_removeButton.IsVisible = value;
-				UpdateTreeViewVisibility();
 			}
 		}
 
@@ -200,29 +181,16 @@ namespace RadWidgets
 			return true;
 		}
 
-		private void UpdateTreeViewVisibility()
+		private bool GetTreeViewVisible()
 		{
-			if (!IsSectionVisible)
-			{
-				_noItemsSelectedLabel.IsVisible = false;
-				_selectedItemsView.IsVisible = false;
-			}
-			else if (_selectedItems.Count == 0)
-			{
-				_noItemsSelectedLabel.IsVisible = true;
-				_selectedItemsView.IsVisible = false;
-			}
-			else
-			{
-				_noItemsSelectedLabel.IsVisible = false;
-				_selectedItemsView.IsVisible = true;
-			}
+			return _selectedItems.Count > 0;
 		}
 
 		private void OnChanged()
 		{
-			UpdateTreeViewVisibility();
-			_removeButton.IsEnabled = _selectedItems.Count > 0;
+			_noItemsSelectedLabel.IsVisible = IsSectionVisible && !GetTreeViewVisible();
+			_selectedItemsView.IsVisible = IsSectionVisible && GetTreeViewVisible();
+			_removeButton.IsEnabled = IsSectionVisible && _selectedItems.Count > 0;
 		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)

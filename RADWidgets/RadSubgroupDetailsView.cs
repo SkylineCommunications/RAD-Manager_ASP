@@ -34,20 +34,6 @@
 			AddWidget(_detailsLabel, 2, 0, 2, 1, verticalAlignment: VerticalAlignment.Top);
 		}
 
-		public override bool IsVisible
-		{
-			get => IsSectionVisible;
-			set
-			{
-				if (IsSectionVisible == value)
-					return;
-
-				IsSectionVisible = value;
-
-				UpdateVisibility();
-			}
-		}
-
 		public void ShowError(string text)
 		{
 			_groupNameLabel.Text = string.Empty;
@@ -85,11 +71,17 @@
 			UpdateVisibility();
 		}
 
+		private bool GetGroupDetailsVisible()
+		{
+			return string.IsNullOrEmpty(_invalidSelectionLabel.Text);
+		}
+
 		private void UpdateVisibility()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && string.IsNullOrEmpty(_invalidSelectionLabel.Text);
-			_groupNameLabel.IsVisible = IsSectionVisible && string.IsNullOrEmpty(_invalidSelectionLabel.Text);
-			_invalidSelectionLabel.IsVisible = IsSectionVisible && !string.IsNullOrEmpty(_invalidSelectionLabel.Text);
+			bool groupDetailsVisible = GetGroupDetailsVisible();
+			_detailsLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
+			_groupNameLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
+			_invalidSelectionLabel.IsVisible = IsSectionVisible && !groupDetailsVisible;
 		}
 	}
 }

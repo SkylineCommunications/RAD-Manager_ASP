@@ -70,7 +70,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddSection(_detailsLabel, row, 0);
+			AddSection(_detailsLabel, row, 0, GetDetailsLabelVisible);
 		}
 
 		public event EventHandler ValidationChanged;
@@ -88,28 +88,6 @@
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
-
-		public override bool IsVisible
-		{
-			get => IsSectionVisible;
-			set
-			{
-				if (IsSectionVisible == value)
-					return;
-
-				IsSectionVisible = value;
-
-				_groupNameSection.IsVisible = value;
-				foreach (var child in _parameterSelectors)
-				{
-					child.Item1.IsVisible = value;
-					child.Item2.IsVisible = value;
-				}
-
-				_optionsEditor.IsVisible = value;
-				UpdateDetailsLabelVisibility();
-			}
-		}
 
 		private void UpdateSubgroupWithSameParameters()
 		{
@@ -146,14 +124,14 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void UpdateDetailsLabelVisibility()
+		private bool GetDetailsLabelVisible()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid && (_hasInvalidParameter || _duplicatedParameters != null || _subgroupWithSameParameters != null);
+			return _groupNameSection.IsValid && (_hasInvalidParameter || _duplicatedParameters != null || _subgroupWithSameParameters != null);
 		}
 
 		private void UpdateDetailsLabel()
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = this.IsSectionVisible && GetDetailsLabelVisible();
 
 			if (_hasInvalidParameter)
 			{
@@ -193,7 +171,7 @@
 		private void OnGroupNameSectionValidationChanged()
 		{
 			UpdateIsValid();
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = this.IsSectionVisible && GetDetailsLabelVisible();
 		}
 	}
 }

@@ -52,7 +52,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddSection(_detailsLabel, row, 0);
+			AddSection(_detailsLabel, row, 0, GetDetailsLabelVisible);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
@@ -64,25 +64,6 @@
 				var parameters = _parameterSelector.GetSelectedParameters().Select(p => new RadParameter(p, string.Empty)).ToList();
 				var subgroup = new RadSubgroupSettings(_groupNameSection.GroupName, Guid.NewGuid(), parameters, new RadSubgroupOptions());
 				return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, new List<RadSubgroupSettings> { subgroup });
-			}
-		}
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			// Note: we had to override this, since otherwise isVisible of the underlying widgets is called instead of on the sections
-			get => IsSectionVisible;
-			set
-			{
-				if (IsSectionVisible == value)
-					return;
-
-				IsSectionVisible = value;
-
-				_groupNameSection.IsVisible = value;
-				_parameterSelector.IsVisible = value;
-				_optionsEditor.IsVisible = value;
-				UpdateDetailsLabelVisibility();
 			}
 		}
 
@@ -104,14 +85,14 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void UpdateDetailsLabelVisibility()
+		private bool GetDetailsLabelVisible()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
+			return _groupNameSection.IsValid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
 		}
 
 		private void UpdateDetailsLabel()
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 
 			if (!_moreThanMinParametersSelected)
 				_detailsLabel.Text = "Select at least two instances.";
@@ -137,7 +118,7 @@
 
 		private void OnGroupNameSectionValidationChanged()
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 			UpdateIsValid();
 		}
 	}

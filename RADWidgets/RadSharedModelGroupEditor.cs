@@ -94,7 +94,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddSection(_detailsLabel, row, 0);
+			AddSection(_detailsLabel, row, 0, GetDetailsLabelVisible);
 		}
 
 		public event EventHandler ValidationChanged;
@@ -104,27 +104,6 @@
 			get
 			{
 				return new RadGroupSettings(_groupNameSection.GroupName, _optionsEditor.Options, _subgroupSelector.Subgroups);
-			}
-		}
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			get => IsSectionVisible;
-			set
-			{
-				if (IsSectionVisible == value)
-					return;
-
-				IsSectionVisible = value;
-
-				_groupNameSection.IsVisible = value;
-				_optionsEditor.IsVisible = value;
-				_parametersCountLabel.IsVisible = value;
-				_parametersCountNumeric.IsVisible = value;
-				_parameterLabelsEditorButton.IsVisible = value;
-				_subgroupSelector.IsVisible = value;
-				UpdateDetailsLabelVisibility();
 			}
 		}
 
@@ -142,10 +121,9 @@
 				.ToList();
 		}
 
-		private void UpdateDetailsLabelVisibility()
+		private bool GetDetailsLabelVisible()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && _groupNameSection.IsValid &&
-				(!_subgroupSelector.IsValid || _hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0);
+			return _groupNameSection.IsValid && (!_subgroupSelector.IsValid || _hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0);
 		}
 
 		private void UpdateValidationText()
@@ -170,7 +148,7 @@
 
 		private void UpdateDetailsLabel()
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = GetDetailsLabelVisible();
 
 			if (!_subgroupSelector.IsValid)
 			{
@@ -254,7 +232,7 @@
 
 		private void OnGroupNameSectionValidationChanged()
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = GetDetailsLabelVisible();
 			UpdateIsValid();
 		}
 

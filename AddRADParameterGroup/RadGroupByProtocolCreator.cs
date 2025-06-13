@@ -127,7 +127,7 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddSection(_detailsLabel, row, 0);
+			AddSection(_detailsLabel, row, 0, GetDetailsLabelVisibility);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
@@ -135,28 +135,6 @@
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			// Note: we had to override this, since otherwise it will make the details label always visible
-			get => IsSectionVisible;
-			set
-			{
-				if (IsSectionVisible == value)
-					return;
-
-				IsSectionVisible = value;
-
-				_groupPrefixLabel.IsVisible = value;
-				_groupPrefixTextBox.IsVisible = value;
-				_parameterSelector.IsVisible = value;
-				if (_sharedModelCheckBox != null)
-					_sharedModelCheckBox.IsVisible = value;
-				_optionsEditor.IsVisible = value;
-				UpdateDetailsLabelVisibility();
-			}
-		}
 
 		public List<RadGroupSettings> GetGroupsToAdd()
 		{
@@ -307,14 +285,14 @@
 			return groups;
 		}
 
-		private void UpdateDetailsLabelVisibility()
+		private bool GetDetailsLabelVisibility()
 		{
-			_detailsLabel.IsVisible = IsSectionVisible && _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
+			return _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
 		}
 
 		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)
 		{
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisibility();
 			if (!_detailsLabel.IsVisible)
 				return;
 
@@ -400,7 +378,7 @@
 		private void OnGroupPrefixTextBoxChanged()
 		{
 			UpdateGroupPrefixCheckboxValidity();
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 
@@ -422,7 +400,7 @@
 			}
 
 			UpdateGroupPrefixCheckboxValidity();
-			UpdateDetailsLabelVisibility();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisibility();
 			UpdateIsValid();
 		}
 	}

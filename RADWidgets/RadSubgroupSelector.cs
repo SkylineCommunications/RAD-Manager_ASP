@@ -158,9 +158,9 @@
 
 			SetSubgroups(subgroups, selectedSubgroup);
 
-			AddWidget(_noSubgroupsLabel, 0, 0, 1, 1 + _detailsView.ColumnCount);
-			AddWidget(_selectorTreeView, 1, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top);
-			AddSection(_detailsView, 1, 1);
+			AddWidget(_noSubgroupsLabel, 0, 0, 1, 1 + _detailsView.ColumnCount, () => !GetTreeViewVisible());
+			AddWidget(_selectorTreeView, 1, 0, _detailsView.RowCount, 1, GetTreeViewVisible, verticalAlignment: VerticalAlignment.Top);
+			AddSection(_detailsView, 1, 1, GetTreeViewVisible);
 			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
 			AddWidget(_whitespace, 4, 2);
@@ -172,26 +172,6 @@
 		public List<RadSubgroupSettings> Subgroups
 		{
 			get => _subgroups.Values.Select(s => s.ToRadSubgroupSettings(_parameterLabels)).ToList();
-		}
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			// Note: we had to override this, since otherwise all child widgets are made visible when this is set to true.
-			get => IsSectionVisible;
-			set
-			{
-				if (value == IsSectionVisible)
-					return;
-
-				IsSectionVisible = value;
-
-				_editButton.IsVisible = value;
-				_removeButton.IsVisible = value;
-				_addButton.IsVisible = value;
-				_whitespace.IsVisible = value;
-				UpdateTreeViewAndLabelVisibility();
-			}
 		}
 
 		public bool IsValid { get; private set; }
@@ -224,13 +204,17 @@
 			_removeButton.IsEnabled = removeButtonEnabled;
 		}
 
+		private bool GetTreeViewVisible()
+		{
+			return _subgroups.Count() > 0;
+		}
+
 		private void UpdateTreeViewAndLabelVisibility()
 		{
-			int count = _subgroups.Count();
-			int selectedCount = _selectorTreeView.Items.Count(i => i.IsChecked);
-			_noSubgroupsLabel.IsVisible = IsSectionVisible && count == 0;
-			_selectorTreeView.IsVisible = IsSectionVisible && count > 0;
-			_detailsView.IsVisible = IsSectionVisible && count > 0;
+			bool treeViewVisible = GetTreeViewVisible();
+			_noSubgroupsLabel.IsVisible = IsSectionVisible && !treeViewVisible;
+			_selectorTreeView.IsVisible = IsSectionVisible && treeViewVisible;
+			_detailsView.IsVisible = IsSectionVisible && treeViewVisible;
 		}
 
 		private string GetSubgroupPlaceHolderName(int count)
