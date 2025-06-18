@@ -118,21 +118,49 @@
 			{
 				ValidationText = "Select a valid element";
 				IsValid = false;
+
+				_elementsDropDown.ValidationState = UIValidationState.Invalid;
+				_elementsDropDown.ValidationText = ValidationText;
+				_parametersDropDown.ValidationState = UIValidationState.Valid;
+				_parametersDropDown.ValidationText = string.Empty;
+				_instanceDropDown.ValidationState = UIValidationState.Valid;
+				_instanceDropDown.ValidationText = string.Empty;
 			}
 			else if (_parametersDropDown.Selected == null)
 			{
 				ValidationText = "Select a valid parameter";
 				IsValid = false;
+
+				_elementsDropDown.ValidationState = UIValidationState.Valid;
+				_elementsDropDown.ValidationText = string.Empty;
+				_parametersDropDown.ValidationState = UIValidationState.Invalid;
+				_parametersDropDown.ValidationText = ValidationText;
+				_instanceDropDown.ValidationState = UIValidationState.Valid;
+				_instanceDropDown.ValidationText = string.Empty;
 			}
 			else if (_instanceDropDown.IsEnabled && _instanceDropDown.Selected == null)
 			{
 				ValidationText = "Select a valid instance";
 				IsValid = false;
+
+				_elementsDropDown.ValidationState = UIValidationState.Valid;
+				_elementsDropDown.ValidationText = string.Empty;
+				_parametersDropDown.ValidationState = UIValidationState.Valid;
+				_parametersDropDown.ValidationText = string.Empty;
+				_instanceDropDown.ValidationState = UIValidationState.Invalid;
+				_instanceDropDown.ValidationText = ValidationText;
 			}
 			else
 			{
 				ValidationText = string.Empty;
 				IsValid = true;
+
+				_elementsDropDown.ValidationState = UIValidationState.Valid;
+				_elementsDropDown.ValidationText = string.Empty;
+				_parametersDropDown.ValidationState = UIValidationState.Valid;
+				_parametersDropDown.ValidationText = string.Empty;
+				_instanceDropDown.ValidationState = UIValidationState.Valid;
+				_instanceDropDown.ValidationText = string.Empty;
 			}
 		}
 
