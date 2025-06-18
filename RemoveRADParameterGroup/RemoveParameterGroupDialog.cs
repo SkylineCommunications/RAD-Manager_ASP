@@ -28,8 +28,10 @@
 		private readonly IEngine _engine;
 		private readonly ParametersCache _parametersCache;
 		private readonly WrappingLabel _label;
-		private readonly Button _acceptButton;
-		private readonly Button _rejectButton;
+		private readonly Button _yesButton;
+		private readonly Button _noButton;
+		private readonly Button _cancelButton;
+		private readonly Button _okButton;
 		private List<AGroupRemoveSection> _groupRemoveWidgets;
 		private List<RadGroupID> _extraGroupsToRemove;
 
@@ -41,18 +43,35 @@
 
 			_label = new WrappingLabel(TextWrapWidth);
 
-			_rejectButton = new Button()
+			_noButton = new Button()
 			{
+				Text = "No",
 				MinWidth = 300,
 			};
-			_rejectButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
+			_noButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
 
-			_acceptButton = new Button()
+			_yesButton = new Button()
 			{
+				Text = "Yes",
 				Style = ButtonStyle.CallToAction,
 				MinWidth = 300,
 			};
-			_acceptButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
+			_yesButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
+
+			_cancelButton = new Button()
+			{
+				Text = "Cancel",
+				MinWidth = 300,
+			};
+			_cancelButton.Pressed += (sender, args) => Cancelled?.Invoke(this, EventArgs.Empty);
+
+			_okButton = new Button()
+			{
+				Text = "OK",
+				Style = ButtonStyle.CallToAction,
+				MinWidth = 300,
+			};
+			_okButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
 			_extraGroupsToRemove = new List<RadGroupID>();
@@ -78,7 +97,7 @@
 			};
 			var whitespace3 = new WhiteSpace()
 			{
-				MinWidth = _rejectButton.MinWidth - (2 * IndentWidth),
+				MinWidth = _yesButton.MinWidth - (2 * IndentWidth),
 			};
 
 			int row = 0;
@@ -96,8 +115,12 @@
 			AddWidget(whitespace3, row, 2);
 			row += 1;
 
-			AddWidget(_rejectButton, row, 0, 1, 3);
-			AddWidget(_acceptButton, row, 3);
+			AddWidget(_yesButton, row, 0, 1, 3);
+			AddWidget(_noButton, row, 3);
+			row++;
+
+			AddWidget(_cancelButton, row, 0, 1, 3);
+			AddWidget(_okButton, row, 3);
 		}
 
 		public event EventHandler Accepted;
@@ -132,8 +155,7 @@
 					_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroups below from Relational Anomaly Detection?";
 				}
 
-				_acceptButton.Text = "OK";
-				_rejectButton.Text = "Cancel";
+				SetOKCancelButtonsVisible();
 
 				var section = new SharedModelRemoveRadioButtonList(groupID, matchingSubgroups, matchingSubgroups.Count == groupInfo.Subgroups.Count,
 					4, TextWrapWidth, TextWrapIndentWidth);
@@ -142,8 +164,7 @@
 			else
 			{
 				_label.Text = $"Are you sure you want to remove the parameter group '{groupID.GroupName}' from Relational Anomaly Detection?";
-				_acceptButton.Text = "Yes";
-				_rejectButton.Text = "No";
+				SetYesNoButtonsVisible();
 				_extraGroupsToRemove.Add(groupID);
 			}
 		}
@@ -152,8 +173,7 @@
 		{
 			Title = "Remove parameter groups";
 			_label.Text = "Are you sure you want to remove the following parameter groups from Relational Anomaly Detection?";
-			_acceptButton.Text = "Yes";
-			_rejectButton.Text = "No";
+			SetYesNoButtonsVisible();
 
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
 			_extraGroupsToRemove = new List<RadGroupID>();
@@ -172,6 +192,22 @@
 					_groupRemoveWidgets.Add(checkBox);
 				}
 			}
+		}
+
+		private void SetYesNoButtonsVisible()
+		{
+			_yesButton.IsVisible = true;
+			_noButton.IsVisible = true;
+			_cancelButton.IsVisible = false;
+			_okButton.IsVisible = false;
+		}
+
+		private void SetOKCancelButtonsVisible()
+		{
+			_yesButton.IsVisible = false;
+			_noButton.IsVisible = false;
+			_cancelButton.IsVisible = true;
+			_okButton.IsVisible = true;
 		}
 
 		private RadGroupInfo FetchGroupInfo(RadGroupID groupID)
