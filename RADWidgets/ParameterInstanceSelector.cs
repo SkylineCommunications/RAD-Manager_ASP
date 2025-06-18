@@ -8,12 +8,14 @@
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class ParameterInstanceSelector : Section
+	public class ParameterInstanceSelector : Section, IValidationWidget
 	{
 		private readonly IEngine _engine;
 		private readonly ElementsDropDown _elementsDropDown;
 		private readonly RadParametersDropDown _parametersDropDown;
 		private readonly DropDown<DynamicTableIndex> _instanceDropDown;
+		private UIValidationState _validationState = UIValidationState.Valid;
+		private string _validationText = string.Empty;
 
 		public ParameterInstanceSelector(IEngine engine, RadSubgroupSelectorParameter parameter = null)
 		{
@@ -56,7 +58,7 @@
 		{
 			get
 			{
-				if (!IsValid)
+				if (!InternalIsValid)
 					return null;
 
 				var element = _elementsDropDown.Selected;
@@ -72,9 +74,43 @@
 			}
 		}
 
-		public bool IsValid { get; private set; }
+		public UIValidationState ValidationState
+		{
+			get => _validationState;
+			set
+			{
+				if (_validationState == value)
+					return;
 
-		public string ValidationText { get; private set; }
+				_validationState = value;
+				UpdateIsValid();
+			}
+		}
+
+		public string ValidationText
+		{
+			get => _validationText;
+			set
+			{
+				if (_validationText == value)
+					return;
+
+				_validationText = value;
+				UpdateIsValid();
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the current selection is valid. This is not influenced by the ValidationState or ValidationText properties, which are used
+		/// for external validation checks (not done by this widget).
+		/// </summary>
+		public bool InternalIsValid { get; private set; }
+
+		/// <summary>
+		/// Gets  a value indicating whether the current selection is valid. This is not influenced by the ValidationState or ValidationText properties, which are used
+		/// for external validation checks (not done by this widget).
+		/// </summary>
+		public string InternalValidationText { get; private set; }
 
 		private void SelectItem(RadSubgroupSelectorParameter parameter)
 		{
@@ -116,11 +152,11 @@
 		{
 			if (_elementsDropDown.Selected == null)
 			{
-				ValidationText = "Select a valid element";
-				IsValid = false;
+				InternalValidationText = "Select a valid element";
+				InternalIsValid = false;
 
 				_elementsDropDown.ValidationState = UIValidationState.Invalid;
-				_elementsDropDown.ValidationText = ValidationText;
+				_elementsDropDown.ValidationText = InternalValidationText;
 				_parametersDropDown.ValidationState = UIValidationState.Valid;
 				_parametersDropDown.ValidationText = string.Empty;
 				_instanceDropDown.ValidationState = UIValidationState.Valid;
@@ -128,39 +164,62 @@
 			}
 			else if (_parametersDropDown.Selected == null)
 			{
-				ValidationText = "Select a valid parameter";
-				IsValid = false;
+				InternalValidationText = "Select a valid parameter";
+				InternalIsValid = false;
 
 				_elementsDropDown.ValidationState = UIValidationState.Valid;
 				_elementsDropDown.ValidationText = string.Empty;
 				_parametersDropDown.ValidationState = UIValidationState.Invalid;
-				_parametersDropDown.ValidationText = ValidationText;
+				_parametersDropDown.ValidationText = InternalValidationText;
 				_instanceDropDown.ValidationState = UIValidationState.Valid;
 				_instanceDropDown.ValidationText = string.Empty;
 			}
 			else if (_instanceDropDown.IsEnabled && _instanceDropDown.Selected == null)
 			{
-				ValidationText = "Select a valid instance";
-				IsValid = false;
+				InternalValidationText = "Select a valid instance";
+				InternalIsValid = false;
 
 				_elementsDropDown.ValidationState = UIValidationState.Valid;
 				_elementsDropDown.ValidationText = string.Empty;
 				_parametersDropDown.ValidationState = UIValidationState.Valid;
 				_parametersDropDown.ValidationText = string.Empty;
 				_instanceDropDown.ValidationState = UIValidationState.Invalid;
-				_instanceDropDown.ValidationText = ValidationText;
+				_instanceDropDown.ValidationText = InternalValidationText;
 			}
 			else
 			{
-				ValidationText = string.Empty;
-				IsValid = true;
+				InternalValidationText = string.Empty;
+				InternalIsValid = true;
 
 				_elementsDropDown.ValidationState = UIValidationState.Valid;
 				_elementsDropDown.ValidationText = string.Empty;
-				_parametersDropDown.ValidationState = UIValidationState.Valid;
-				_parametersDropDown.ValidationText = string.Empty;
-				_instanceDropDown.ValidationState = UIValidationState.Valid;
-				_instanceDropDown.ValidationText = string.Empty;
+
+				if (ValidationState != UIValidationState.Valid)
+				{
+					_elementsDropDown.ValidationState = UIValidationState.Valid;
+					_elementsDropDown.ValidationText = string.Empty;
+					if (_instanceDropDown.IsEnabled)
+					{
+						_parametersDropDown.ValidationState = UIValidationState.Valid;
+						_parametersDropDown.ValidationText = string.Empty;
+						_instanceDropDown.ValidationState = UIValidationState.Invalid;
+						_instanceDropDown.ValidationText = ValidationText;
+					}
+					else
+					{
+						_parametersDropDown.ValidationState = UIValidationState.Invalid;
+						_parametersDropDown.ValidationText = ValidationText;
+						_instanceDropDown.ValidationState = UIValidationState.Valid;
+						_instanceDropDown.ValidationText = string.Empty;
+					}
+				}
+				else
+				{
+					_parametersDropDown.ValidationState = UIValidationState.Valid;
+					_parametersDropDown.ValidationText = string.Empty;
+					_instanceDropDown.ValidationState = UIValidationState.Valid;
+					_instanceDropDown.ValidationText = string.Empty;
+				}
 			}
 		}
 

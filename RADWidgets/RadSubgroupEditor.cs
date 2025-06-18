@@ -17,7 +17,7 @@
 		private readonly Guid _subgroupID;
 		private readonly List<RadSubgroupSelectorItem> _otherSubgroups;
 		private bool _hasInvalidParameter;
-		private IGrouping<ParameterKey, Tuple<Label, ParameterInstanceSelector>> _duplicatedParameters;
+		private bool _hasDuplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
 
 		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
@@ -103,7 +103,28 @@
 
 		private void UpdateDuplicatedParameters()
 		{
-			_duplicatedParameters = _parameterSelectors.GroupBy(p => p.Item2.SelectedItem?.Key, new ParameterKeyEqualityComparer()).FirstOrDefault(g => g.Count() > 1);
+			var grouped = _parameterSelectors.GroupBy(p => p.Item2.SelectedItem?.Key, new ParameterKeyEqualityComparer());
+			_hasDuplicatedParameters = false;
+			foreach (var g in grouped)
+			{
+				if (g.Count() > 1)
+				{
+					_hasDuplicatedParameters = true;
+					foreach (var selector in g)
+					{
+						selector.Item2.ValidationState = UIValidationState.Invalid;
+						selector.Item2.ValidationText = "This parameter is duplicated";
+					}
+				}
+				else
+				{
+					foreach (var selector in g)
+					{
+						selector.Item2.ValidationState = UIValidationState.Valid;
+						selector.Item2.ValidationText = string.Empty;
+					}
+				}
+			}
 		}
 
 		private void UpdateIsValid()
@@ -123,7 +144,7 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (_hasInvalidParameter || _duplicatedParameters != null || _subgroupWithSameParameters != null);
+			return _groupNameSection.IsValid && (_hasInvalidParameter || _hasDuplicatedParameters || _subgroupWithSameParameters != null);
 		}
 
 		private void UpdateDetailsLabel()
@@ -132,15 +153,15 @@
 
 			if (_hasInvalidParameter)
 			{
-				var invalidParameterLabels = _parameterSelectors.Where(s => !s.Item2.IsValid).Select(s => s.Item1.Text);
+				var invalidParameterLabels = _parameterSelectors.Where(s => !s.Item2.InternalIsValid).Select(s => s.Item1.Text);
 				if (invalidParameterLabels.Count() > 1)
 					_detailsLabel.Text = $"Make a valid selection for parameters {invalidParameterLabels.HumanReadableJoin()}.";
 				else
 					_detailsLabel.Text = $"Make a valid selection for parameter {invalidParameterLabels.FirstOrDefault()}";
 			}
-			else if (_duplicatedParameters != null)
+			else if (_hasDuplicatedParameters)
 			{
-				_detailsLabel.Text = $"The parameters you selected for {_duplicatedParameters.Select(s => s.Item1.Text).HumanReadableJoin()} are exactly the same.";
+				_detailsLabel.Text = $"Some parameters are duplicated.";
 			}
 			else if (_subgroupWithSameParameters != null)
 			{
@@ -154,7 +175,7 @@
 
 		private void OnParameterSelectorChanged()
 		{
-			_hasInvalidParameter = _parameterSelectors.Any(p => !p.Item2.IsValid);
+			_hasInvalidParameter = _parameterSelectors.Any(p => !p.Item2.InternalIsValid);
 			if (!_hasInvalidParameter)
 			{
 				UpdateSubgroupWithSameParameters();
