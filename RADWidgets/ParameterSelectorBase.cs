@@ -40,7 +40,7 @@
 			AddWidget(_instanceTextBox, 1, 2);
 		}
 
-		public event EventHandler<EventArgs> InstanceChanged;
+		public event EventHandler<EventArgs> Changed;
 
 		public virtual UIValidationState ValidationState
 		{
@@ -89,6 +89,7 @@
 				_instanceTextBox.IsEnabled = true;
 			}
 
+			Changed?.Invoke(this, EventArgs.Empty);
 			UpdateValidationState();
 		}
 
@@ -149,7 +150,7 @@
 		{
 			HasInvalidInstance = false;
 			UpdateValidationState();
-			InstanceChanged?.Invoke(this, EventArgs.Empty);
+			Changed?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

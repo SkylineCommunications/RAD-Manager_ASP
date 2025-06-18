@@ -45,7 +45,7 @@
 			}
 
 			var selector = ItemSelector as ParameterSelector;
-			selector.InstanceChanged += (sender, args) => OnChanged();
+			selector.Changed += (sender, args) => OnChanged();
 			Changed += (sender, args) => OnChanged();
 		}
 
@@ -76,6 +76,7 @@
 				// If an item has been added or removed, then the validation state of the selector should be reset
 				var selector = ItemSelector as ParameterSelector;
 				selector.ValidationState = UIValidationState.Valid;
+				selector.ValidationText = string.Empty;
 				_parameterAlreadySelected = false;
 			}
 		}
