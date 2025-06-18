@@ -84,16 +84,14 @@
 				var element = _elementsDropDown.Selected;
 				if (element == null)
 				{
-					ValidationState = UIValidationState.Invalid;
-					ValidationText = "Select a valid element";
+					UpdateValidationState();
 					return null;
 				}
 
 				var parameter = ParametersDropDown.Selected;
 				if (parameter == null)
 				{
-					ValidationState = UIValidationState.Invalid;
-					ValidationText = "Select a valid parameter";
+					UpdateValidationState();
 					return null;
 				}
 
@@ -103,8 +101,8 @@
 					matchingInstances = Utils.FetchInstancesWithTrending(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();
 					if (matchingInstances.Count == 0)
 					{
-						ValidationState = UIValidationState.Invalid;
-						ValidationText = "No matching instances found";
+						HasInvalidInstance = true;
+						UpdateValidationState();
 						return null;
 					}
 				}
@@ -123,6 +121,23 @@
 			}
 		}
 
+		protected override void UpdateValidationState()
+		{
+			if (_elementsDropDown.Selected == null)
+			{
+				_elementsDropDown.ValidationState = UIValidationState.Invalid;
+				_elementsDropDown.ValidationText = "Select a valid element";
+				ParametersDropDown.ValidationState = UIValidationState.Valid;
+				ParametersDropDown.ValidationText = string.Empty;
+				InstanceTextBox.ValidationState = UIValidationState.Valid;
+				InstanceTextBox.ValidationText = string.Empty;
+			}
+			else
+			{
+				base.UpdateValidationState();
+			}
+		}
+
 		private void OnSelectedElementChanged()
 		{
 			var element = _elementsDropDown.Selected;
@@ -133,6 +148,7 @@
 			}
 
 			SetPossibleParameters(element.DataMinerID, element.ElementID);
+			UpdateValidationState();
 		}
 	}
 }

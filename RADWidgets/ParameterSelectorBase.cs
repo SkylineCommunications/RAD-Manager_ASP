@@ -10,6 +10,8 @@
 		private readonly IEngine _engine;
 		private readonly RadParametersDropDown _parametersDropDown;
 		private readonly TextBox _instanceTextBox;
+		private UIValidationState _validationState = UIValidationState.Valid;
+		private string _validationText = string.Empty;
 
 		protected ParameterSelectorBase(IEngine engine, bool leaveFirstColEmpty)
 		{
@@ -40,16 +42,30 @@
 
 		public event EventHandler<EventArgs> InstanceChanged;
 
-		public UIValidationState ValidationState
+		public virtual UIValidationState ValidationState
 		{
-			get => _instanceTextBox.ValidationState;
-			set => _instanceTextBox.ValidationState = value;
+			get => _validationState;
+			set
+			{
+				if (_validationState == value)
+					return;
+
+				_validationState = value;
+				UpdateValidationState();
+			}
 		}
 
 		public string ValidationText
 		{
-			get => _instanceTextBox.ValidationText;
-			set => _instanceTextBox.ValidationText = value;
+			get => _validationText;
+			set
+			{
+				if (_validationText == value)
+					return;
+
+				_validationText = value;
+				UpdateValidationState();
+			}
 		}
 
 		protected IEngine Engine => _engine;
@@ -58,10 +74,11 @@
 
 		protected TextBox InstanceTextBox => _instanceTextBox;
 
+		protected bool HasInvalidInstance { get; set; } = false;
+
 		protected void OnSelectedParameterChanged()
 		{
 			var parameter = _parametersDropDown.Selected;
-			_instanceTextBox.ValidationState = UIValidationState.Valid;
 			if (parameter?.IsTableColumn != true)
 			{
 				_instanceTextBox.IsEnabled = false;
@@ -70,6 +87,43 @@
 			else
 			{
 				_instanceTextBox.IsEnabled = true;
+			}
+
+			UpdateValidationState();
+		}
+
+		protected virtual void UpdateValidationState()
+		{
+			if (_parametersDropDown.Selected == null)
+			{
+				_parametersDropDown.ValidationState = UIValidationState.Invalid;
+				_parametersDropDown.ValidationText = "Select a valid parameter";
+				_instanceTextBox.ValidationState = UIValidationState.Valid;
+				_instanceTextBox.ValidationText = string.Empty;
+			}
+			else if (HasInvalidInstance)
+			{
+				_instanceTextBox.ValidationState = UIValidationState.Invalid;
+				_instanceTextBox.ValidationText = "No matching instances found";
+				_parametersDropDown.ValidationState = UIValidationState.Valid;
+				_parametersDropDown.ValidationText = string.Empty;
+			}
+			else
+			{
+				if (_instanceTextBox.IsEnabled)
+				{
+					_instanceTextBox.ValidationState = _validationState;
+					_instanceTextBox.ValidationText = _validationText;
+					_parametersDropDown.ValidationState = UIValidationState.Valid;
+					_parametersDropDown.ValidationText = string.Empty;
+				}
+				else
+				{
+					_instanceTextBox.ValidationState = UIValidationState.Valid;
+					_instanceTextBox.ValidationText = string.Empty;
+					_parametersDropDown.ValidationState = _validationState;
+					_parametersDropDown.ValidationText = _validationText;
+				}
 			}
 		}
 
@@ -93,7 +147,8 @@
 
 		private void OnInstanceChanged()
 		{
-			_instanceTextBox.ValidationState = UIValidationState.Valid;
+			HasInvalidInstance = false;
+			UpdateValidationState();
 			InstanceChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
