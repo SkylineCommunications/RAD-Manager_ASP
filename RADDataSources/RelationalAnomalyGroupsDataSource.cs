@@ -105,7 +105,7 @@ namespace RadDataSources
 				yield return new GQIRow(
 					new GQICell[]
 					{
-						new GQICell() { Value = groupName },
+						new GQICell() { Value = subgroupInfo.GetName(groupName) },
 						new GQICell() { Value = dataMinerID },
 						new GQICell() { Value = ParameterKeysToString(subgroupInfo.Parameters?.Select(p => p?.Key)) },
 						new GQICell() { Value = groupInfo.Options?.UpdateModel ?? false },
