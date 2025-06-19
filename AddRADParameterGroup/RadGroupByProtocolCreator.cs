@@ -109,7 +109,6 @@
 				{
 					Tooltip = "If checked, one shared model group will be created with subgroups for each element. If unchecked, separate groups will be created for " +
 					"each element.",
-					IsChecked = true,
 				};
 				_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
 			}
