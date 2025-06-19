@@ -28,11 +28,15 @@
 			GroupName = groupName;
 			GroupNameExists = groupNameExists;
 
-			ParameterKeys = parameters.SelectMany(p => p.MatchingParameters).ToList();
+			var comparer = new ParameterKeyEqualityComparer();
+			ParameterKeys = parameters.SelectMany(p => p.MatchingParameters).Distinct(comparer).ToList();
 			MoreThanMinInstances = ParameterKeys.Count >= RadGroupEditor.MIN_PARAMETERS;
 			LessThanMaxInstances = ParameterKeys.Count <= RadGroupEditor.MAX_PARAMETERS;
 			SelectorItemWithMultipleInstances = parameters.Any(p => p.MatchingParameters.Count > 1);
 			SelectorItemWithNoInstances = parameters.Any(p => p.MatchingParameters.Count == 0);
+			SelectorItemWithDuplicateInstances = parameters.Where(p => p.MatchingParameters.Count == 1)
+				.GroupBy(p => p.MatchingParameters?.First(), comparer)
+				.Any(g => g.Count() > 1);
 		}
 
 		public string ElementName { get; set; }
@@ -57,9 +61,14 @@
 		/// </summary>
 		public bool SelectorItemWithNoInstances { get; private set; }
 
+		/// <summary>
+		/// Gets a value indicating whether there are multiple items in the parameter selector that match the same instance.
+		/// </summary>
+		public bool SelectorItemWithDuplicateInstances { get; private set; }
+
 		public bool ValidStandalone => !GroupNameExists && MoreThanMinInstances && LessThanMaxInstances;
 
-		public bool ValidSubgroup => MoreThanMinInstances && LessThanMaxInstances && !SelectorItemWithMultipleInstances && !SelectorItemWithNoInstances;
+		public bool ValidSubgroup => MoreThanMinInstances && LessThanMaxInstances && !SelectorItemWithMultipleInstances && !SelectorItemWithNoInstances && !SelectorItemWithDuplicateInstances;
 	}
 
 	public class RadGroupByProtocolCreator : VisibilitySection
@@ -353,6 +362,14 @@
 			return $"Some parameters selected above match no instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
 		}
 
+		private List<string> GetGroupsWithDuplicateInstancesInSelectorItemsText(List<GroupByProtocolInfo> groups)
+		{
+			if (groups.Count <= 0)
+				return new List<string>();
+
+			return $"Some parameters selected above match duplicate instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
+		}
+
 		private List<string> GetGroupsWithUnknownInvalidReasonText(List<GroupByProtocolInfo> groups)
 		{
 			if (groups.Count <= 0)
@@ -372,6 +389,10 @@
 
 			var groupsWithMultipleInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithMultipleInstances).ToList();
 			var groupsWithNoInstancesPerSelectorItem = remainingInvalidGroups.Where(g => g.SelectorItemWithNoInstances).ToList();
+			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithMultipleInstancesPerSelectorItem).Except(groupsWithNoInstancesPerSelectorItem).ToList();
+
+			var groupsWithDuplicateInstances = remainingInvalidGroups.Where(g => g.SelectorItemWithDuplicateInstances).ToList();
+			remainingInvalidGroups = remainingInvalidGroups.Except(groupsWithDuplicateInstances).ToList();
 
 			List<string> lines = new List<string>();
 			lines.AddRange(GetValidGroupsText(validGroups, true));
@@ -379,6 +400,7 @@
 			lines.AddRange(GetGroupsWithTooManyInstancesText(groupsWithTooManyInstances));
 			lines.AddRange(GetGroupsWithMultipleInstancesPerSelectorItemText(groupsWithMultipleInstancesPerSelectorItem));
 			lines.AddRange(GetGroupsWithNoInstancesPerSelectorItemText(groupsWithNoInstancesPerSelectorItem));
+			lines.AddRange(GetGroupsWithDuplicateInstancesInSelectorItemsText(groupsWithDuplicateInstances));
 			lines.AddRange(GetGroupsWithUnknownInvalidReasonText(remainingInvalidGroups));
 
 			return lines;
