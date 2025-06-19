@@ -4,7 +4,7 @@
 	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 
-	public class ProtocolParameterSelectorInfo : MultiSelectorItem
+	public class ProtocolParameterSelectorInfo : SelectorItem
 	{
 		public string ParameterName { get; set; }
 

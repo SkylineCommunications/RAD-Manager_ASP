@@ -3,33 +3,14 @@ namespace RadWidgets.Widgets.Generic
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.AutomationUI.Objects;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	/// <summary>
-	/// Abstract class for items that can be selected in a <see cref="MultiSelector{T}" /> widget.
-	/// </summary>
-	public abstract class MultiSelectorItem : Section
-	{
-		/// <summary>
-		/// Gets the key of the item. This key is used to uniquely identify an item: no two items with the same key can be selected at the same time.
-		/// </summary>
-		/// <returns>The key.</returns>
-		public abstract string GetKey();
-
-		/// <summary>
-		/// Gets the display value of the item. This value is shown in the widget.
-		/// </summary>
-		/// <returns>The display value.</returns>
-		public abstract string GetDisplayValue();
-	}
 
 	/// <summary>
 	/// Selector widget to select a single item in a MultiSelector widget.
 	/// </summary>
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
-	public abstract class MultiSelectorItemSelector<T> : Section where T : MultiSelectorItem
+	public abstract class MultiSelectorItemSelector<T> : Section where T : SelectorItem
 	{
 		/// <summary>
 		/// Gets the selected item in the widget.
@@ -42,7 +23,7 @@ namespace RadWidgets.Widgets.Generic
 	/// it will take (itemSelector.RowCount + 2) rows and (itemSelector.ColumnCount + 1) columns.
 	/// </summary>
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
-	public abstract class MultiSelector<T> : VisibilitySection where T : MultiSelectorItem
+	public abstract class MultiSelector<T> : VisibilitySection where T : SelectorItem
 	{
 		private readonly MultiSelectorItemSelector<T> _itemSelector;
 		private readonly Label _noItemsSelectedLabel;

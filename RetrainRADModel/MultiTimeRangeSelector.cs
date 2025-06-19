@@ -7,7 +7,7 @@
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
-	public class TimeRangeItem : MultiSelectorItem
+	public class TimeRangeItem : SelectorItem
 	{
 		public TimeRangeItem(TimeRange range)
 		{

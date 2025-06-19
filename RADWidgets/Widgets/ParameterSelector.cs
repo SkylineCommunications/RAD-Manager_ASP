@@ -11,7 +11,7 @@
 
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class ParameterSelectorInfo : MultiSelectorItem
+	public class ParameterSelectorInfo : SelectorItem
 	{
 		public string ElementName { get; set; }
 

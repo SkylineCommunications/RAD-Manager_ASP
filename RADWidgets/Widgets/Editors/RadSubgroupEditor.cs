@@ -5,7 +5,6 @@
 	using System.Linq;
 	using RadWidgets.Widgets;
 	using RadWidgets.Widgets.Generic;
-	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
@@ -21,12 +20,14 @@
 		private bool _hasInvalidParameter;
 		private bool _hasDuplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
+		private readonly List<string> _parameterLabels;
 
 		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
 			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)
 		{
 			_subgroupID = settings?.ID ?? Guid.NewGuid();
 			_otherSubgroups = allSubgroups;
+			_parameterLabels = parameterLabels ?? new List<string>();
 			if (settings != null)
 				_otherSubgroups = _otherSubgroups.Where(s => s.ID != settings.ID).ToList();
 
@@ -83,9 +84,9 @@
 
 		public RadSubgroupSelectorItem GetSettings()
 		{
+			var displayName = string.IsNullOrEmpty(_groupNameSection.GroupName) ? _groupNameSection.GroupNamePlaceHolder : _groupNameSection.GroupName;
 			return new RadSubgroupSelectorItem(_subgroupID, _groupNameSection.GroupName, _optionsEditor.Options,
-				_parameterSelectors.Select(t => t.Item2.SelectedItem).ToList(),
-				string.IsNullOrEmpty(_groupNameSection.GroupName) ? _groupNameSection.GroupNamePlaceHolder : _groupNameSection.GroupName);
+				_parameterSelectors.Select(t => t.Item2.SelectedItem).ToList(), displayName, _parameterLabels);
 		}
 
 		private void UpdateSubgroupWithSameParameters()
@@ -167,7 +168,7 @@
 			}
 			else if (_subgroupWithSameParameters != null)
 			{
-				_detailsLabel.Text = $"The parameters you selected are exactly the same as those of subgroup '{_subgroupWithSameParameters.DisplayValue}'.";
+				_detailsLabel.Text = $"The parameters you selected are exactly the same as those of subgroup '{_subgroupWithSameParameters.DisplayName}'.";
 			}
 			else
 			{
@@ -178,11 +179,9 @@
 		private void OnParameterSelectorChanged()
 		{
 			_hasInvalidParameter = _parameterSelectors.Any(p => !p.Item2.InternalIsValid);
+			UpdateDuplicatedParameters();
 			if (!_hasInvalidParameter)
-			{
 				UpdateSubgroupWithSameParameters();
-				UpdateDuplicatedParameters();
-			}
 
 			UpdateIsValid();
 			UpdateDetailsLabel();

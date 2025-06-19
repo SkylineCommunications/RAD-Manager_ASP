@@ -6,7 +6,7 @@
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T>, IValidationWidget where T : MultiSelectorItem
+	public abstract class ParameterSelectorBase<T> : MultiSelectorItemSelector<T>, IValidationWidget where T : SelectorItem
 	{
 		private readonly IEngine _engine;
 		private readonly RadParametersDropDown _parametersDropDown;
