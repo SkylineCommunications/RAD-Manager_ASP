@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets.Generic
 {
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 

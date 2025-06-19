@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq;
 	using RadWidgets;
+	using RadWidgets.Widgets.Editors;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;

@@ -1,6 +1,7 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;

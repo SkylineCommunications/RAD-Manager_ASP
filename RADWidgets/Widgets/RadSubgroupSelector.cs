@@ -1,15 +1,17 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadUtils;
+	using RadWidgets;
+	using RadWidgets.Widgets.Dialogs;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.AutomationUI.Objects;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
-
 
 	public class RadSubgroupSelectorParameter
 	{
@@ -248,7 +250,7 @@
 				foreach (var p in subgroup.Parameters)
 				{
 					var element = _engine.FindElement(p.Key.DataMinerID, p.Key.ElementID);
-					var paramInfo = Utils.FetchParameterInfo(_engine, _parametersCache, p.Key.DataMinerID, p.Key.ElementID, p.Key.ParameterID);
+					var paramInfo = RadWidgets.Utils.FetchParameterInfo(_engine, _parametersCache, p.Key.DataMinerID, p.Key.ElementID, p.Key.ParameterID);
 					parameters.Add(new RadSubgroupSelectorParameter
 					{
 						Key = p.Key,

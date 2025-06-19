@@ -1,6 +1,6 @@
 ﻿namespace AddParameterGroup
 {
-	using RadWidgets;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 
 	public class MultiProtocolParameterSelector : MultiSelector<ProtocolParameterSelectorInfo>
@@ -18,6 +18,13 @@
 			Changed += (sender, args) => OnChanged();
 		}
 
+		public void SetProtocol(string protocolName, string protocolVersion)
+		{
+			var selector = ItemSelector as ProtocolParameterSelector;
+			selector.SetProtocol(protocolName, protocolVersion);
+			SetSelected(null);
+		}
+
 		protected override bool AddItem(ProtocolParameterSelectorInfo item)
 		{
 			if (!base.AddItem(item))
@@ -31,13 +38,6 @@
 
 			return true;
 		}
-
-		public void SetProtocol(string protocolName, string protocolVersion)
-        {
-			var selector = ItemSelector as ProtocolParameterSelector;
-			selector.SetProtocol(protocolName, protocolVersion);
-			SetSelected(null);
-        }
 
 		private void OnChanged()
 		{

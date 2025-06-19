@@ -1,8 +1,10 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets.Editors
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadWidgets.Widgets;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -149,7 +151,7 @@
 
 		private void UpdateDetailsLabel()
 		{
-			_detailsLabel.IsVisible = this.IsSectionVisible && GetDetailsLabelVisible();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 
 			if (_hasInvalidParameter)
 			{
@@ -189,7 +191,7 @@
 		private void OnGroupNameSectionValidationChanged()
 		{
 			UpdateIsValid();
-			_detailsLabel.IsVisible = this.IsSectionVisible && GetDetailsLabelVisible();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 		}
 	}
 }

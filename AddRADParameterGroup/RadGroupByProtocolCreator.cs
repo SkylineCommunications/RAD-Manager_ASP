@@ -6,6 +6,9 @@
 	using AddParameterGroup;
 	using RadUtils;
 	using RadWidgets;
+	using RadWidgets.Widgets;
+	using RadWidgets.Widgets.Editors;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;

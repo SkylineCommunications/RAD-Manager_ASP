@@ -1,7 +1,9 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets.Dialogs
 {
 	using System;
 	using System.Collections.Generic;
+	using RadWidgets.Widgets;
+	using RadWidgets.Widgets.Editors;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;

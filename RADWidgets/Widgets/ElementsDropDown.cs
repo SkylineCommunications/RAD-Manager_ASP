@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System.Linq;
 	using Skyline.DataMiner.Automation;

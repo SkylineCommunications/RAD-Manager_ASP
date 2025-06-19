@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System;
 	using System.Collections.Generic;
@@ -28,7 +28,7 @@
 
 		public void SetPossibleParameters(int dataMinerID, int elementID)
 		{
-			var protocol = Utils.FetchElementProtocol(_engine, dataMinerID, elementID);
+			var protocol = RadWidgets.Utils.FetchElementProtocol(_engine, dataMinerID, elementID);
 			SetPossibleParameters(protocol, p => p.IsRadSupported() && p.HasTrending());
 		}
 
@@ -40,7 +40,7 @@
 				return;
 			}
 
-			var protocol = Utils.FetchProtocol(_engine, protocolName, protocolVersion);
+			var protocol = RadWidgets.Utils.FetchProtocol(_engine, protocolName, protocolVersion);
 			SetPossibleParameters(protocol, p => p.IsRadSupported());
 		}
 

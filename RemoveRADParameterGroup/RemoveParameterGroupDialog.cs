@@ -6,6 +6,7 @@
 	using System.Reflection.Emit;
 	using RadUtils;
 	using RadWidgets;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;

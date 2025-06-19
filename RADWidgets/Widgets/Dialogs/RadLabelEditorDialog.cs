@@ -1,8 +1,10 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets.Dialogs
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadWidgets;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 

@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
@@ -10,8 +10,8 @@
         public RadSubgroupOptionsEditor(int columnCount, RadGroupOptions parentOptions, RadSubgroupOptions options = null)
         {
             _baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, options,
-				parentOptions?.GetAnomalyThresholdOrDefault() ?? RadGroupOptions.DefaultAnomalyThreshold,
-				parentOptions?.GetMinimalDurationOrDefault() ?? RadGroupOptions.DefaultMinimalDuration);
+				parentOptions?.GetAnomalyThresholdOrDefault() ?? RadGroupBaseOptions.DefaultAnomalyThreshold,
+				parentOptions?.GetMinimalDurationOrDefault() ?? RadGroupBaseOptions.DefaultMinimalDuration);
 
             AddSection(_baseOptionsEditor, 0, 0);
         }

@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets.Generic
 {
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
@@ -44,7 +44,7 @@
 		private void UpdateText()
 		{
 			if (_maxTextWidth.HasValue)
-				base.Text = string.Join("\n", RadWidgets.Utils.WordWrap(_text, _maxTextWidth.Value));
+				base.Text = string.Join("\n", _text.WordWrap(_maxTextWidth.Value));
 			else
 				base.Text = _text;
 		}
