@@ -15,8 +15,8 @@
 		public MultiParameterSelector(IEngine engine, ParametersCache parametersCache, IEnumerable<ParameterKey> parameters = null) :
 			base(new ParameterSelector(engine), null, "No parameters selected")
 		{
-			AddButtonTooltip = "Add the instance specified on the left to the parameter group.";
-			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the parameter group.";
+			AddButtonTooltip = "Add the instance specified on the left to the relational anomaly group.";
+			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the relational anomaly group.";
 
 			if (parameters != null)
 			{

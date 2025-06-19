@@ -17,7 +17,7 @@
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
-			Title = $"Edit group '{groupSettings.GroupName}'";
+			Title = $"Edit Group '{groupSettings.GroupName}'";
 			var parametersCache = new EngineParametersCache(engine);
 
 			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct().ToList();
@@ -56,7 +56,7 @@
 			if (_groupEditor.IsValid)
 			{
 				_okButton.IsEnabled = true;
-				_okButton.Tooltip = "Edit the selected parameter group as specified above";
+				_okButton.Tooltip = "Edit the selected relational anomaly group as specified above";
 			}
 			else
 			{

@@ -13,7 +13,7 @@
 		{
 			_checkBox = new CheckBox(groupID.GroupName)
 			{
-				Tooltip = $"Select to remove the parameter group '{groupID.GroupName}' from Relational Anomaly Detection.",
+				Tooltip = $"Select to remove the relational anomaly group '{groupID.GroupName}'.",
 				IsChecked = true,
 			};
 			_groupID = groupID;

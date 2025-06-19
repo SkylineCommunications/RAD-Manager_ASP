@@ -13,7 +13,7 @@
 	}
 
 	/// <summary>
-	/// A widget that allows the user to select whether to remove the entire shared model group or only specific subgroups from the parameter group.
+	/// A widget that allows the user to select whether to remove the entire shared model group or only specific subgroups from the relational anomaly group.
 	/// </summary>
 	public class SharedModelRemoveRadioButtonList : AGroupRemoveSection
 	{
@@ -54,12 +54,12 @@
 					if (string.IsNullOrEmpty(subgroup.Name))
 					{
 						checkBoxText = $"Unnamed subgroup on {Utils.Shorten(subgroup.ParameterDescription, textWrapWidth - textWrapIndentWidth - 20)}";
-						tooltip = $"Select to remove this subgroup from the parameter group {groupID.GroupName}.";
+						tooltip = $"Select to remove this subgroup from the relational anomaly group {groupID.GroupName}.";
 					}
 					else
 					{
 						checkBoxText = subgroup.Name;
-						tooltip = $"Select to remove the subgroup {subgroup.Name} from the parameter group {groupID.GroupName}.";
+						tooltip = $"Select to remove the subgroup {subgroup.Name} from the relational anomaly group {groupID.GroupName}.";
 					}
 
 					var checkBox = new CheckBox(checkBoxText)

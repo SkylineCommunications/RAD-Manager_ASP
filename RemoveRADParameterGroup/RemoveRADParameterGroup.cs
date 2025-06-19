@@ -31,7 +31,7 @@ public class Script
 			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to remove first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to remove first");
 				return;
 			}
 
@@ -65,7 +65,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		_app.Engine.ExitSuccess("Removing parameter group cancelled");
+		_app.Engine.ExitSuccess("Removing relational anomaly group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -84,7 +84,7 @@ public class Script
 			}
 			catch (Exception ex)
 			{
-				_app.Engine.GenerateInformation($"Failed to remove parameter group '{group.GroupName}': {ex}");
+				_app.Engine.GenerateInformation($"Failed to remove relational anomaly group '{group.GroupName}': {ex}");
 				failedGroups.Add(Tuple.Create(group.GroupName, ex));
 			}
 		}
@@ -104,11 +104,11 @@ public class Script
 
 		if (failedGroups.Count > 0)
 		{
-			var ex = new AggregateException("Failed to remove parameter group(s) from RAD configuration", failedGroups.Select(p => p.Item2));
+			var ex = new AggregateException("Failed to remove relational anomaly group(s) from RAD configuration", failedGroups.Select(p => p.Item2));
 			RadWidgets.Utils.ShowExceptionDialog(_app, $"Failed to remove {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex);
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully removed parameter group from RAD configuration");
+		_app.Engine.ExitSuccess("Successfully removed relational anomaly group from RAD configuration");
 	}
 }

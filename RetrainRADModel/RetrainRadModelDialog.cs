@@ -20,7 +20,7 @@
 			ShowScriptAbortPopup = false;
 			GroupID = groupID;
 
-			Title = $"Retrain model for parameter group '{groupInfo.GroupName}'";
+			Title = $"Retrain Model For Relational Anomaly Group '{groupInfo.GroupName}'";
 
 			var label = new Label($"Retrain the model using the following time ranges with normal behavior:");
 
@@ -45,7 +45,7 @@
 			_okButton = new Button("Retrain")
 			{
 				Style = ButtonStyle.CallToAction,
-				Tooltip = "Train the selected parameter group using the trend data in the time ranges selected above.",
+				Tooltip = "Train the selected relational anomaly group using the trend data in the time ranges selected above.",
 			};
 			_okButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 

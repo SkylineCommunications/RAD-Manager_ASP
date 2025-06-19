@@ -134,7 +134,7 @@
 
 		private void SetWidgetsForSingleGroup(RadGroupID groupID, IEnumerable<RadSubgroupID> subgroupIDs)
 		{
-			Title = "Remove parameter group";
+			Title = "Remove Relational Anomaly Group";
 
 			var groupInfo = FetchGroupInfo(groupID);
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
@@ -164,7 +164,7 @@
 			}
 			else
 			{
-				_label.Text = $"Are you sure you want to remove the parameter group '{groupID.GroupName}' from Relational Anomaly Detection?";
+				_label.Text = $"Are you sure you want to remove the relational anomaly group '{groupID.GroupName}'?";
 				SetYesNoButtonsVisible();
 				_extraGroupsToRemove.Add(groupID);
 			}
@@ -172,8 +172,8 @@
 
 		private void SetWidgetsForMultipleGroups(IEnumerable<IGrouping<RadGroupID, IRadGroupID>> parameterGroups)
 		{
-			Title = "Remove parameter groups";
-			_label.Text = "Are you sure you want to remove the following parameter groups from Relational Anomaly Detection?";
+			Title = "Remove Relational Anomaly Groups";
+			_label.Text = "Are you sure you want to remove the following relational anomaly groups?";
 			SetYesNoButtonsVisible();
 
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
@@ -219,8 +219,8 @@
 			}
 			catch (Exception e)
 			{
-				_engine.Log($"Failed to fetch group info for parameter group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
-				throw new DataMinerException("Failed to fetch group info for parameter group", e);
+				_engine.Log($"Failed to fetch group info for relational anomaly group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
+				throw new DataMinerException("Failed to fetch group info for relational anomaly group", e);
 			}
 		}
 

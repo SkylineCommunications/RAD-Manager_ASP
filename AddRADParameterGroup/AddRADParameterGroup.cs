@@ -58,7 +58,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		_app.Engine.ExitSuccess("Adding parameter group cancelled");
+		_app.Engine.ExitSuccess("Adding relational anomaly group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -77,19 +77,19 @@ public class Script
 			}
 			catch (Exception ex)
 			{
-				_app.Engine.GenerateInformation($"Failed to add parameter group '{group.GroupName}': {ex}");
+				_app.Engine.GenerateInformation($"Failed to add relational anomaly group '{group.GroupName}': {ex}");
 				failedGroups.Add(Tuple.Create(group.GroupName, ex));
 			}
 		}
 
 		if (failedGroups.Count > 0)
 		{
-			var ex = new AggregateException("Failed to add parameter group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
+			var ex = new AggregateException("Failed to add relational anomaly group(s) to RAD configuration", failedGroups.Select(p => p.Item2));
 			Utils.ShowExceptionDialog(_app, $"Failed to create {failedGroups.Select(p => p.Item1).HumanReadableJoin()}", ex, dialog);
 
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Successfully added relational anomaly group(s) to RAD configuration");
 	}
 }

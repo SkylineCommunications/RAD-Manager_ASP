@@ -19,7 +19,7 @@
 		{
 			_engine = engine;
 
-			string protocolNameTooltip = "Make a parameter group for each element that uses this connector.";
+			string protocolNameTooltip = "Make a relational anomaly group for each element that uses this connector.";
 			var protocolNameLabel = new Label("Connector")
 			{
 				Tooltip = protocolNameTooltip,
@@ -33,7 +33,7 @@
 			};
 			_protocolNameDropDown.Changed += (sender, args) => OnSelectedProtocolChanged();
 
-			string protocolVersionTooltip = "Make a parameter group for each element that uses this connector version.";
+			string protocolVersionTooltip = "Make a relational anomaly group for each element that uses this connector version.";
 			var protocolVersionLabel = new Label("Connector version")
 			{
 				Tooltip = protocolVersionTooltip,

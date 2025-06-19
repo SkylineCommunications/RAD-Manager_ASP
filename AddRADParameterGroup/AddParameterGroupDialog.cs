@@ -32,7 +32,7 @@
 		public AddParameterGroupDialog(IEngine engine) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
-			Title = "Add Parameter Group";
+			Title = "Add Relational Anomaly Group";
 
 			var addTypeLabel = new Label("What to add?")
 			{
@@ -108,11 +108,11 @@
 				_okButton.IsEnabled = true;
 				if (_addTypeDropDown.Selected == AddGroupType.Single || _addTypeDropDown.Selected == AddGroupType.SharedModel)
 				{
-					_okButton.Tooltip = "Add the parameter group specified above to the RAD configuration";
+					_okButton.Tooltip = "Add the relational anomaly group specified above to the RAD configuration";
 				}
 				else
 				{
-					_okButton.Tooltip = "Add the parameter group(s) specified above to the RAD configuration";
+					_okButton.Tooltip = "Add the relational anomaly group(s) specified above to the RAD configuration";
 				}
 			}
 			else
@@ -130,7 +130,7 @@
 				_groupByProtocolCreator.IsVisible = false;
 				_sharedModelGroupEditor.IsVisible = false;
 				_okButton.Text = "Add group";
-				_addTypeDropDown.Tooltip = "Add the parameter group specified below.";
+				_addTypeDropDown.Tooltip = "Add the relational anomaly group specified below.";
 				OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 			}
 			else if (_addTypeDropDown.Selected == AddGroupType.MultipleOnProtocol)
@@ -139,7 +139,7 @@
 				_groupByProtocolCreator.IsVisible = true;
 				_sharedModelGroupEditor.IsVisible = false;
 				_okButton.Text = "Add group(s)";
-				_addTypeDropDown.Tooltip = "Add a parameter group with the instances and options specified below for each element that uses the given connection and connector version.";
+				_addTypeDropDown.Tooltip = "Add a relational anomaly group with the instances and options specified below for each element that uses the given connection and connector version.";
 				OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 			}
 			else
@@ -148,7 +148,7 @@
 				_groupByProtocolCreator.IsVisible = false;
 				_sharedModelGroupEditor.IsVisible = true;
 				_okButton.Text = "Add group";
-				_addTypeDropDown.Tooltip = "Add a parameter group with multiple subgroups that share a single model.";
+				_addTypeDropDown.Tooltip = "Add a relational anomaly group with multiple subgroups that share a single model.";
 				OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 			}
 		}

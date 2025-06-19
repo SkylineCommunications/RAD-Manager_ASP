@@ -10,8 +10,8 @@
 		public MultiProtocolParameterSelector(string protocolName, string protocolVersion, IEngine engine) :
 			base(new ProtocolParameterSelector(protocolName, protocolVersion, engine), null, "No parameters selected")
 		{
-			AddButtonTooltip = "Add the instance specified on the left to the parameter groups.";
-			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the parameter groups.";
+			AddButtonTooltip = "Add the instance specified on the left to the relational anomaly groups.";
+			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the relational anomaly groups.";
 
 			var selector = ItemSelector as ProtocolParameterSelector;
 			selector.Changed += (sender, args) => OnChanged();

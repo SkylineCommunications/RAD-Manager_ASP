@@ -17,7 +17,7 @@
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
-			Title = $"Edit shared model group '{groupSettings.GroupName}'";
+			Title = $"Edit Shared Model Group '{groupSettings.GroupName}'";
 
 			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct().ToList();
 			var parametersCache = new EngineParametersCache(engine);

@@ -29,14 +29,14 @@ public class Script
 			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to retrain first");
 				return;
 			}
 
 			var parentGroups = groupIDs.Select(id => new RadGroupID(id.DataMinerID, id.GroupName)).Distinct();
 			if (parentGroups.Count() > 1)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple relational anomaly groups selected", "Please select a single relational anomaly group you want to retrain");
 				return;
 			}
 
@@ -72,7 +72,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		_app.Engine.ExitSuccess("Removing parameter group cancelled");
+		_app.Engine.ExitSuccess("Removing relational anomaly group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -91,7 +91,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to retrain relational anomaly group", ex, dialog);
 			return;
 		}
 

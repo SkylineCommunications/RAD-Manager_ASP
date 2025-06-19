@@ -87,14 +87,14 @@ public class Script
 		var groupIDs = Utils.ParseGroupIDParameter(_app);
 		if (groupIDs.Count == 0)
 		{
-			Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to edit first.");
+			Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to edit first.");
 			settings = null;
 			groupID = null;
 			return false;
 		}
 		else if (groupIDs.Count > 1)
 		{
-			Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to edit.");
+			Utils.ShowMessageDialog(_app, "Multiple relational anomaly groups selected", "Please select a single relational anomaly group you want to edit.");
 			settings = null;
 			groupID = null;
 			return false;
@@ -107,14 +107,14 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to fetch parameter group information", ex);
+			Utils.ShowExceptionDialog(_app, "Failed to fetch relational anomaly group information", ex);
 			settings = null;
 			return false;
 		}
 
 		if (settings?.Subgroups == null || settings.Subgroups.Count == 0)
 		{
-			Utils.ShowMessageDialog(_app, "No subgroups found", "The selected parameter group does not contain any subgroups to edit.");
+			Utils.ShowMessageDialog(_app, "No subgroups found", "The selected relational anomaly group does not contain any subgroups to edit.");
 			settings = null;
 			return false;
 		}
@@ -158,11 +158,11 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Successfully edit relational anomaly group");
 	}
 
 	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
@@ -200,11 +200,11 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to add parameter group(s) to RAD configuration", ex, dialog);
+			Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully added parameter group(s) to RAD configuration");
+		_app.Engine.ExitSuccess("Successfully editted relational anomaly group");
 	}
 
 	private void GetAddedAndRemovedSubgroups(List<RadSubgroupSettings> newSubgroups, List<RadSubgroupInfo> oldSubgroups,
@@ -246,6 +246,6 @@ public class Script
 
 	private void Dialog_Cancelled()
 	{
-		_app.Engine.ExitSuccess("Editing parameter group cancelled");
+		_app.Engine.ExitSuccess("Editing relational anomaly group cancelled");
 	}
 }

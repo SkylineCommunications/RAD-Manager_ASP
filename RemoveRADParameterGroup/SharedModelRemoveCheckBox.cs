@@ -5,7 +5,7 @@
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	/// <summary>
-	/// A widget that allows the user to select whether to remove the entire shared model group, only specific subgroups from the parameter group, or do nothing at all.
+	/// A widget that allows the user to select whether to remove the entire shared model group, only specific subgroups from the relational anomaly group, or do nothing at all.
 	/// </summary>
 	public class SharedModelRemoveCheckBox : AGroupRemoveSection
 	{
@@ -26,7 +26,7 @@
 		{
 			_checkBox = new CheckBox(groupID.GroupName)
 			{
-				Tooltip = $"Select to remove the parameter group '{groupID.GroupName}' or some of its subgroups.",
+				Tooltip = $"Select to remove the relational anomaly group '{groupID.GroupName}' or some of its subgroups.",
 				IsChecked = true,
 			};
 			_checkBox.Changed += (sender, args) => OnCheckBoxChanged();
