@@ -1,4 +1,4 @@
-﻿namespace AddParameterGroup
+﻿namespace AddRadParameterGroup.GroupByProtocolCreator
 {
 	using System;
 	using System.Collections.Generic;

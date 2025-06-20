@@ -16,7 +16,7 @@
 		public EditSubgroupDialog(IEngine engine, List<RadSubgroupSelectorItem> existingSubgroups, List<string> labels, RadSubgroupSelectorItem settings,
 			string groupNamePlaceHolder, RadGroupOptions parentOptions) : base(engine)
 		{
-			Title = string.IsNullOrEmpty(settings?.Name) ? "Edit subgroup" : $"Edit subgroup '{settings.Name}'";
+			Title = string.IsNullOrEmpty(settings?.Name) ? "Edit Subgroup" : $"Edit Subgroup '{settings.Name}'";
 			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, parentOptions, labels, groupNamePlaceHolder, settings);
 			_subgroupEditor.ValidationChanged += (sender, args) => OnSubgroupEditorValidationChanged();
 

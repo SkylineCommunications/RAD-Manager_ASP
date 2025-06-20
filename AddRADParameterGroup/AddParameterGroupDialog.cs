@@ -1,10 +1,10 @@
-﻿namespace AddParameterGroup
+﻿namespace AddRadParameterGroup
 {
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
 	using System.Linq;
-	using AddRadParameterGroup;
+	using AddRadParameterGroup.GroupByProtocolCreator;
 	using RadWidgets;
 	using RadWidgets.Widgets.Editors;
 	using Skyline.DataMiner.Automation;
@@ -25,7 +25,7 @@
 	{
 		private readonly EnumDropDown<AddGroupType> _addTypeDropDown;
 		private readonly RadGroupEditor _groupEditor;
-		private readonly RadGroupByProtocolCreator _groupByProtocolCreator;
+		private readonly GroupByProtocolCreatorWidget _groupByProtocolCreator;
 		private readonly RadSharedModelGroupEditor _sharedModelGroupEditor;
 		private readonly Button _okButton;
 
@@ -52,7 +52,7 @@
 			_groupEditor = new RadGroupEditor(engine, existingGroupNames, parametersCache);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
-			_groupByProtocolCreator = new RadGroupByProtocolCreator(engine, existingGroupNames, parametersCache);
+			_groupByProtocolCreator = new GroupByProtocolCreatorWidget(engine, existingGroupNames, parametersCache);
 			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
 			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames, parametersCache);

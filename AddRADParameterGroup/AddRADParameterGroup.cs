@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AddParameterGroup;
+using AddRadParameterGroup;
 using RadWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {

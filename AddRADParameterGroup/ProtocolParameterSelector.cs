@@ -1,4 +1,4 @@
-﻿namespace AddParameterGroup
+﻿namespace AddRadParameterGroup
 {
 	using RadWidgets.Widgets;
 	using RadWidgets.Widgets.Generic;

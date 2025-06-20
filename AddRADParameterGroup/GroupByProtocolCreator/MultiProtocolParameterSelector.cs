@@ -1,4 +1,4 @@
-﻿namespace AddParameterGroup
+﻿namespace AddRadParameterGroup.GroupByProtocolCreator
 {
 	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
