@@ -89,9 +89,9 @@
 			{
 				string label = string.IsNullOrWhiteSpace(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i];
 				if (i < _item.Parameters.Count && _item.Parameters[i] != null)
-					parameterTexts.Add($"  {label}: {_item.Parameters[i].ToString()}");
+					parameterTexts.Add($"\t{label}: {_item.Parameters[i].ToString()}");
 				else
-					parameterTexts.Add($"  {label}: Not set");
+					parameterTexts.Add($"\t{label}: Not set");
 			}
 
 			var parameterText = string.Join("\n", parameterTexts);
@@ -101,8 +101,8 @@
 			string minimalDurationText = _item.Options.MinimalDuration.HasValue ? $"{minimalDuration} minutes" : $"{minimalDuration} minutes (same as parent group)";
 			_detailsLabel.Text = $"Parameters:\n{parameterText}\n\n" +
 				$"Options:\n" +
-				$"  Anomaly threshold: {anomalyThresholdText}\n" +
-				$"  Minimal anomaly duration: {minimalDurationText}";
+				$"\tAnomaly threshold: {anomalyThresholdText}\n" +
+				$"\tMinimal anomaly duration: {minimalDurationText}";
 
 			UpdateVisibility();
 		}
