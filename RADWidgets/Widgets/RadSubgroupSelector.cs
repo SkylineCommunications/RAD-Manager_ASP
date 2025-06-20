@@ -282,7 +282,7 @@
 				return;
 			}
 
-			_subgroupViewer.SetItems(subgroups, selectedGroups.Select(g => g.ToString()).ToArray());
+			_subgroupViewer.SetItems(subgroups.OrderBy(s => s.DisplayName, StringComparer.OrdinalIgnoreCase).ToList(), selectedGroups.Select(g => g.ToString()).ToArray());
 		}
 
 		private void CalculateSubgroupsWithMissingParameters(List<RadSubgroupSelectorItem> subgroups)
