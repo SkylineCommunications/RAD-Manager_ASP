@@ -23,6 +23,7 @@
 		private List<string> _oldParameterLabels;
 		private List<string> _duplicatedParameterLabels;
 		private bool _hasMissingParameterLabels;
+		private bool _hasWhiteSpaceLabels;
 
 		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache,
 			RadGroupInfo settings = null, Guid? selectedSubgroup = null)
@@ -112,7 +113,8 @@
 		private void UpdateParameterLabelsValid()
 		{
 			_hasMissingParameterLabels = _parameterLabels.Any(s => !string.IsNullOrEmpty(s)) && _parameterLabels.Any(s => string.IsNullOrEmpty(s));
-			_duplicatedParameterLabels = _parameterLabels.Where(s => !string.IsNullOrEmpty(s))
+			_hasWhiteSpaceLabels = _parameterLabels.Any(s => !string.IsNullOrEmpty(s) && string.IsNullOrWhiteSpace(s));
+			_duplicatedParameterLabels = _parameterLabels.Where(s => !string.IsNullOrWhiteSpace(s))
 				.GroupBy(s => s, StringComparer.OrdinalIgnoreCase)
 				.Where(g => g.Count() > 1)
 				.Select(g => g.Key)
@@ -121,7 +123,7 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (!_subgroupSelector.IsValid || _hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0);
+			return _groupNameSection.IsValid && (!_subgroupSelector.IsValid || _hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0);
 		}
 
 		private void UpdateValidationText()
@@ -134,7 +136,7 @@
 			{
 				ValidationText = "Make sure all subgroup configurations are valid.";
 			}
-			else if (_hasMissingParameterLabels || _duplicatedParameterLabels.Count > 0)
+			else if (_hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0)
 			{
 				ValidationText = "Provide valid labels for the parameters.";
 			}
@@ -155,6 +157,10 @@
 			else if (_hasMissingParameterLabels)
 			{
 				_detailsLabel.Text = "Either provide a label for all parameters, or do not provide any labels.";
+			}
+			else if (_hasWhiteSpaceLabels)
+			{
+				_detailsLabel.Text = "Parameter labels cannot only contain whitespace characters.";
 			}
 			else if (_duplicatedParameterLabels.Count > 0)
 			{

@@ -62,6 +62,11 @@
 					_groupNameTextBox.ValidationText = string.Empty;
 				}
 			}
+			else if (string.IsNullOrWhiteSpace(_groupNameTextBox.Text))
+			{
+				_groupNameTextBox.ValidationState = UIValidationState.Invalid;
+				_groupNameTextBox.ValidationText = "Group name cannot only contain whitespace characters";
+			}
 			else if (_existingGroupNames.Any(s => string.Equals(_groupNameTextBox.Text, s, StringComparison.OrdinalIgnoreCase)))
 			{
 				_groupNameTextBox.ValidationState = UIValidationState.Invalid;

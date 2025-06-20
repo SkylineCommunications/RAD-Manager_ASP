@@ -60,6 +60,8 @@
 
 		public bool HasDuplicatedParameters { get; private set; }
 
+		public bool HasWhiteSpaceName => string.IsNullOrWhiteSpace(Name) && !string.IsNullOrEmpty(Name);
+
 		public RadSubgroupOptions Options { get; private set; }
 
 		public List<RadSubgroupSelectorParameter> Parameters { get; private set; }
@@ -106,6 +108,8 @@
 				return $"{DisplayName} (missing parameters)";
 			else if (HasDuplicatedParameters)
 				return $"{DisplayName} (duplicated parameters)";
+			else if (HasWhiteSpaceName)
+				return $"{DisplayName} (invalid name)";
 			else
 				return DisplayName;
 		}
@@ -128,6 +132,7 @@
 		private HashSet<string> _subgroupsWithMissingParameters;
 		private HashSet<string> _subgroupsWithDuplicatedParameters;
 		private List<string> _duplicatedSubgroupNames;
+		private List<string> _subgroupsWithWhitespaceNames;
 		private List<string> _subgroupsWithSameParameters;
 
 		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
@@ -304,6 +309,11 @@
 				.ToList();
 		}
 
+		private void CalculateSubgroupsWithWhitespaceNames(List<RadSubgroupSelectorItem> subgroups)
+		{
+			_subgroupsWithWhitespaceNames = subgroups.Where(s => s.HasWhiteSpaceName).Select(s => s.DisplayName).ToList();
+		}
+
 		/// <summary>
 		/// Check whether any two subgroups have exactly the same parameters. Stops as soon as it finds one collection of subgroups that have the same parameters.
 		/// </summary>
@@ -329,6 +339,11 @@
 			if (newSettings.HasDuplicatedParameters)
 				_subgroupsWithDuplicatedParameters.Add(newSettings.DisplayName);
 
+			if (oldSettings.HasWhiteSpaceName)
+				_subgroupsWithWhitespaceNames.Remove(oldSettings.DisplayName);
+			if (newSettings.HasWhiteSpaceName)
+				_subgroupsWithWhitespaceNames.Add(newSettings.DisplayName);
+
 			if (!string.Equals(newSettings.Name, oldSettings.Name))
 				CalculateDuplicatedSubgroupNames(subgroups);
 
@@ -343,6 +358,9 @@
 
 			if (newSettings.HasDuplicatedParameters)
 				_subgroupsWithDuplicatedParameters.Add(newSettings.DisplayName);
+
+			if (newSettings.HasWhiteSpaceName)
+				_subgroupsWithWhitespaceNames.Add(newSettings.DisplayName);
 
 			string newName = newSettings.Name;
 			if (!string.IsNullOrEmpty(newName) && subgroups.Count(s => string.Equals(s.Name, newName, StringComparison.OrdinalIgnoreCase)) >= 2)
@@ -387,6 +405,15 @@
 				return;
 			}
 
+			if (_subgroupsWithWhitespaceNames.Count > 0)
+			{
+				if (_subgroupsWithWhitespaceNames.Count == 1)
+					ValidationText = $"One subgroup name only contains whitespace characters. This is not allowed.";
+				else
+					ValidationText = $"Multiple subgroup names only contain whitespace characters. This is not allowed.";
+				return;
+			}
+
 			if (_subgroupsWithSameParameters.Count > 0)
 				ValidationText = $"The parameters of the subgroups {_subgroupsWithSameParameters.HumanReadableJoin()} are exactly the same. Provide unique parameters for each subgroup.";
 		}
@@ -408,6 +435,7 @@
 		{
 			CalculateSubgroupsWithDuplicatedParameters(subgroups);
 			CalculateSubgroupsWithMissingParameters(subgroups);
+			CalculateSubgroupsWithWhitespaceNames(subgroups);
 			CalculateDuplicatedSubgroupNames(subgroups);
 			CalculateSubgroupsWithSameParameters(subgroups);
 

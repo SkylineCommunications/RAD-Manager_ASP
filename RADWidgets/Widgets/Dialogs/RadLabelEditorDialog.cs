@@ -124,9 +124,26 @@
 				_okButton.Tooltip = "Set the parameter labels above. Note that before submitting the group, you should make sure to either provide a label for all parameters, or for none.";
 				return;
 			}
-			else if (!isEmpty)
+
+			if (!isEmpty)
 			{
 				// Here, a label is provided for all parameters
+				var whitespaceLabels = _labelEditors.Where(e => string.IsNullOrWhiteSpace(e.Label));
+				if (whitespaceLabels.Any())
+				{
+					_detailsLabel.Text = "Labels with only whitespace characters are not allowed.";
+					_detailsLabel.IsVisible = true;
+					_okButton.Tooltip = "Set the parameter labels above. Note that before submitting the group, you will have to fix all labels only containing whitespace characters.";
+
+					foreach (var e in whitespaceLabels)
+					{
+						e.ValidationState = UIValidationState.Invalid;
+						editor.ValidationText = "Labels with only whitespace characters are not allowed.";
+					}
+
+					return;
+				}
+
 				var duplicateLabels = _labelEditors.GroupBy(e => e.Label, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1);
 				if (duplicateLabels.Any())
 				{

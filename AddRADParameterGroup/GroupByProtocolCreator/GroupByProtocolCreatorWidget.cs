@@ -243,7 +243,7 @@
 
 		private void UpdateGroupPrefixCheckboxValidity()
 		{
-			if (string.IsNullOrEmpty(_groupPrefixTextBox.Text))
+			if (string.IsNullOrWhiteSpace(_groupPrefixTextBox.Text))
 			{
 				_groupPrefixTextBox.ValidationState = UIValidationState.Invalid;
 				_groupPrefixTextBox.ValidationText = _sharedModelCheckBox?.IsChecked == true ? "Provide a group name" : "Provide a group name prefix";

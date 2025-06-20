@@ -87,7 +87,7 @@
 			List<string> parameterTexts = new List<string>(_parameterLabels.Count);
 			for (int i = 0; i < _parameterLabels.Count; ++i)
 			{
-				string label = string.IsNullOrEmpty(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i];
+				string label = string.IsNullOrWhiteSpace(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i];
 				if (i < _item.Parameters.Count && _item.Parameters[i] != null)
 					parameterTexts.Add($"  {label}: {_item.Parameters[i].ToString()}");
 				else

@@ -34,7 +34,7 @@
 			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(parameterLabels.Count);
 			for (int i = 0; i < parameterLabels.Count; i++)
 			{
-				var label = new Label(string.IsNullOrEmpty(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]);
+				var label = new Label(string.IsNullOrWhiteSpace(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]);
 
 				RadSubgroupSelectorParameter parameter = null;
 				if (settings != null && i < settings.Parameters.Count)
