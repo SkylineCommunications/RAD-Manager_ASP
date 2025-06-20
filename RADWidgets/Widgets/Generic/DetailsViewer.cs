@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Skyline.DataMiner.Net.AutomationUI.Objects;
-using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-namespace RadWidgets.Widgets.Generic
+﻿namespace RadWidgets.Widgets.Generic
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+
 	public abstract class DetailsView<T> : VisibilitySection where T : SelectorItem
 	{
-		public abstract void ShowDetails(List<T> selection);
+		public abstract void ShowDetails(T selection);
 	}
 
 	public class SelectionChangedEventArgs<T> : EventArgs where T : SelectorItem
 	{
-		public SelectionChangedEventArgs(List<T> selection)
+		public SelectionChangedEventArgs(T selection)
 		{
 			Selection = selection;
 		}
 
-		public List<T> Selection { get; }
+		public T Selection { get; }
 	}
 
 	/// <summary>
@@ -26,70 +25,74 @@ namespace RadWidgets.Widgets.Generic
 	/// </summary>
 	public class DetailsViewer<T> : VisibilitySection where T : SelectorItem
 	{
-		private readonly TreeView _treeView;
+		private readonly RadioButtonList<T> _radioButtonsList;
 		private readonly DetailsView<T> _detailsView;
-		private List<T> _items;
 
 		public DetailsViewer(DetailsView<T> detailsView, List<T> items = null)
 		{
-			_treeView = new TreeView(new List<TreeViewItem>())
+			_radioButtonsList = new RadioButtonList<T>()
 			{
-				IsReadOnly = false,
 				MinWidth = 300,
 			};
-			_treeView.Changed += (sender, args) => OnTreeViewChanged();
+			_radioButtonsList.Changed += (sender, args) => OnRadioButtonsListChanged(args.Selected);
 
 			_detailsView = detailsView ?? throw new ArgumentNullException(nameof(detailsView));
 
 			SetItems(items);
 
-			AddWidget(_treeView, 0, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_radioButtonsList, 0, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top);
 			AddSection(_detailsView, 0, 1);
 		}
 
 		public event EventHandler<SelectionChangedEventArgs<T>> SelectionChanged;
 
-		public List<T> Items
+		public List<T> GetItems()
 		{
-			get => _items;
-			set => SetItems(value);
+			return _radioButtonsList.Options.Select(o => o.Value).ToList();
 		}
 
-		public void SetItems(List<T> items, params string[] selectedKeys)
+		public void SetItems(List<T> items, string selectedKey = null)
 		{
-			_items = items ?? new List<T>();
-
-			var treeViewItems = new List<TreeViewItem>(_items.Count);
-			List<T> selectedItems = new List<T>(selectedKeys.Length);
-			foreach (var item in _items)
+			if (items == null)
 			{
-				var key = item.GetKey();
-				var selected = selectedKeys.Contains(key);
-				var treeViewItem = new TreeViewItem(item.GetDisplayValue(), key)
-				{
-					IsChecked = selected,
-				};
-				treeViewItems.Add(treeViewItem);
-				if (selected)
-					selectedItems.Add(item);
+				_radioButtonsList.Options = new List<Option<T>>();
+				_detailsView.ShowDetails(null);
+				SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(null));
+				return;
 			}
 
-			_treeView.Items = treeViewItems;
-			_detailsView.ShowDetails(selectedItems);
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItems));
+			int? selectedIndex = null;
+			if (selectedKey != null)
+			{
+				for (int i = 0; i < items.Count; i++)
+				{
+					if (items[i].GetKey() == selectedKey)
+					{
+						selectedIndex = i;
+						break;
+					}
+				}
+			}
+
+			var options = items.Select(i => new Option<T>(i.GetDisplayValue(), i)).ToList();
+			_radioButtonsList.Options = options;
+			if (selectedIndex.HasValue)
+				_radioButtonsList.SelectedOption = options[selectedIndex.Value];
+
+			var selectedItem = selectedIndex.HasValue ? items[selectedIndex.Value] : null;
+			_detailsView.ShowDetails(selectedItem);
+			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItem));
 		}
 
-		public List<T> GetSelected()
+		public T GetSelected()
 		{
-			var selectedKeys = _treeView.Items.Where(i => i.IsChecked).Select(i => i.KeyValue).ToHashSet();
-			return _items.Where(i => selectedKeys.Contains(i.GetKey())).ToList();
+			return _radioButtonsList.Selected;
 		}
 
-		private void OnTreeViewChanged()
+		private void OnRadioButtonsListChanged(T selectedItem)
 		{
-			var selectedItems = GetSelected();
-			_detailsView.ShowDetails(selectedItems);
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItems));
+			_detailsView.ShowDetails(selectedItem);
+			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItem));
 		}
 	}
 }

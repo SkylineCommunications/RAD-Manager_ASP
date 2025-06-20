@@ -194,23 +194,26 @@
 
 		public List<RadSubgroupSettings> GetSubgroups()
 		{
-			return _subgroupViewer.Items.Select(s => s.ToRadSubgroupSettings(_parameterLabels)).ToList();
+			return _subgroupViewer.GetItems().Select(s => s.ToRadSubgroupSettings(_parameterLabels)).ToList();
 		}
 
 		public void UpdateParameterLabels(List<string> parameterLabels)
 		{
 			_parameterLabels = parameterLabels;
 			_subgroupDetailsView.SetParameterLabels(parameterLabels);
-			foreach (var item in _subgroupViewer.Items)
+
+			var newItems = _subgroupViewer.GetItems();
+			Guid? selectedID = _subgroupViewer.GetSelected()?.ID;
+			foreach (var item in newItems)
 				item.UpdateHasMissingParameters(_parameterLabels);
 
-			CalculateSubgroupsWithMissingParameters(_subgroupViewer.Items);
-			CalculateSubgroupsWithDuplicatedParameters(_subgroupViewer.Items);
-			CalculateSubgroupsWithSameParameters(_subgroupViewer.Items);
-			UpdateIsValid(_subgroupViewer.Items);
+			CalculateSubgroupsWithMissingParameters(newItems);
+			CalculateSubgroupsWithDuplicatedParameters(newItems);
+			CalculateSubgroupsWithSameParameters(newItems);
+			UpdateIsValid(newItems);
 
 			// We might need to append the missing parameters suffix to the display value, hence recalculate all items
-			UpdateSelectorTreeViewItems(_subgroupViewer.Items, _subgroupViewer.GetSelected().Select(i => i.ID).ToArray());
+			UpdateSelectorTreeViewItems(newItems, selectedID);
 		}
 
 		public void UpdateParentOptions(RadGroupOptions parentOptions)
@@ -221,7 +224,7 @@
 
 		private bool GetSubgroupsViewerVisible()
 		{
-			return GetSubgroupsViewerVisible(_subgroupViewer.Items);
+			return GetSubgroupsViewerVisible(_subgroupViewer.GetItems());
 		}
 
 		private bool GetSubgroupsViewerVisible(List<RadSubgroupSelectorItem> subgroups)
@@ -277,7 +280,7 @@
 			CalculateAndUpdateIsValid(items);
 		}
 
-		private void UpdateSelectorTreeViewItems(List<RadSubgroupSelectorItem> subgroups, params Guid[] selectedGroups)
+		private void UpdateSelectorTreeViewItems(List<RadSubgroupSelectorItem> subgroups, Guid? selectedGroup = null)
 		{
 			UpdateTreeViewAndLabelVisibility(subgroups);
 			if (subgroups.Count == 0)
@@ -287,7 +290,7 @@
 				return;
 			}
 
-			_subgroupViewer.SetItems(subgroups.OrderBy(s => s.DisplayName, StringComparer.OrdinalIgnoreCase).ToList(), selectedGroups.Select(g => g.ToString()).ToArray());
+			_subgroupViewer.SetItems(subgroups.OrderBy(s => s.DisplayName, StringComparer.OrdinalIgnoreCase).ToList(), selectedGroup?.ToString());
 		}
 
 		private void CalculateSubgroupsWithMissingParameters(List<RadSubgroupSelectorItem> subgroups)
@@ -444,13 +447,13 @@
 
 		private void OnEditButtonPressed()
 		{
-			var settings = _subgroupViewer.GetSelected()?.FirstOrDefault();
+			var settings = _subgroupViewer.GetSelected();
 			if (settings == null)
 				return;
 			var placeHolderName = string.IsNullOrEmpty(settings.Name) ? settings.DisplayName : GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 
 			InteractiveController app = new InteractiveController(_engine);
-			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _subgroupViewer.Items.ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
+			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as EditSubgroupDialog;
@@ -460,7 +463,7 @@
 				app.Stop();
 
 				var newSettings = d.GetSettings();
-				var newItems = _subgroupViewer.Items.Select(s => s.ID == settings.ID ? newSettings : s).ToList();
+				var newItems = _subgroupViewer.GetItems().Select(s => s.ID == settings.ID ? newSettings : s).ToList();
 				if (string.IsNullOrEmpty(newSettings.Name) && !string.IsNullOrEmpty(settings.Name))
 					_unnamedSubgroupCount++;
 
@@ -475,8 +478,11 @@
 
 		private void OnRemoveButtonPressed()
 		{
-			var selectedKeys = _subgroupViewer.GetSelected().Select(i => i.ID).ToList();
-			var newItems = _subgroupViewer.Items.Where(s => !selectedKeys.Contains(s.ID)).ToList();
+			var selectedKey = _subgroupViewer.GetSelected()?.ID;
+			if (selectedKey == null)
+				return;
+
+			var newItems = _subgroupViewer.GetItems().Where(s => s.ID != selectedKey).ToList();
 			CalculateAndUpdateIsValid(newItems);
 			UpdateSelectorTreeViewItems(newItems);
 		}
@@ -485,7 +491,7 @@
 		{
 			var placeHolderName = GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 			InteractiveController app = new InteractiveController(_engine);
-			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _subgroupViewer.Items.ToList(), _parameterLabels, _parentOptions, placeHolderName);
+			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, _parentOptions, placeHolderName);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as AddSubgroupDialog;
@@ -495,7 +501,7 @@
 				app.Stop();
 
 				var newSettings = d.GetSettings();
-				var newItems = _subgroupViewer.Items;
+				var newItems = _subgroupViewer.GetItems();
 				newItems.Add(newSettings);
 				if (string.IsNullOrEmpty(newSettings.Name))
 					_unnamedSubgroupCount++;
@@ -509,10 +515,10 @@
 			app.ShowDialog(dialog);
 		}
 
-		private void OnSubgroupViewerSelectionChanged(List<RadSubgroupSelectorItem> selection)
+		private void OnSubgroupViewerSelectionChanged(RadSubgroupSelectorItem selection)
 		{
-			_editButton.IsEnabled = selection?.Count == 1;
-			_removeButton.IsEnabled = selection?.Count >= 1;
+			_editButton.IsEnabled = selection != null;
+			_removeButton.IsEnabled = selection != null;
 		}
 	}
 }

@@ -56,23 +56,15 @@
 			UpdateDetails();
 		}
 
-		public override void ShowDetails(List<RadSubgroupSelectorItem> selectedItems)
+		public override void ShowDetails(RadSubgroupSelectorItem selectedItem)
 		{
-			if (selectedItems == null || selectedItems.Count == 0)
+			_item = selectedItem;
+			if (selectedItem == null)
 			{
 				ShowError("No subgroup selected");
-				_item = null;
 				return;
 			}
 
-			if (selectedItems.Count > 1)
-			{
-				ShowError("Multiple subgroups selected.");
-				_item = null;
-				return;
-			}
-
-			_item = selectedItems.FirstOrDefault();
 			UpdateDetails();
 		}
 

@@ -46,23 +46,15 @@
 			AddWidget(_errorLabel, 3, 0, GetGroupErrorVisible, verticalAlignment: VerticalAlignment.Top);
 		}
 
-		public override void ShowDetails(List<T> selectedItems)
+		public override void ShowDetails(T selectedItem)
 		{
-			if (selectedItems == null || selectedItems.Count == 0)
+			_item = selectedItem;
+			if (selectedItem == null)
 			{
 				ShowError("No group selected");
-				_item = null;
 				return;
 			}
 
-			if (selectedItems.Count > 1)
-			{
-				ShowError("Multiple groups selected.");
-				_item = null;
-				return;
-			}
-
-			_item = selectedItems.FirstOrDefault();
 			_groupNameLabel.Text = _item.GroupByProtocolInfo.GroupName;
 			_invalidSelectionLabel.Text = string.Empty;
 
