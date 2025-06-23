@@ -17,10 +17,10 @@
 		private readonly MarginLabel _detailsLabel;
 		private readonly Guid _subgroupID;
 		private readonly List<RadSubgroupSelectorItem> _otherSubgroups;
+		private readonly List<string> _parameterLabels;
 		private bool _hasInvalidParameter;
 		private bool _hasDuplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
-		private readonly List<string> _parameterLabels;
 
 		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
 			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)

@@ -418,6 +418,7 @@
 				ValidationText = $"The parameters of the subgroups {_subgroupsWithSameParameters.HumanReadableJoin()} are exactly the same. Provide unique parameters for each subgroup.";
 				return true;
 			}
+
 			return false;
 		}
 
