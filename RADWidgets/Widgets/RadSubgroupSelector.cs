@@ -426,18 +426,23 @@
 		{
 			if (UpdateValidationTextForNrOfSubgroups(subgroups))
 				return;
-			else if (UpdateValidationTextForMissingParameters())
+
+			if (UpdateValidationTextForMissingParameters())
 				return;
-			else if (UpdateValidationTextForDuplicatedParameters())
+
+			if (UpdateValidationTextForDuplicatedParameters())
 				return;
-			else if (UpdateValidationTextForDuplicatedNames())
+
+			if (UpdateValidationTextForDuplicatedNames())
 				return;
-			else if (UpdateValidationTextForWhitespaceNames())
+
+			if (UpdateValidationTextForWhitespaceNames())
 				return;
-			else if (UpdateValidationTextForSameParameters())
+
+			if (UpdateValidationTextForSameParameters())
 				return;
-			else
-				ValidationText = string.Empty; // No validation errors found
+
+			ValidationText = string.Empty; // No validation errors found
 		}
 
 		/// <summary>

@@ -32,9 +32,9 @@
 				_otherSubgroups = _otherSubgroups.Where(s => s.ID != settings.ID).ToList();
 
 			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(_parameterLabels.Count);
-			for (int i = 0; i < parameterLabels.Count; i++)
+			for (int i = 0; i < _parameterLabels.Count; i++)
 			{
-				var label = new Label(string.IsNullOrWhiteSpace(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]);
+				var label = new Label(string.IsNullOrWhiteSpace(_parameterLabels[i]) ? $"Parameter {i + 1}" : _parameterLabels[i]);
 
 				RadSubgroupSelectorParameter parameter = null;
 				if (settings != null && i < settings.Parameters.Count)
