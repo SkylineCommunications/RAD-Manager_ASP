@@ -6,15 +6,16 @@
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class GroupsByProtocolDetailsView<T> : DetailsView<T> where T : RadGroupByProtocolDetailsItem
+	public class GroupsByProtocolDetailsView : DetailsView<RadGroupByProtocolDetailsItem>
 	{
 		private readonly Label _groupNameLabel;
 		private readonly Label _invalidSelectionLabel;
 		private readonly Label _detailsLabel;
 		private readonly WrappingLabel _errorLabel;
-		private T _item;
+		private RadGroupByProtocolDetailsItem _item;
 
-		public GroupsByProtocolDetailsView()
+		//TODO: for subgroup viewer: check spacing of invalid selection label
+		public GroupsByProtocolDetailsView(int columnSpan)
 		{
 			_groupNameLabel = new Label()
 			{
@@ -40,13 +41,13 @@
 				MaxTextWidth = 200,
 			};
 
-			AddWidget(_groupNameLabel, 0, 2, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 1, 2, () => !GetGroupDetailsVisible(), verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 2, 2, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_errorLabel, 3, 2, GetGroupErrorVisible, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_groupNameLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
+			AddWidget(_invalidSelectionLabel, new WidgetLayout(1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
+			AddWidget(_detailsLabel, new WidgetLayout(2, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
+			AddWidget(_errorLabel, new WidgetLayout(3, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupErrorVisible);
 		}
 
-		public override void ShowDetails(T selectedItem, List<T> allItems)
+		public override void ShowDetails(RadGroupByProtocolDetailsItem selectedItem, List<RadGroupByProtocolDetailsItem> allItems)
 		{
 			_item = selectedItem;
 			if (selectedItem == null)

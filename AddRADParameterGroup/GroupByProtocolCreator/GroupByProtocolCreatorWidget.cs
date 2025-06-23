@@ -13,6 +13,36 @@
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
+	public enum SeparateGroupsByProtocolStatus
+	{
+		ValidGroup,
+		MoreThanMaxInstances,
+		LessThanMinInstances,
+		GroupNameExists,
+	}
+
+	public enum SharedModelGroupByProtocolStatus
+	{
+		ValidSubgroup,
+		MoreThanMaxInstances,
+		LessThanMinInstances,
+
+		/// <summary>
+		/// There is at least one item in the parameter selector that matches multiple instances.
+		/// </summary>
+		SelectorItemWithMultipleInstances,
+
+		/// <summary>
+		/// There is at least one item in the parameter selector that matches no instances.
+		/// </summary>
+		SelectorItemWithNoInstances,
+
+		/// <summary>
+		/// There are two items in the parameter selector that match the same instance.
+		/// </summary>
+		SelectorItemWithDuplicateInstances,
+	}
+
 	public class ParameterSelectorItemMatchInfo
 	{
 		public ProtocolParameterSelectorInfo SelectorItem { get; set; }
@@ -78,7 +108,6 @@
 
 	public class GroupByProtocolCreatorWidget : VisibilitySection
 	{
-		private const int WordWrapLength = 150;
 		private readonly IEngine _engine;
 		private readonly ParametersCache _parametersCache;
 		private readonly List<string> _existingGroupNames;
@@ -88,8 +117,7 @@
 		private readonly CheckBox _sharedModelCheckBox = null;
 		private readonly RadGroupOptionsEditor _optionsEditor;
 		private readonly WhiteSpace _whiteSpace;
-		private readonly Label _detailsLabel;
-		private readonly Button _moreDetailsButton;
+		private readonly GroupsByProtocolDetails _groupDetails;
 
 		public GroupByProtocolCreatorWidget(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache)
 		{
@@ -132,10 +160,7 @@
 				MinHeight = 10,
 			};
 
-			_detailsLabel = new Label();
-
-			_moreDetailsButton = new Button("More details...");
-			_moreDetailsButton.Pressed += (sender, args) => OnMoreDetailsButtonPressed();
+			_groupDetails = new GroupsByProtocolDetails(_parameterSelector.ColumnCount);
 
 			OnGroupPrefixTextBoxChanged();
 			OnSharedModelCheckBoxChanged();
@@ -157,14 +182,13 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_whiteSpace, row, 0, 1, 1, GetDetailsLabelVisibility);
+			AddWidget(_whiteSpace, row, 0, 1, 1, GetGroupDetailsVisibility);
 
 			// Note: this whitespace is to avoid the second column from being very narrow, since there is no widget that only spans that column.
 			AddWidget(parameterProtocolWhiteSpace, row, 1);
 			row += 1;
 
-			AddWidget(_detailsLabel, row, 0, 1, _parameterSelector.ColumnCount - 1, GetDetailsLabelVisibility);
-			AddWidget(_moreDetailsButton, new WidgetLayout(row, _parameterSelector.ColumnCount - 1, verticalAlignment: VerticalAlignment.Bottom), GetDetailsLabelVisibility);
+			AddSection(_groupDetails, row, 0, GetGroupDetailsVisibility);
 		}
 
 		public event EventHandler<EventArgs> ValidationChanged;
@@ -222,7 +246,7 @@
 			}
 
 			var groups = GetSelectedGroupInfo();
-			UpdateDetailsLabel(groups);
+			UpdateGroupDetails(groups);
 
 			bool hasValidGroup;
 			if (_sharedModelCheckBox?.IsChecked == true)
@@ -322,127 +346,25 @@
 			return groups;
 		}
 
-		private bool GetDetailsLabelVisibility()
+		private bool GetGroupDetailsVisibility()
 		{
 			return _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
 		}
 
-		private void UpdateDetailsLabelVisibility()
+		private void UpdateGroupDetailsVisibility()
 		{
-			var visibility = GetDetailsLabelVisibility();
+			var visibility = GetGroupDetailsVisibility();
 			_whiteSpace.IsVisible = IsSectionVisible && visibility;
-			_detailsLabel.IsVisible = IsSectionVisible && visibility;
-			_moreDetailsButton.IsVisible = IsSectionVisible && visibility;
+			_groupDetails.IsVisible = IsSectionVisible && visibility;
 		}
 
-		private List<string> GetValidGroupsText(IEnumerable<GroupByProtocolInfo> groups, bool sharedModelGroup)
+		private void UpdateGroupDetails(List<GroupByProtocolInfo> groupInfos)
 		{
-			List<string> lines = new List<string>();
-
-			int nrOfGroups = groups.Count();
-			if (nrOfGroups <= 0)
-				return lines;
-
-			if (sharedModelGroup)
-				lines.Add($"The following shared model group will be created with {nrOfGroups} subgroups:");
-			else
-				lines.Add($"The following groups will be created:");
-			lines.AddRange(groups.OrderBy(g => g.GroupName)
-				.Take(5)
-				.SelectMany(g => $"'{g.GroupName}' with {g.ParameterKeys.Count} instances".WordWrap(WordWrapLength))
-				.Select(s => $"\t{s}"));
-			if (nrOfGroups > 6)
-				lines.Add($"\t... and {nrOfGroups - 5} more");
-
-			return lines;
-		}
-
-		private List<string> GetGroupsWithInvalidNamesText(IEnumerable<GroupByProtocolInfo> groups)
-		{
-			if (!groups.Any())
-				return new List<string>();
-
-			return $"Not overwriting existing groups with the same name for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
-		}
-
-		private List<string> GetGroupsWithTooFewInstancesText(IEnumerable<GroupByProtocolInfo> groups)
-		{
-			if (!groups.Any())
-				return new List<string>();
-
-			return $"Too few instances have been selected, or instances are not trended for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
-		}
-
-		private List<string> GetGroupsWithTooManyInstancesText(IEnumerable<GroupByProtocolInfo> groups)
-		{
-			if (!groups.Any())
-				return new List<string>();
-
-			return $"Too many instances have been selected for {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
-		}
-
-		private List<string> GetGroupsWithMultipleInstancesPerSelectorItemText(IEnumerable<GroupByProtocolInfo> groups)
-		{
-			if (!groups.Any())
-				return new List<string>();
-
-			return $"Some parameters selected above match multiple instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
-		}
-
-		private List<string> GetGroupsWithNoInstancesPerSelectorItemText(IEnumerable<GroupByProtocolInfo> groups)
-		{
-			if (!groups.Any())
-				return new List<string>();
-
-			return $"Some parameters selected above match no instances on {groups.Select(s => $"'{s.ElementName}'").HumanReadableJoin()}".WordWrap(WordWrapLength);
-		}
-
-		private List<string> GetDetailsLabelTextSharedModelGroup(List<GroupByProtocolInfo> groups)
-		{
-			List<string> lines = new List<string>();
-			lines.AddRange(GetValidGroupsText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.ValidSubgroup), false));
-			lines.AddRange(GetGroupsWithTooFewInstancesText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.LessThanMinInstances)));
-			lines.AddRange(GetGroupsWithTooManyInstancesText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.MoreThanMaxInstances)));
-			lines.AddRange(GetGroupsWithMultipleInstancesPerSelectorItemText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.SelectorItemWithMultipleInstances)));
-			lines.AddRange(GetGroupsWithNoInstancesPerSelectorItemText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.SelectorItemWithNoInstances)));
-			lines.AddRange(GetGroupsWithInvalidNamesText(groups.Where(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.SelectorItemWithDuplicateInstances)));
-
-			return lines;
-		}
-
-		private List<string> GetDetailsLabelTextSeparateGroups(List<GroupByProtocolInfo> groups)
-		{
-			List<string> lines = new List<string>();
-			lines.AddRange(GetValidGroupsText(groups.Where(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.ValidGroup), false));
-			lines.AddRange(GetGroupsWithInvalidNamesText(groups.Where(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.GroupNameExists)));
-			lines.AddRange(GetGroupsWithTooFewInstancesText(groups.Where(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.LessThanMinInstances)));
-			lines.AddRange(GetGroupsWithTooManyInstancesText(groups.Where(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.MoreThanMaxInstances)));
-
-			return lines;
-		}
-
-		private void UpdateDetailsLabel(List<GroupByProtocolInfo> groups)
-		{
-			UpdateDetailsLabelVisibility();
-			if (!_detailsLabel.IsVisible)
+			UpdateGroupDetailsVisibility();
+			if (!_groupDetails.IsVisible)
 				return;
 
-			if (groups.Count == 0)
-			{
-				_detailsLabel.Text = "No elements found on the selected protocol";
-				_moreDetailsButton.IsEnabled = false;
-				return;
-			}
-
-			bool sharedModelGroup = _sharedModelCheckBox?.IsChecked ?? false;
-			List<string> lines;
-			if (sharedModelGroup)
-				lines = GetDetailsLabelTextSharedModelGroup(groups);
-			else
-				lines = GetDetailsLabelTextSeparateGroups(groups);
-
-			_detailsLabel.Text = string.Join("\n", lines);
-			_moreDetailsButton.IsEnabled = true;
+			_groupDetails.Update(groupInfos, _sharedModelCheckBox?.IsChecked == true);
 		}
 
 		private void OnParameterSelectorChanged()
@@ -453,7 +375,7 @@
 		private void OnGroupPrefixTextBoxChanged()
 		{
 			UpdateGroupPrefixCheckboxValidity();
-			UpdateDetailsLabelVisibility();
+			UpdateGroupDetailsVisibility();
 			UpdateIsValid();
 		}
 
@@ -475,25 +397,8 @@
 			}
 
 			UpdateGroupPrefixCheckboxValidity();
-			UpdateDetailsLabelVisibility();
+			UpdateGroupDetailsVisibility();
 			UpdateIsValid();
-		}
-
-		private void OnMoreDetailsButtonPressed()
-		{
-			var groups = GetSelectedGroupInfo();
-			if (groups.Count <= 0)
-				return;
-
-			GroupsByProtocolDetailsDialog dialog;
-			if (_sharedModelCheckBox?.IsChecked ?? false)
-				dialog = new SharedModelGroupsByProtocolDetailsDialog(_engine, groups);
-			else
-				dialog = new SeparateGroupsByProtocolDetailsDialog(_engine, groups);
-
-			InteractiveController app = new InteractiveController(_engine);
-			dialog.Closed += (sender, args) => app.Stop();
-			app.ShowDialog(dialog);
 		}
 	}
 }
