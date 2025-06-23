@@ -175,8 +175,8 @@
 			AddSection(_subgroupViewer, 0, 0);
 			AddWidget(addButton, 0, 2);
 			AddWidget(_editButton, 1, 2, 2, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_removeButton, 3, 2, 2, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(whitespace, 5, 2);
+			AddWidget(_removeButton, 3, 2, 1, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(whitespace, 4, 2);
 		}
 
 		public event EventHandler ValidationChanged;
@@ -258,14 +258,6 @@
 
 		private void UpdateSelectorTreeViewItems(List<RadSubgroupSelectorItem> subgroups, Guid? selectedGroup = null)
 		{
-			if (subgroups.Count == 0)
-			{
-				//TODO: probably display the text for no subgroups
-				_editButton.IsEnabled = false;
-				_removeButton.IsEnabled = false;
-				return;
-			}
-
 			_subgroupViewer.SetItems(subgroups.OrderBy(s => s.DisplayName, StringComparer.OrdinalIgnoreCase).ToList(), selectedGroup?.ToString());
 		}
 

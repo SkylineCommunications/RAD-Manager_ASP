@@ -14,7 +14,6 @@
 		private readonly WrappingLabel _errorLabel;
 		private RadGroupByProtocolDetailsItem _item;
 
-		//TODO: for subgroup viewer: check spacing of invalid selection label
 		public GroupsByProtocolDetailsView(int columnSpan)
 		{
 			_groupNameLabel = new Label()

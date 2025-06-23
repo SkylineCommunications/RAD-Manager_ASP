@@ -39,9 +39,11 @@
 				MinWidth = 400,
 			};
 
-			AddWidget(_groupNameLabel, 0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 2, 0, 2, columnSpan, verticalAlignment: VerticalAlignment.Top);
+			UpdateVisibility();
+
+			AddWidget(_groupNameLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
+			AddWidget(_invalidSelectionLabel, new WidgetLayout(1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
+			AddWidget(_detailsLabel, new WidgetLayout(2, 0, 2, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
 		}
 
 		public void SetParameterLabels(List<string> parameterLabels)
