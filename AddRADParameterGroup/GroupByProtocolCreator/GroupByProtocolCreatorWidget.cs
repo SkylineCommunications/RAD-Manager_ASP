@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Runtime.Remoting.Channels;
 	using RadUtils;
 	using RadWidgets;
 	using RadWidgets.Widgets;
@@ -146,10 +145,6 @@
 			AddWidget(_groupPrefixTextBox, row, 1, 1, _parameterSelector.ColumnCount - 1);
 			++row;
 
-			// Note: this whitespace is to avoid the second column from being very narrow, since there is no widget that only spans that column.
-			AddWidget(parameterProtocolWhiteSpace, row, 1);
-			++row;
-
 			AddSection(_parameterSelector, row, 0);
 			row += _parameterSelector.RowCount;
 
@@ -162,7 +157,9 @@
 			AddSection(_optionsEditor, row, 0);
 			row += _optionsEditor.RowCount;
 
-			AddWidget(_whiteSpace, row, 0, 1, _parameterSelector.ColumnCount, GetDetailsLabelVisibility);
+			AddWidget(_whiteSpace, row, 0, 1, 1, GetDetailsLabelVisibility);
+			// Note: this whitespace is to avoid the second column from being very narrow, since there is no widget that only spans that column.
+			AddWidget(parameterProtocolWhiteSpace, row, 1);
 			row += 1;
 
 			AddWidget(_detailsLabel, row, 0, 1, _parameterSelector.ColumnCount - 1, GetDetailsLabelVisibility);
