@@ -4,11 +4,12 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using RadUtils;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class RadParametersDropDown : DropDown<ParameterInfo>
+	public class RadParametersDropDown : TooltipDropDown<ParameterInfo>
 	{
 		private readonly IEngine _engine;
 
@@ -18,7 +19,6 @@
 
 			IsDisplayFilterShown = true;
 			IsSorted = true;
-			Changed += (sender, args) => OnChanged();
 		}
 
 		public void ClearPossibleParameters()
@@ -53,11 +53,6 @@
 			}
 
 			Options = protocol.Parameters.Where(p => predicate(p)).OrderBy(p => p.DisplayName).Select(p => new Option<ParameterInfo>(p.DisplayName, p));
-		}
-
-		private void OnChanged()
-		{
-			Tooltip = Selected?.DisplayName ?? string.Empty;
 		}
 	}
 }

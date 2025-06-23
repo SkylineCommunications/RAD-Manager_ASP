@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
@@ -13,7 +14,7 @@
 		private readonly IEngine _engine;
 		private readonly ElementsDropDown _elementsDropDown;
 		private readonly RadParametersDropDown _parametersDropDown;
-		private readonly DropDown<DynamicTableIndex> _instanceDropDown;
+		private readonly TooltipDropDown<DynamicTableIndex> _instanceDropDown;
 		private UIValidationState _validationState = UIValidationState.Valid;
 		private string _validationText = string.Empty;
 
@@ -30,7 +31,7 @@
 			_parametersDropDown.Changed += (sender, args) => OnParametersDropDownChanged();
 
 			var instanceLabel = new Label("Display key");
-			_instanceDropDown = new DropDown<DynamicTableIndex>()
+			_instanceDropDown = new TooltipDropDown<DynamicTableIndex>()
 			{
 				IsDisplayFilterShown = true,
 				IsSorted = true,

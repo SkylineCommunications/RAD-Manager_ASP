@@ -25,7 +25,7 @@
 	/// </summary>
 	public class DetailsViewer<T> : VisibilitySection where T : SelectorItem
 	{
-		private readonly DropDown<T> _dropDown;
+		private readonly TooltipDropDown<T> _dropDown;
 		private readonly DetailsView<T> _detailsView;
 
 		public DetailsViewer(DetailsView<T> detailsView, string labelText = null, List<T> items = null)
@@ -34,7 +34,7 @@
 			if (!string.IsNullOrEmpty(labelText))
 				label = new Label(labelText);
 
-			_dropDown = new DropDown<T>()
+			_dropDown = new TooltipDropDown<T>()
 			{
 				IsDisplayFilterShown = true,
 			};
