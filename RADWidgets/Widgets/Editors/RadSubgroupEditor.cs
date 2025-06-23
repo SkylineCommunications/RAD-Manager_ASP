@@ -31,7 +31,7 @@
 			if (settings != null)
 				_otherSubgroups = _otherSubgroups.Where(s => s.ID != settings.ID).ToList();
 
-			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(parameterLabels.Count);
+			_parameterSelectors = new List<Tuple<Label, ParameterInstanceSelector>>(_parameterLabels.Count);
 			for (int i = 0; i < parameterLabels.Count; i++)
 			{
 				var label = new Label(string.IsNullOrWhiteSpace(parameterLabels[i]) ? $"Parameter {i + 1}" : parameterLabels[i]);

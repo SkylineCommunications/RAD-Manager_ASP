@@ -340,53 +340,103 @@
 			CalculateSubgroupsWithSameParameters(subgroups);
 		}
 
-		private void UpdateValidationText(List<RadSubgroupSelectorItem> subgroups)
+		private bool UpdateValidationTextForNrOfSubgroups(List<RadSubgroupSelectorItem> subgroups)
 		{
-			ValidationText = string.Empty;
 			if (subgroups.Count < MinNrOfSubgroups || subgroups.Count > MaxNrOfSubgroups)
 			{
 				ValidationText = $"The number of subgroups must be between {MinNrOfSubgroups} and {MaxNrOfSubgroups}.";
-				return;
+				return true;
 			}
 
+			return false;
+		}
+
+		private bool UpdateValidationTextForMissingParameters()
+		{
 			if (_subgroupsWithMissingParameters.Count > 0)
 			{
 				if (_subgroupsWithMissingParameters.Count == 1)
 					ValidationText = $"Subgroup {_subgroupsWithMissingParameters.First()} is missing parameters.";
 				else
 					ValidationText = $"Subgroups {_subgroupsWithMissingParameters.HumanReadableJoin()} are missing parameters.";
-				return;
+
+				return true;
 			}
 
+			return false;
+		}
+
+		private bool UpdateValidationTextForDuplicatedParameters()
+		{
 			if (_subgroupsWithDuplicatedParameters.Count > 0)
 			{
 				if (_subgroupsWithDuplicatedParameters.Count == 1)
 					ValidationText = $"Subgroup {_subgroupsWithDuplicatedParameters.First()} has duplicated parameters.";
 				else
 					ValidationText = $"Subgroups {_subgroupsWithDuplicatedParameters.HumanReadableJoin()} have duplicated parameters.";
-				return;
+
+				return true;
 			}
 
+			return false;
+		}
+
+		private bool UpdateValidationTextForDuplicatedNames()
+		{
 			if (_duplicatedSubgroupNames.Count > 0)
 			{
 				if (_duplicatedSubgroupNames.Count == 1)
 					ValidationText = $"The name {_duplicatedSubgroupNames.First()} is used by multiple subgroups.";
 				else
 					ValidationText = $"The names {_duplicatedSubgroupNames.HumanReadableJoin()} are used by multiple subgroups.";
-				return;
+
+				return true;
 			}
 
+			return false;
+		}
+
+		private bool UpdateValidationTextForWhitespaceNames()
+		{
 			if (_subgroupsWithWhitespaceNames.Count > 0)
 			{
 				if (_subgroupsWithWhitespaceNames.Count == 1)
 					ValidationText = $"One subgroup name only contains whitespace characters. This is not allowed.";
 				else
 					ValidationText = $"Multiple subgroup names only contain whitespace characters. This is not allowed.";
-				return;
+
+				return true;
 			}
 
+			return false;
+		}
+
+		private bool UpdateValidationTextForSameParameters()
+		{
 			if (_subgroupsWithSameParameters.Count > 0)
+			{
 				ValidationText = $"The parameters of the subgroups {_subgroupsWithSameParameters.HumanReadableJoin()} are exactly the same. Provide unique parameters for each subgroup.";
+				return true;
+			}
+			return false;
+		}
+
+		private void UpdateValidationText(List<RadSubgroupSelectorItem> subgroups)
+		{
+			if (UpdateValidationTextForNrOfSubgroups(subgroups))
+				return;
+			else if (UpdateValidationTextForMissingParameters())
+				return;
+			else if (UpdateValidationTextForDuplicatedParameters())
+				return;
+			else if (UpdateValidationTextForDuplicatedNames())
+				return;
+			else if (UpdateValidationTextForWhitespaceNames())
+				return;
+			else if (UpdateValidationTextForSameParameters())
+				return;
+			else
+				ValidationText = string.Empty; // No validation errors found
 		}
 
 		/// <summary>
