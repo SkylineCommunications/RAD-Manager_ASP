@@ -16,7 +16,7 @@
 		private RadGroupOptions _parentOptions;
 		private RadSubgroupSelectorItem _item;
 
-		public RadSubgroupDetailsView(List<string> parameterLabels, RadGroupOptions parentOptions)
+		public RadSubgroupDetailsView(int columnSpan, List<string> parameterLabels, RadGroupOptions parentOptions)
 		{
 			_parameterLabels = parameterLabels ?? new List<string>();
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
@@ -39,9 +39,9 @@
 				MinWidth = 400,
 			};
 
-			AddWidget(_groupNameLabel, 0, 0, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 1, 0, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 2, 0, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_groupNameLabel, 0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_invalidSelectionLabel, 1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_detailsLabel, 2, 0, 2, columnSpan, verticalAlignment: VerticalAlignment.Top);
 		}
 
 		public void SetParameterLabels(List<string> parameterLabels)
@@ -56,8 +56,14 @@
 			UpdateDetails();
 		}
 
-		public override void ShowDetails(RadSubgroupSelectorItem selectedItem)
+		public override void ShowDetails(RadSubgroupSelectorItem selectedItem, List<RadSubgroupSelectorItem> allItems)
 		{
+			if (allItems == null || !allItems.Any())
+			{
+				ShowError("Add a subgroup by selecting 'Add subgroup...' on the right");
+				return;
+			}
+
 			_item = selectedItem;
 			if (selectedItem == null)
 			{

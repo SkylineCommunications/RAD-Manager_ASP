@@ -46,7 +46,7 @@
 			AddWidget(_errorLabel, 3, 0, GetGroupErrorVisible, verticalAlignment: VerticalAlignment.Top);
 		}
 
-		public override void ShowDetails(T selectedItem)
+		public override void ShowDetails(T selectedItem, List<T> allItems)
 		{
 			_item = selectedItem;
 			if (selectedItem == null)

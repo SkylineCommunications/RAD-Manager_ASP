@@ -46,7 +46,7 @@
 			if (validGroups.Count > 0)
 			{
 				var validLabel = new Label("The following relational anomaly groups will be created for the following elements:");
-				var validGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), validGroups);
+				var validGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), items: validGroups);
 				columnCount = validGroupsViewer.ColumnCount;
 
 				AddWidget(validLabel, row, 0, 1, validGroupsViewer.ColumnCount);
@@ -70,7 +70,7 @@
 			if (invalidGroups.Count > 0)
 			{
 				var invalidLabel = new Label("Relational anomaly groups can not be created for the following elements:");
-				var invalidGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), invalidGroups);
+				var invalidGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), items: invalidGroups);
 				columnCount = invalidGroupsViewer.ColumnCount;
 
 				AddWidget(invalidLabel, row, 0, 1, invalidGroupsViewer.ColumnCount);

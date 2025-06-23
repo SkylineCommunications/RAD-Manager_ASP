@@ -120,7 +120,6 @@
 		public const int MinNrOfSubgroups = 2;
 		public const int MaxNrOfSubgroups = 2500;
 		private readonly IEngine _engine;
-		private readonly Label _noSubgroupsLabel;
 		private readonly DetailsViewer<RadSubgroupSelectorItem> _subgroupViewer;
 		private readonly RadSubgroupDetailsView _subgroupDetailsView;
 		private readonly Button _editButton;
@@ -143,14 +142,9 @@
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
 			_parametersCache = parametersCache;
 
-			_noSubgroupsLabel = new Label("Add a subgroup by selecting 'Add subgroup...' below")
-			{
-				MinWidth = 600,
-			};
+			_subgroupDetailsView = new RadSubgroupDetailsView(2, parameterLabels, parentOptions);
 
-			_subgroupDetailsView = new RadSubgroupDetailsView(parameterLabels, parentOptions);
-
-			_subgroupViewer = new DetailsViewer<RadSubgroupSelectorItem>(_subgroupDetailsView);
+			_subgroupViewer = new DetailsViewer<RadSubgroupSelectorItem>(_subgroupDetailsView, "Subgroups");
 			_subgroupViewer.SelectionChanged += (sender, args) => OnSubgroupViewerSelectionChanged(args.Selection);
 
 			_editButton = new Button("Edit subgroup...")
@@ -178,12 +172,11 @@
 
 			SetSubgroups(subgroups, selectedSubgroup);
 
-			AddWidget(_noSubgroupsLabel, 0, 0, 1, _subgroupViewer.ColumnCount, () => !GetSubgroupsViewerVisible());
-			AddSection(_subgroupViewer, 1, 0, GetSubgroupsViewerVisible);
-			AddWidget(_editButton, 0, 2, 3, 1, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_removeButton, 3, 2, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(whitespace, 4, 2);
-			AddWidget(addButton, 5, 2);
+			AddSection(_subgroupViewer, 0, 0);
+			AddWidget(addButton, 0, 2);
+			AddWidget(_editButton, 1, 2, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_removeButton, 3, 2, 2, 1, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(whitespace, 5, 2);
 		}
 
 		public event EventHandler ValidationChanged;
@@ -220,23 +213,6 @@
 		{
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
 			_subgroupDetailsView.SetParentOptions(parentOptions);
-		}
-
-		private bool GetSubgroupsViewerVisible()
-		{
-			return GetSubgroupsViewerVisible(_subgroupViewer.GetItems());
-		}
-
-		private bool GetSubgroupsViewerVisible(List<RadSubgroupSelectorItem> subgroups)
-		{
-			return subgroups.Count > 0;
-		}
-
-		private void UpdateTreeViewAndLabelVisibility(List<RadSubgroupSelectorItem> subgroups)
-		{
-			bool subgroupsViewerVisible = GetSubgroupsViewerVisible(subgroups);
-			_noSubgroupsLabel.IsVisible = IsSectionVisible && !subgroupsViewerVisible;
-			_subgroupViewer.IsVisible = IsSectionVisible && subgroupsViewerVisible;
 		}
 
 		private string GetSubgroupPlaceHolderName(int count)
@@ -282,9 +258,9 @@
 
 		private void UpdateSelectorTreeViewItems(List<RadSubgroupSelectorItem> subgroups, Guid? selectedGroup = null)
 		{
-			UpdateTreeViewAndLabelVisibility(subgroups);
 			if (subgroups.Count == 0)
 			{
+				//TODO: probably display the text for no subgroups
 				_editButton.IsEnabled = false;
 				_removeButton.IsEnabled = false;
 				return;

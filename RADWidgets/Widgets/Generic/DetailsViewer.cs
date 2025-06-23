@@ -7,7 +7,7 @@
 
 	public abstract class DetailsView<T> : VisibilitySection where T : SelectorItem
 	{
-		public abstract void ShowDetails(T selection);
+		public abstract void ShowDetails(T selection, List<T> allItems);
 	}
 
 	public class SelectionChangedEventArgs<T> : EventArgs where T : SelectorItem
@@ -25,38 +25,51 @@
 	/// </summary>
 	public class DetailsViewer<T> : VisibilitySection where T : SelectorItem
 	{
-		private readonly RadioButtonList<T> _radioButtonsList;
+		private readonly DropDown<T> _dropDown;
 		private readonly DetailsView<T> _detailsView;
 
-		public DetailsViewer(DetailsView<T> detailsView, List<T> items = null)
+		public DetailsViewer(DetailsView<T> detailsView, string labelText = null, List<T> items = null)
 		{
-			_radioButtonsList = new RadioButtonList<T>()
+			Label label = null;
+			if (!string.IsNullOrEmpty(labelText))
+				label = new Label(labelText);
+
+			_dropDown = new DropDown<T>()
 			{
-				MinWidth = 300,
+				IsDisplayFilterShown = true,
 			};
-			_radioButtonsList.Changed += (sender, args) => OnRadioButtonsListChanged(args.Selected);
+			_dropDown.Changed += (sender, args) => OnRadioButtonsListChanged(args.Selected);
 
 			_detailsView = detailsView ?? throw new ArgumentNullException(nameof(detailsView));
 
 			SetItems(items);
 
-			AddWidget(_radioButtonsList, 0, 0, _detailsView.RowCount, 1, verticalAlignment: VerticalAlignment.Top);
-			AddSection(_detailsView, 0, 1);
+			if (label != null)
+			{
+				AddWidget(label, 0, 0);
+				AddWidget(_dropDown, 0, 1, 1, _detailsView.ColumnCount - 1);
+			}
+			else
+			{
+				AddWidget(_dropDown, 0, 0, 1, _detailsView.ColumnCount);
+			}
+
+			AddSection(_detailsView, 1, 0);
 		}
 
 		public event EventHandler<SelectionChangedEventArgs<T>> SelectionChanged;
 
 		public List<T> GetItems()
 		{
-			return _radioButtonsList.Options.Select(o => o.Value).ToList();
+			return _dropDown.Options.Select(o => o.Value).ToList();
 		}
 
 		public void SetItems(List<T> items, string selectedKey = null)
 		{
 			if (items == null)
 			{
-				_radioButtonsList.Options = new List<Option<T>>();
-				_detailsView.ShowDetails(null);
+				_dropDown.Options = new List<Option<T>>();
+				_detailsView.ShowDetails(null, new List<T>());
 				SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(null));
 				return;
 			}
@@ -75,23 +88,23 @@
 			}
 
 			var options = items.Select(i => new Option<T>(i.GetDisplayValue(), i)).ToList();
-			_radioButtonsList.Options = options;
+			_dropDown.Options = options;
 			if (selectedIndex.HasValue)
-				_radioButtonsList.SelectedOption = options[selectedIndex.Value];
+				_dropDown.SelectedOption = options[selectedIndex.Value];
 
 			var selectedItem = selectedIndex.HasValue ? items[selectedIndex.Value] : null;
-			_detailsView.ShowDetails(selectedItem);
+			_detailsView.ShowDetails(selectedItem, items);
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItem));
 		}
 
 		public T GetSelected()
 		{
-			return _radioButtonsList.Selected;
+			return _dropDown.Selected;
 		}
 
 		private void OnRadioButtonsListChanged(T selectedItem)
 		{
-			_detailsView.ShowDetails(selectedItem);
+			_detailsView.ShowDetails(selectedItem, GetItems());
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItem));
 		}
 	}
