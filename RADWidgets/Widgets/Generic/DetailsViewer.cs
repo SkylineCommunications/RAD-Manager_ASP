@@ -21,8 +21,9 @@
 	}
 
 	/// <summary>
-	/// Widget consisting of a list on the left (represented by a tree view) and a section viewing the details on the right.
+	/// Widget consisting of a dropdown and a section viewing the details on the under it.
 	/// </summary>
+	/// <typeparam name="T"> The type of the items in the dropdown and details view.</typeparam>
 	public class DetailsViewer<T> : VisibilitySection where T : SelectorItem
 	{
 		private readonly TooltipDropDown<T> _dropDown;

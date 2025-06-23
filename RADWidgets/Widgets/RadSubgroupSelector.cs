@@ -206,7 +206,7 @@
 			UpdateIsValid(newItems);
 
 			// We might need to append the missing parameters suffix to the display value, hence recalculate all items
-			UpdateSelectorTreeViewItems(newItems, selectedID);
+			UpdateSubgroupViewerItems(newItems, selectedID);
 		}
 
 		public void UpdateParentOptions(RadGroupOptions parentOptions)
@@ -225,7 +225,7 @@
 			List<RadSubgroupSelectorItem> items = new List<RadSubgroupSelectorItem>(subgroups?.Count ?? 0);
 			if (subgroups == null)
 			{
-				UpdateSelectorTreeViewItems(items);
+				UpdateSubgroupViewerItems(items);
 				CalculateAndUpdateIsValid(items);
 				return;
 			}
@@ -250,13 +250,13 @@
 			}
 
 			if (selectedSubgroup.HasValue)
-				UpdateSelectorTreeViewItems(items, selectedSubgroup.Value);
+				UpdateSubgroupViewerItems(items, selectedSubgroup.Value);
 			else
-				UpdateSelectorTreeViewItems(items);
+				UpdateSubgroupViewerItems(items);
 			CalculateAndUpdateIsValid(items);
 		}
 
-		private void UpdateSelectorTreeViewItems(List<RadSubgroupSelectorItem> subgroups, Guid? selectedGroup = null)
+		private void UpdateSubgroupViewerItems(List<RadSubgroupSelectorItem> subgroups, Guid? selectedGroup = null)
 		{
 			_subgroupViewer.SetItems(subgroups.OrderBy(s => s.DisplayName, StringComparer.OrdinalIgnoreCase).ToList(), selectedGroup?.ToString());
 		}
@@ -298,7 +298,7 @@
 				_subgroupsWithSameParameters = new List<string>();
 		}
 
-		private void CalculateAndUpdateIsValidOnEditedSubgroup(List<RadSubgroupSelectorItem> subgroups, RadSubgroupSelectorItem newSettings, RadSubgroupSelectorItem oldSettings)
+		private void CalculateIsValidOnEditedSubgroup(List<RadSubgroupSelectorItem> subgroups, RadSubgroupSelectorItem newSettings, RadSubgroupSelectorItem oldSettings)
 		{
 			if (oldSettings.HasMissingParameters)
 				_subgroupsWithMissingParameters.Remove(oldSettings.DisplayName);
@@ -322,7 +322,7 @@
 				CalculateSubgroupsWithSameParameters(subgroups);
 		}
 
-		private void CalculateAndUpdateIsValidOnAddedSubgroup(List<RadSubgroupSelectorItem> subgroups, RadSubgroupSelectorItem newSettings)
+		private void CalculateIsValidOnAddedSubgroup(List<RadSubgroupSelectorItem> subgroups, RadSubgroupSelectorItem newSettings)
 		{
 			if (newSettings.HasMissingParameters)
 				_subgroupsWithMissingParameters.Add(newSettings.DisplayName);
@@ -435,8 +435,8 @@
 				if (string.IsNullOrEmpty(newSettings.Name) && !string.IsNullOrEmpty(settings.Name))
 					_unnamedSubgroupCount++;
 
-				UpdateSelectorTreeViewItems(newItems, settings.ID);
-				CalculateAndUpdateIsValidOnEditedSubgroup(newItems, newSettings, settings);
+				UpdateSubgroupViewerItems(newItems, settings.ID);
+				CalculateIsValidOnEditedSubgroup(newItems, newSettings, settings);
 				UpdateIsValid(newItems);
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();
@@ -452,7 +452,7 @@
 
 			var newItems = _subgroupViewer.GetItems().Where(s => s.ID != selectedKey).ToList();
 			CalculateAndUpdateIsValid(newItems);
-			UpdateSelectorTreeViewItems(newItems);
+			UpdateSubgroupViewerItems(newItems);
 		}
 
 		private void OnAddButtonPressed()
@@ -474,9 +474,9 @@
 				if (string.IsNullOrEmpty(newSettings.Name))
 					_unnamedSubgroupCount++;
 
-				CalculateAndUpdateIsValidOnAddedSubgroup(newItems, newSettings);
+				CalculateIsValidOnAddedSubgroup(newItems, newSettings);
 				UpdateIsValid(newItems);
-				UpdateSelectorTreeViewItems(newItems, newSettings.ID);
+				UpdateSubgroupViewerItems(newItems, newSettings.ID);
 			};
 			dialog.Cancelled += (sender, args) => app.Stop();
 
