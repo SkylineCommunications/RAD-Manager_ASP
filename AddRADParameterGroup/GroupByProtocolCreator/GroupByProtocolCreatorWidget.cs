@@ -206,7 +206,7 @@
 				var subgroups = new List<RadSubgroupSettings>(groupInfos.Count);
 				foreach (var g in groupInfos)
 				{
-					if (g.SeparateGroupStatus != SeparateGroupsByProtocolStatus.ValidGroup)
+					if (g.SharedModelGroupStatus != SharedModelGroupByProtocolStatus.ValidSubgroup)
 						continue;
 
 					var subgroup = new RadSubgroupSettings(g.GroupName, Guid.NewGuid(),
@@ -222,7 +222,7 @@
 				var groups = new List<RadGroupSettings>(groupInfos.Count);
 				foreach (var g in groupInfos)
 				{
-					if (g.SharedModelGroupStatus != SharedModelGroupByProtocolStatus.ValidSubgroup)
+					if (g.SeparateGroupStatus != SeparateGroupsByProtocolStatus.ValidGroup)
 						continue;
 
 					var subgroup = new RadSubgroupSettings(g.GroupName, Guid.NewGuid(),
