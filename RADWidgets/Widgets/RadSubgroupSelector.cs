@@ -117,7 +117,7 @@
 
 	public class RadSubgroupSelector : VisibilitySection
 	{
-		public const int MinNrOfSubgroups = 2;
+		public const int MinNrOfSubgroups = 1;
 		public const int MaxNrOfSubgroups = 2500;
 		private readonly IEngine _engine;
 		private readonly DetailsViewer<RadSubgroupSelectorItem> _subgroupViewer;
