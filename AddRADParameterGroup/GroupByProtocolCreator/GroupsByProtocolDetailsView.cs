@@ -40,10 +40,10 @@
 				MaxTextWidth = 200,
 			};
 
-			AddWidget(_groupNameLabel, 0, 0, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_invalidSelectionLabel, 1, 0, () => !GetGroupDetailsVisible(), verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_detailsLabel, 2, 0, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
-			AddWidget(_errorLabel, 3, 0, GetGroupErrorVisible, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_groupNameLabel, 0, 2, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_invalidSelectionLabel, 1, 2, () => !GetGroupDetailsVisible(), verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_detailsLabel, 2, 2, GetGroupDetailsVisible, verticalAlignment: VerticalAlignment.Top);
+			AddWidget(_errorLabel, 3, 2, GetGroupErrorVisible, verticalAlignment: VerticalAlignment.Top);
 		}
 
 		public override void ShowDetails(T selectedItem, List<T> allItems)

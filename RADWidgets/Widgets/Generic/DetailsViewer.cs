@@ -92,7 +92,7 @@
 			if (selectedIndex.HasValue)
 				_dropDown.SelectedOption = options[selectedIndex.Value];
 
-			var selectedItem = selectedIndex.HasValue ? items[selectedIndex.Value] : null;
+			var selectedItem = _dropDown.Selected;
 			_detailsView.ShowDetails(selectedItem, items);
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs<T>(selectedItem));
 		}

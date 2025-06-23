@@ -158,6 +158,7 @@
 			row += _optionsEditor.RowCount;
 
 			AddWidget(_whiteSpace, row, 0, 1, 1, GetDetailsLabelVisibility);
+
 			// Note: this whitespace is to avoid the second column from being very narrow, since there is no widget that only spans that column.
 			AddWidget(parameterProtocolWhiteSpace, row, 1);
 			row += 1;

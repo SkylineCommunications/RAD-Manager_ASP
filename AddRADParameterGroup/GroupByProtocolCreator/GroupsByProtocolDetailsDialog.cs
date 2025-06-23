@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -41,51 +42,43 @@
 			var validGroups = GetValidItems(groups);
 			var invalidGroups = GetInvalidItems(groups);
 
-			int row = 0;
-			int columnCount = 1;
-			if (validGroups.Count > 0)
-			{
-				var validLabel = new Label("The following relational anomaly groups will be created for the following elements:");
-				var validGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), items: validGroups);
-				columnCount = validGroupsViewer.ColumnCount;
-
-				AddWidget(validLabel, row, 0, 1, validGroupsViewer.ColumnCount);
-				row++;
-
-				AddSection(validGroupsViewer, row, 0);
-				row += validGroupsViewer.RowCount;
-			}
-
+			string labelText;
 			if (validGroups.Count > 0 && invalidGroups.Count > 0)
 			{
-				var whitespace = new WhiteSpace()
-				{
-					MinHeight = 10,
-				};
-
-				AddWidget(whitespace, row, 0);
-				row++;
+				labelText = $"Relational anomaly groups will be created for {validGroups.Count} elements, but no group will be created for {invalidGroups.Count}. Select an element " +
+					$"below to see more details.";
 			}
-
-			if (invalidGroups.Count > 0)
+			else if (validGroups.Count > 0)
 			{
-				var invalidLabel = new Label("Relational anomaly groups can not be created for the following elements:");
-				var invalidGroupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), items: invalidGroups);
-				columnCount = invalidGroupsViewer.ColumnCount;
-
-				AddWidget(invalidLabel, row, 0, 1, invalidGroupsViewer.ColumnCount);
-				row++;
-
-				AddSection(invalidGroupsViewer, row, 0);
-				row += invalidGroupsViewer.RowCount;
+				labelText = $"Relational anomaly groups will be created for {validGroups.Count} elements. Select an element below to see more details.";
 			}
+			else if (invalidGroups.Count > 0)
+			{
+				labelText = $"Relational anomaly groups can not be created for {invalidGroups.Count} elements. Select an element below to see more details.";
+			}
+			else
+			{
+				labelText = "No elements for the selected protocol found.";
+			}
+
+			var label = new WrappingLabel(labelText, 120);
+
+			var groupsViewer = new DetailsViewer<T>(new GroupsByProtocolDetailsView<T>(), "Element", validGroups.Concat(invalidGroups).ToList());
 
 			var closeButton = new Button("Close")
 			{
 				Style = ButtonStyle.CallToAction,
 			};
 			closeButton.Pressed += (sender, args) => Closed?.Invoke(this, EventArgs.Empty);
-			AddWidget(closeButton, row, 0, 1, columnCount);
+
+			int row = 0;
+			AddWidget(label, 0, 0, 1, groupsViewer.ColumnCount);
+			row++;
+
+			AddSection(groupsViewer, 1, 0);
+			row += groupsViewer.RowCount;
+
+			AddWidget(closeButton, row, 0, 1, groupsViewer.ColumnCount);
 		}
 
 		public override event EventHandler Closed;
