@@ -40,7 +40,7 @@
 			_hasAllSubgroups = hasAllSubgroups;
 
 			_radioButtonList = new EnumRadioButtonList<SharedModelGroupRemoveMode>(v => GetRadioButtonText(v, subgroupInfos, textWrapWidth));
-			_radioButtonList.Selected = SharedModelGroupRemoveMode.SubgroupsOnly;
+			_radioButtonList.Selected = hasAllSubgroups ? SharedModelGroupRemoveMode.EntireGroup : SharedModelGroupRemoveMode.SubgroupsOnly;
 			_radioButtonList.Changed += (sender, args) => OnRadioButtonListChanged();
 
 			_subgroupCheckBoxes = new List<Tuple<RadSubgroupID, CheckBox>>();
