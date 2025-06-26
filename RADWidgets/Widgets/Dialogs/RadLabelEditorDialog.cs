@@ -35,7 +35,7 @@
 
 		public event EventHandler Changed;
 
-		public string Label => _textBox.Text;
+		public string Label => _textBox.Text?.Trim();
 
 		public UIValidationState ValidationState
 		{
