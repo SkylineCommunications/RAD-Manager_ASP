@@ -20,7 +20,7 @@
 			Title = $"Edit Group '{groupSettings.GroupName}'";
 			var parametersCache = new EngineParametersCache(engine);
 
-			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct().ToList();
+			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			_groupEditor = new RadGroupEditor(engine, groupNames, parametersCache, groupSettings);
 			_groupEditor.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 

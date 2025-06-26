@@ -52,7 +52,7 @@
 
 		public IEnumerable<ParameterKey> GetSelectedParameters()
 		{
-			return GetSelected().SelectMany(i => i.GetParameterKeys()).Distinct();
+			return GetSelected().SelectMany(i => i.GetParameterKeys()).Distinct(new ParameterKeyEqualityComparer());
 		}
 
 		protected override bool AddItem(ParameterSelectorInfo item)
