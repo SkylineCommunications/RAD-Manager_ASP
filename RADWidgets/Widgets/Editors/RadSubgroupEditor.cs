@@ -78,6 +78,8 @@
 
 		public event EventHandler ValidationChanged;
 
+		public bool IsNameValid => _groupNameSection.IsValid;
+
 		public bool IsValid { get; private set; }
 
 		public string ValidationText { get; private set; }

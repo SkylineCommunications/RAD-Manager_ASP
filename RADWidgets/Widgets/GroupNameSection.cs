@@ -39,7 +39,7 @@
 
 		public event EventHandler ValidationChanged;
 
-		public string GroupName => _groupNameTextBox.Text;
+		public string GroupName => _groupNameTextBox.Text?.Trim();
 
 		public string GroupNamePlaceHolder => _groupNameTextBox.PlaceHolder;
 
@@ -67,7 +67,7 @@
 				_groupNameTextBox.ValidationState = UIValidationState.Invalid;
 				_groupNameTextBox.ValidationText = "Group name cannot only contain whitespace characters";
 			}
-			else if (_existingGroupNames.Any(s => string.Equals(_groupNameTextBox.Text, s, StringComparison.OrdinalIgnoreCase)))
+			else if (_existingGroupNames.Any(s => string.Equals(_groupNameTextBox.Text?.Trim(), s, StringComparison.OrdinalIgnoreCase)))
 			{
 				_groupNameTextBox.ValidationState = UIValidationState.Invalid;
 				_groupNameTextBox.ValidationText = "Group name already exists";

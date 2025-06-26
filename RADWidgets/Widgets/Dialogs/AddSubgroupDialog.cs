@@ -51,7 +51,12 @@
 
 		private void OnSubgroupEditorValidationChanged()
 		{
-			if (_subgroupEditor.IsValid)
+			_okButton.IsEnabled = _subgroupEditor.IsNameValid;
+			if (!_subgroupEditor.IsNameValid)
+			{
+				_okButton.Tooltip = "Provide a valid group name";
+			}
+			else if (_subgroupEditor.IsValid)
 			{
 				_okButton.Tooltip = "Create a subgroup with the specified settings.";
 			}
