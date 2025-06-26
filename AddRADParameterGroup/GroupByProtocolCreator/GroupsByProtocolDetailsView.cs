@@ -8,7 +8,6 @@
 
 	public class GroupsByProtocolDetailsView : DetailsView<RadGroupByProtocolDetailsItem>
 	{
-		private readonly Label _groupNameLabel;
 		private readonly Label _invalidSelectionLabel;
 		private readonly Label _detailsLabel;
 		private readonly WrappingLabel _errorLabel;
@@ -16,12 +15,6 @@
 
 		public GroupsByProtocolDetailsView(int columnSpan)
 		{
-			_groupNameLabel = new Label()
-			{
-				Tooltip = "The name of the selected group.",
-				Style = TextStyle.Heading,
-			};
-
 			_invalidSelectionLabel = new Label()
 			{
 				Tooltip = "Invalid selection.",
@@ -40,10 +33,9 @@
 				MaxTextWidth = 200,
 			};
 
-			AddWidget(_groupNameLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
-			AddWidget(_invalidSelectionLabel, new WidgetLayout(1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
-			AddWidget(_detailsLabel, new WidgetLayout(2, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
-			AddWidget(_errorLabel, new WidgetLayout(3, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupErrorVisible);
+			AddWidget(_invalidSelectionLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
+			AddWidget(_detailsLabel, new WidgetLayout(1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
+			AddWidget(_errorLabel, new WidgetLayout(2, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupErrorVisible);
 		}
 
 		public override void ShowDetails(RadGroupByProtocolDetailsItem selectedItem, List<RadGroupByProtocolDetailsItem> allItems)
@@ -55,7 +47,6 @@
 				return;
 			}
 
-			_groupNameLabel.Text = _item.GroupByProtocolInfo.GroupName;
 			_invalidSelectionLabel.Text = string.Empty;
 
 			List<string> lines = new List<string>() { "Matching parameters:" };
@@ -93,7 +84,6 @@
 
 		private void ShowError(string text)
 		{
-			_groupNameLabel.Text = string.Empty;
 			_invalidSelectionLabel.Text = text;
 			_detailsLabel.Text = string.Empty;
 
@@ -114,7 +104,6 @@
 		{
 			bool groupDetailsVisible = GetGroupDetailsVisible();
 			_detailsLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
-			_groupNameLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
 			_invalidSelectionLabel.IsVisible = IsSectionVisible && !groupDetailsVisible;
 
 			bool groupErrorVisible = GetGroupErrorVisible();

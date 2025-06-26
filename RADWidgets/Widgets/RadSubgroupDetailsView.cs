@@ -9,7 +9,6 @@
 
 	public class RadSubgroupDetailsView : DetailsView<RadSubgroupSelectorItem>
 	{
-		private readonly Label _groupNameLabel;
 		private readonly Label _invalidSelectionLabel;
 		private readonly Label _detailsLabel;
 		private List<string> _parameterLabels;
@@ -20,12 +19,6 @@
 		{
 			_parameterLabels = parameterLabels ?? new List<string>();
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
-
-			_groupNameLabel = new Label()
-			{
-				Tooltip = "The name of the selected subgroup.",
-				Style = TextStyle.Heading,
-			};
 
 			_invalidSelectionLabel = new Label()
 			{
@@ -41,9 +34,8 @@
 
 			UpdateVisibility();
 
-			AddWidget(_groupNameLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
-			AddWidget(_invalidSelectionLabel, new WidgetLayout(1, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
-			AddWidget(_detailsLabel, new WidgetLayout(2, 0, 2, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
+			AddWidget(_invalidSelectionLabel, new WidgetLayout(0, 0, 1, columnSpan, verticalAlignment: VerticalAlignment.Top), () => !GetGroupDetailsVisible());
+			AddWidget(_detailsLabel, new WidgetLayout(1, 0, 3, columnSpan, verticalAlignment: VerticalAlignment.Top), GetGroupDetailsVisible);
 		}
 
 		public void SetParameterLabels(List<string> parameterLabels)
@@ -81,7 +73,6 @@
 			if (_item == null)
 				return;
 
-			_groupNameLabel.Text = _item.DisplayName;
 			_invalidSelectionLabel.Text = string.Empty;
 
 			List<string> parameterTexts = new List<string>(_parameterLabels.Count);
@@ -109,7 +100,6 @@
 
 		private void ShowError(string text)
 		{
-			_groupNameLabel.Text = string.Empty;
 			_invalidSelectionLabel.Text = text;
 			_detailsLabel.Text = string.Empty;
 
@@ -125,7 +115,6 @@
 		{
 			bool groupDetailsVisible = GetGroupDetailsVisible();
 			_detailsLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
-			_groupNameLabel.IsVisible = IsSectionVisible && groupDetailsVisible;
 			_invalidSelectionLabel.IsVisible = IsSectionVisible && !groupDetailsVisible;
 		}
 	}
