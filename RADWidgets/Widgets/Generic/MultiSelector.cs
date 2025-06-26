@@ -1,35 +1,16 @@
-namespace RadWidgets
+namespace RadWidgets.Widgets.Generic
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.AutomationUI.Objects;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	/// <summary>
-	/// Abstract class for items that can be selected in a <see cref="MultiSelector{T}" /> widget.
-	/// </summary>
-	public abstract class MultiSelectorItem : Section
-	{
-		/// <summary>
-		/// Gets the key of the item. This key is used to uniquely identify an item: no two items with the same key can be selected at the same time.
-		/// </summary>
-		/// <returns>The key.</returns>
-		public abstract string GetKey();
-
-		/// <summary>
-		/// Gets the display value of the item. This value is shown in the widget.
-		/// </summary>
-		/// <returns>The display value.</returns>
-		public abstract string GetDisplayValue();
-	}
 
 	/// <summary>
 	/// Selector widget to select a single item in a MultiSelector widget.
 	/// </summary>
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
-	public abstract class MultiSelectorItemSelector<T> : Section where T : MultiSelectorItem
+	public abstract class MultiSelectorItemSelector<T> : Section where T : SelectorItem
 	{
 		/// <summary>
 		/// Gets the selected item in the widget.
@@ -42,7 +23,7 @@ namespace RadWidgets
 	/// it will take (itemSelector.RowCount + 2) rows and (itemSelector.ColumnCount + 1) columns.
 	/// </summary>
 	/// <typeparam name="T">The type of the items that can be selected.</typeparam>
-	public abstract class MultiSelector<T> : Section where T : MultiSelectorItem
+	public abstract class MultiSelector<T> : VisibilitySection where T : SelectorItem
 	{
 		private readonly MultiSelectorItemSelector<T> _itemSelector;
 		private readonly Label _noItemsSelectedLabel;
@@ -50,7 +31,6 @@ namespace RadWidgets
 		private readonly Dictionary<string, T> _selectedItems = new Dictionary<string, T>();
 		private readonly Button _addButton;
 		private readonly Button _removeButton;
-		private bool _isVisible = true;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MultiSelector{T}"/> class.
@@ -88,8 +68,8 @@ namespace RadWidgets
 			AddWidget(_addButton, row + _itemSelector.RowCount - 1, _itemSelector.ColumnCount);
 			row += _itemSelector.RowCount;
 
-			AddWidget(_noItemsSelectedLabel, row, 0, 1, _itemSelector.ColumnCount);
-			AddWidget(_selectedItemsView, row + 1, 0, 2, _itemSelector.ColumnCount);
+			AddWidget(_noItemsSelectedLabel, row, 0, 1, _itemSelector.ColumnCount, () => !GetTreeViewVisible());
+			AddWidget(_selectedItemsView, row + 1, 0, 2, _itemSelector.ColumnCount, GetTreeViewVisible);
 			AddWidget(_removeButton, row, _itemSelector.ColumnCount, 2, 1, verticalAlignment: VerticalAlignment.Top);
 		}
 
@@ -125,25 +105,6 @@ namespace RadWidgets
 			set
 			{
 				_noItemsSelectedLabel.Text = value;
-			}
-		}
-
-		/// <inheritdoc />
-		public override bool IsVisible
-		{
-			// Note: we had to override this, since otherwise all child widgets are made visible when this is set to true.
-			get => _isVisible;
-			set
-			{
-				if (value == _isVisible)
-					return;
-
-				_isVisible = value;
-
-				_itemSelector.IsVisible = value;
-				_addButton.IsVisible = value;
-				_removeButton.IsVisible = value;
-				UpdateTreeViewVisibility();
 			}
 		}
 
@@ -201,29 +162,16 @@ namespace RadWidgets
 			return true;
 		}
 
-		private void UpdateTreeViewVisibility()
+		private bool GetTreeViewVisible()
 		{
-			if (!_isVisible)
-			{
-				_noItemsSelectedLabel.IsVisible = false;
-				_selectedItemsView.IsVisible = false;
-			}
-			else if (_selectedItems.Count == 0)
-			{
-				_noItemsSelectedLabel.IsVisible = true;
-				_selectedItemsView.IsVisible = false;
-			}
-			else
-			{
-				_noItemsSelectedLabel.IsVisible = false;
-				_selectedItemsView.IsVisible = true;
-			}
+			return _selectedItems.Count > 0;
 		}
 
 		private void OnChanged()
 		{
-			UpdateTreeViewVisibility();
-			_removeButton.IsEnabled = _selectedItems.Count > 0;
+			_noItemsSelectedLabel.IsVisible = IsSectionVisible && !GetTreeViewVisible();
+			_selectedItemsView.IsVisible = IsSectionVisible && GetTreeViewVisible();
+			_removeButton.IsEnabled = IsSectionVisible && _selectedItems.Count > 0;
 		}
 
 		private void AddButton_Pressed(object sender, EventArgs e)

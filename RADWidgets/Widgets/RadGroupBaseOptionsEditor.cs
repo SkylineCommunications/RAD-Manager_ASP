@@ -1,43 +1,36 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
-
-	public class RadGroupOptions
-	{
-		public bool UpdateModel { get; set; }
-
-		public double? AnomalyThreshold { get; set; }
-
-		public int? MinimalDuration { get; set; }
-	}
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// Editor for RAD group options.
 	/// </summary>
-	public class RadGroupOptionsEditor : Section
+	public class RadGroupBaseOptionsEditor : Section
 	{
-		private const int _DefaultAnomalyThreshold = 3;
-		private static readonly TimeSpan _DefaultMinimalDuration = TimeSpan.FromMinutes(5);
-		private readonly CheckBox _updateModelCheckBox;
 		private readonly CheckBox _anomalyThresholdOverrideCheckBox;
 		private readonly Numeric _anomalyThresholdNumeric;
 		private readonly CheckBox _minimalDurationOverrideCheckBox;
 		private readonly Time _minimalDurationTime;
+		private readonly double _defaultAnomalyThreshold;
+		private readonly int _defaultMinimalDuration;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RadGroupOptionsEditor"/> class.
+		/// Initializes a new instance of the <see cref="RadGroupBaseOptionsEditor"/> class.
 		/// </summary>
 		/// <param name="columnCount">The number of columns the section should take (should be 2 or greater).</param>
 		/// <param name="options">The initial settings to display (if any).</param>
-		public RadGroupOptionsEditor(int columnCount, RadGroupOptions options = null)
+		/// <param name="defaultAnomalyThreshold">The default anomaly threshold to use if not overridden.</param>
+		/// <param name="defaultMinimalDuration">The default minimal duration to use if not overridden.</param>
+		public RadGroupBaseOptionsEditor(
+			int columnCount,
+			RadGroupBaseOptions options = null,
+			double defaultAnomalyThreshold = RadGroupBaseOptions.DefaultAnomalyThreshold,
+			int defaultMinimalDuration = RadGroupBaseOptions.DefaultMinimalDuration)
 		{
-			_updateModelCheckBox = new CheckBox("Update model on new data?")
-			{
-				IsChecked = options?.UpdateModel ?? false,
-				Tooltip = "Whether to continuously update the RAD model when new trend data is available. If not selected, the model will only be trained after " +
-				"creation and when you manually specify a training range.",
-			};
+			_defaultAnomalyThreshold = defaultAnomalyThreshold;
+			_defaultMinimalDuration = defaultMinimalDuration;
 
 			_anomalyThresholdOverrideCheckBox = new CheckBox("Override default anomaly threshold?")
 			{
@@ -55,11 +48,12 @@
 			_anomalyThresholdNumeric = new Numeric()
 			{
 				Minimum = 0,
-				Value = options?.AnomalyThreshold ?? _DefaultAnomalyThreshold,
-				StepSize = 0.01,
+				Value = options?.AnomalyThreshold ?? _defaultAnomalyThreshold,
+				StepSize = 0.1,
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
 			};
+			_anomalyThresholdNumeric.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			_minimalDurationOverrideCheckBox = new CheckBox("Override default minimum anomaly duration?")
 			{
@@ -78,15 +72,13 @@
 			{
 				HasSeconds = false,
 				Minimum = TimeSpan.FromMinutes(5),
-				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : _DefaultMinimalDuration,
+				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : TimeSpan.FromMinutes(_defaultMinimalDuration),
 				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
 			};
+			_minimalDurationTime.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;
-			AddWidget(_updateModelCheckBox, row, 0, 1, columnCount);
-			++row;
-
 			AddWidget(_anomalyThresholdOverrideCheckBox, row, 0, 1, columnCount);
 			++row;
 
@@ -101,22 +93,9 @@
 			AddWidget(_minimalDurationTime, row, 1, 1, columnCount - 1);
 		}
 
-		public RadGroupOptions Options
-		{
-			get
-			{
-				return new RadGroupOptions
-				{
-					UpdateModel = UpdateModel,
-					AnomalyThreshold = AnomalyThreshold,
-					MinimalDuration = MinimalDuration,
-				};
-			}
-		}
+		public event EventHandler Changed;
 
-		private bool UpdateModel => _updateModelCheckBox.IsChecked;
-
-		private double? AnomalyThreshold
+		public double? AnomalyThreshold
 		{
 			get
 			{
@@ -127,7 +106,7 @@
 			}
 		}
 
-		private int? MinimalDuration
+		public int? MinimalDuration
 		{
 			get
 			{
@@ -142,14 +121,18 @@
 		{
 			_anomalyThresholdNumeric.IsEnabled = _anomalyThresholdOverrideCheckBox.IsChecked;
 			if (!_anomalyThresholdOverrideCheckBox.IsChecked)
-				_anomalyThresholdNumeric.Value = _DefaultAnomalyThreshold;
+				_anomalyThresholdNumeric.Value = _defaultAnomalyThreshold;
+
+			Changed?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void OnMinimalDurationOverrideCheckBoxChanged()
 		{
 			_minimalDurationTime.IsEnabled = _minimalDurationOverrideCheckBox.IsChecked;
 			if (!_minimalDurationOverrideCheckBox.IsChecked)
-				_minimalDurationTime.TimeSpan = _DefaultMinimalDuration;
+				_minimalDurationTime.TimeSpan = TimeSpan.FromMinutes(_defaultMinimalDuration);
+
+			Changed?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
