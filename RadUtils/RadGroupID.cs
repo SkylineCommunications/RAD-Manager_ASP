@@ -1,4 +1,4 @@
-﻿namespace RadWidgets
+﻿namespace RadUtils
 {
 	using System;
 

@@ -1,7 +1,7 @@
 ﻿namespace RemoveRADParameterGroup
 {
 	using System.Collections.Generic;
-	using RadWidgets;
+	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	/// <summary>

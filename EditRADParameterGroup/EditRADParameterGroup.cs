@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EditRADParameterGroup;
+using RadUtils;
 using RadWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
@@ -84,17 +85,17 @@ public class Script
 
 	private bool TryGetRadGroupID(out RadGroupInfo settings, out IRadGroupID groupID)
 	{
-		var groupIDs = Utils.ParseGroupIDParameter(_app);
+		var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 		if (groupIDs.Count == 0)
 		{
-			Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to edit first.");
+			RadWidgets.Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to edit first.");
 			settings = null;
 			groupID = null;
 			return false;
 		}
 		else if (groupIDs.Count > 1)
 		{
-			Utils.ShowMessageDialog(_app, "Multiple relational anomaly groups selected", "Please select a single relational anomaly group you want to edit.");
+			RadWidgets.Utils.ShowMessageDialog(_app, "Multiple relational anomaly groups selected", "Please select a single relational anomaly group you want to edit.");
 			settings = null;
 			groupID = null;
 			return false;
@@ -107,14 +108,14 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to fetch relational anomaly group information", ex);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch relational anomaly group information", ex);
 			settings = null;
 			return false;
 		}
 
 		if (settings?.Subgroups == null || settings.Subgroups.Count == 0)
 		{
-			Utils.ShowMessageDialog(_app, "No subgroups found", "The selected relational anomaly group does not contain any subgroups to edit.");
+			RadWidgets.Utils.ShowMessageDialog(_app, "No subgroups found", "The selected relational anomaly group does not contain any subgroups to edit.");
 			settings = null;
 			return false;
 		}
@@ -158,7 +159,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
 			return;
 		}
 
@@ -200,7 +201,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to edit relational anomaly group", ex, dialog);
 			return;
 		}
 
