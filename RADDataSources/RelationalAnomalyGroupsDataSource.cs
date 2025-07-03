@@ -5,6 +5,7 @@ namespace RadDataSources
 	using System.Linq;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
@@ -80,7 +81,21 @@ namespace RadDataSources
 
 		private IEnumerable<GQIRow> GetRowsForGroup(int dataMinerID, string groupName)
 		{
-			var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
+			RadGroupInfo groupInfo;
+			try
+			{
+				groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
+			}
+			catch (DataMinerSecurityException)
+			{
+				yield break;
+			}
+			catch (Exception ex)
+			{
+				_logger.Error($"Failed to fetch RAD group info for group '{groupName}' from agent {dataMinerID}: {ex.Message}");
+				yield break;
+			}
+
 			if (groupInfo == null)
 			{
 				_logger.Error($"Could not fetch RAD group info for group '{groupName}' from agent {dataMinerID}: no response or response of the wrong type received");
