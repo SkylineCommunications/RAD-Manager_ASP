@@ -93,7 +93,7 @@ namespace RadDataSources
 			catch (Exception ex)
 			{
 				_logger.Error($"Failed to fetch RAD group info for group '{groupName}' from agent {dataMinerID}: {ex.Message}");
-				yield break;
+				throw;
 			}
 
 			if (groupInfo == null)
