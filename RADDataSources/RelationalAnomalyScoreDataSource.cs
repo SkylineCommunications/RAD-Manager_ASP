@@ -28,10 +28,11 @@ namespace RadDataSources
 		private DateTime? _startTime = null;
 		private DateTime? _endTime = null;
 		private IGQILogger _logger;
+		private ConnectionHelper _connectionHelper;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			ConnectionHelper.InitializeConnection(args.DMS, args.Logger);
+			_connectionHelper = new ConnectionHelper(args.DMS, args.Logger);
 			_logger = args.Logger;
 			return default;
 		}
@@ -82,7 +83,7 @@ namespace RadDataSources
 
 			try
 			{
-				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_dataMinerID, _groupName, _subGroupName, _subGroupID,
+				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_connectionHelper, _dataMinerID, _groupName, _subGroupName, _subGroupID,
 					_startTime.Value, _endTime.Value, _skipCache);
 			}
 			catch (Exception e)
