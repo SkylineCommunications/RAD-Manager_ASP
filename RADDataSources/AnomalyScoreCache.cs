@@ -51,7 +51,7 @@
 	{
 		private const int MAX_CACHE_SIZE = 5;
 		private readonly object _anomalyScoreDataLock = new object();
-		private List<AnomalyScoreData> _anomalyScoreData = new List<AnomalyScoreData>();
+		private readonly List<AnomalyScoreData> _anomalyScoreData = new List<AnomalyScoreData>();
 
 		public List<KeyValuePair<DateTime, double>> GetAnomalyScores(ConnectionHelper helper, IRadGroupID groupID,
 			DateTime startTime, DateTime endTime, bool skipCache)
