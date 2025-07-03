@@ -20,6 +20,24 @@
 		public int DataMinerID { get; set; }
 
 		public string GroupName { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is RadGroupID other)
+			{
+				return DataMinerID == other.DataMinerID && string.Equals(GroupName, other.GroupName, StringComparison.OrdinalIgnoreCase);
+			}
+
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			int hash = DataMinerID;
+			hash ^= GroupName?.GetHashCode() ?? 0;
+
+			return hash;
+		}
 	}
 
 	public struct RadSubgroupID : IRadGroupID
@@ -47,5 +65,27 @@
 		public Guid? SubgroupID { get; set; }
 
 		public string SubgroupName { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is RadSubgroupID other)
+			{
+				return DataMinerID == other.DataMinerID &&
+					string.Equals(GroupName, other.GroupName, StringComparison.OrdinalIgnoreCase) &&
+					SubgroupID == other.SubgroupID &&
+					string.Equals(SubgroupName, other.SubgroupName, StringComparison.OrdinalIgnoreCase);
+			}
+
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			int hash = DataMinerID;
+			hash ^= GroupName?.GetHashCode() ?? 0;
+			hash ^= SubgroupID?.GetHashCode() ?? 0;
+			hash ^= SubgroupName?.GetHashCode() ?? 0;
+			return hash;
+		}
 	}
 }
