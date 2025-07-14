@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Cache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParametersCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RadGroupID.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
 </Project>

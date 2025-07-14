@@ -3,7 +3,9 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// Represents a DataMiner Automation script.
@@ -28,10 +30,11 @@ namespace RadDataSources
 		private DateTime? _startTime = null;
 		private DateTime? _endTime = null;
 		private IGQILogger _logger;
+		private ConnectionHelper _connectionHelper;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			ConnectionHelper.InitializeConnection(args.DMS, args.Logger);
+			_connectionHelper = new ConnectionHelper(args.DMS, args.Logger);
 			_logger = args.Logger;
 			return default;
 		}
@@ -80,10 +83,17 @@ namespace RadDataSources
 				return default;
 			}
 
+			IRadGroupID groupID;
+			if (_subGroupID != Guid.Empty)
+				groupID = new RadSubgroupID(_dataMinerID, _groupName, _subGroupID);
+			else if (!string.IsNullOrEmpty(_subGroupName))
+				groupID = new RadSubgroupID(_dataMinerID, _groupName, _subGroupName);
+			else
+				groupID = new RadGroupID(_dataMinerID, _groupName);
+
 			try
 			{
-				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_dataMinerID, _groupName, _subGroupName, _subGroupID,
-					_startTime.Value, _endTime.Value, _skipCache);
+				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_connectionHelper, groupID, _startTime.Value, _endTime.Value, _skipCache);
 			}
 			catch (Exception e)
 			{

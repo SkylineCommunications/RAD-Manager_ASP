@@ -74,8 +74,6 @@
 			};
 			_okButton.Pressed += (sender, args) => Accepted?.Invoke(this, EventArgs.Empty);
 
-			_groupRemoveWidgets = new List<AGroupRemoveSection>();
-			_extraGroupsToRemove = new List<RadGroupID>();
 			var parameterGroups = groupIDs.GroupBy(g => new RadGroupID(g.DataMinerID, g.GroupName));
 			if (parameterGroups.Count() == 1)
 			{
@@ -139,35 +137,34 @@
 			var groupInfo = FetchGroupInfo(groupID);
 			_groupRemoveWidgets = new List<AGroupRemoveSection>();
 			_extraGroupsToRemove = new List<RadGroupID>();
-			if (groupInfo.Subgroups.Count > 1)
-			{
-				var matchingSubgroups = GetMatchingSubgroups(groupInfo, subgroupIDs);
-
-				if (matchingSubgroups.Count == 1)
-				{
-					var subgroup = matchingSubgroups.First();
-					if (string.IsNullOrEmpty(subgroup.Name))
-						_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroup on {subgroup.ParameterDescription} from Relational Anomaly Detection?";
-					else
-						_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroup '{subgroup.Name}' from Relational Anomaly Detection?";
-				}
-				else
-				{
-					_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroups below from Relational Anomaly Detection?";
-				}
-
-				SetOKCancelButtonsVisible();
-
-				var section = new SharedModelRemoveRadioButtonList(groupID, matchingSubgroups, matchingSubgroups.Count == groupInfo.Subgroups.Count,
-					4, TextWrapWidth, TextWrapIndentWidth);
-				_groupRemoveWidgets.Add(section);
-			}
-			else
+			if (groupInfo == null || groupInfo.Subgroups == null || groupInfo.Subgroups.Count <= 1)
 			{
 				_label.Text = $"Are you sure you want to remove the relational anomaly group '{groupID.GroupName}'?";
 				SetYesNoButtonsVisible();
 				_extraGroupsToRemove.Add(groupID);
+				return;
 			}
+
+			var matchingSubgroups = GetMatchingSubgroups(groupInfo, subgroupIDs);
+
+			if (matchingSubgroups.Count == 1)
+			{
+				var subgroup = matchingSubgroups.First();
+				if (string.IsNullOrEmpty(subgroup.Name))
+					_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroup on {subgroup.ParameterDescription} from Relational Anomaly Detection?";
+				else
+					_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroup '{subgroup.Name}' from Relational Anomaly Detection?";
+			}
+			else
+			{
+				_label.Text = $"Do you want to remove the whole shared model group '{groupID.GroupName}' or only the subgroups below from Relational Anomaly Detection?";
+			}
+
+			SetOKCancelButtonsVisible();
+
+			var section = new SharedModelRemoveRadioButtonList(groupID, matchingSubgroups, matchingSubgroups.Count == groupInfo.Subgroups.Count,
+				4, TextWrapWidth, TextWrapIndentWidth);
+			_groupRemoveWidgets.Add(section);
 		}
 
 		private void SetWidgetsForMultipleGroups(IEnumerable<IGrouping<RadGroupID, IRadGroupID>> parameterGroups)
@@ -181,7 +178,7 @@
 			foreach (var group in parameterGroups)
 			{
 				var groupInfo = FetchGroupInfo(group.Key);
-				if (groupInfo.Subgroups.Count > 1)
+				if (groupInfo?.Subgroups?.Count > 1)
 				{
 					var subgroups = GetMatchingSubgroups(groupInfo, group.OfType<RadSubgroupID>());
 					var section = new SharedModelRemoveCheckBox(group.Key, subgroups, subgroups.Count == groupInfo.Subgroups.Count, 4, TextWrapWidth, TextWrapIndentWidth);
@@ -220,7 +217,7 @@
 			catch (Exception e)
 			{
 				_engine.Log($"Failed to fetch group info for relational anomaly group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
-				throw new DataMinerException("Failed to fetch group info for relational anomaly group", e);
+				return null;
 			}
 		}
 

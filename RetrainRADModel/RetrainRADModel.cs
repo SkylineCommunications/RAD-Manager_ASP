@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using RadUtils;
 using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
@@ -41,7 +43,18 @@ public class Script
 			}
 
 			var groupID = parentGroups.First();
-			var groupInfo = engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+			RadGroupInfo groupInfo;
+			try
+			{
+				groupInfo = engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Failed to fetch group info for relational anomaly group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
+				RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch relational anomaly group info", e);
+				return;
+			}
+
 			var dialog = new RetrainRadModelDialog(engine, groupID, groupInfo);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
@@ -91,7 +104,7 @@ public class Script
 		}
 		catch (Exception ex)
 		{
-			Utils.ShowExceptionDialog(_app, "Failed to retrain relational anomaly group", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to retrain relational anomaly group", ex, dialog);
 			return;
 		}
 

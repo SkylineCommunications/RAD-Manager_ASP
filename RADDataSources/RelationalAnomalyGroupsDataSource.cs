@@ -5,6 +5,7 @@ namespace RadDataSources
 	using System.Linq;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
@@ -19,12 +20,13 @@ namespace RadDataSources
 		private GQIDMS _dms;
 		private IGQILogger _logger;
 		private IEnumerator<int> _dmaIDEnumerator;
+		private ConnectionHelper _connectionHelper;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			_dms = args.DMS;
 			_logger = args.Logger;
-			ConnectionHelper.InitializeConnection(_dms, _logger);
+			_connectionHelper = new ConnectionHelper(_dms, _logger);
 			return default;
 		}
 
@@ -53,8 +55,8 @@ namespace RadDataSources
 				.Distinct()
 				.GetEnumerator();
 
-			_elementNames = new ElementNameCache(_logger);
-			_parameters = new ParametersCache(_logger);
+			_elementNames = new ElementNameCache(_logger, _connectionHelper);
+			_parameters = new ParametersCache(_logger, _connectionHelper);
 
 			return default;
 		}
@@ -65,7 +67,7 @@ namespace RadDataSources
 				return new GQIPage(Array.Empty<GQIRow>());
 
 			int dataMinerID = _dmaIDEnumerator.Current;
-			var groupNames = ConnectionHelper.RadHelper.FetchParameterGroups(dataMinerID);
+			var groupNames = _connectionHelper.RadHelper.FetchParameterGroups(dataMinerID);
 			if (groupNames == null)
 			{
 				_logger.Error($"Could not fetch RAD group names from agent {dataMinerID}: no response or response of the wrong type received");
@@ -80,7 +82,21 @@ namespace RadDataSources
 
 		private IEnumerable<GQIRow> GetRowsForGroup(int dataMinerID, string groupName)
 		{
-			var groupInfo = ConnectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
+			RadGroupInfo groupInfo;
+			try
+			{
+				groupInfo = _connectionHelper.RadHelper.FetchParameterGroupInfo(dataMinerID, groupName);
+			}
+			catch (DataMinerSecurityException)
+			{
+				yield break;
+			}
+			catch (Exception ex)
+			{
+				_logger.Error($"Failed to fetch RAD group info for group '{groupName}' from agent {dataMinerID}: {ex.Message}");
+				throw;
+			}
+
 			if (groupInfo == null)
 			{
 				_logger.Error($"Could not fetch RAD group info for group '{groupName}' from agent {dataMinerID}: no response or response of the wrong type received");

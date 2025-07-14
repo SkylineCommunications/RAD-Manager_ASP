@@ -3,7 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadWidgets;
+	using RadUtils;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
 	public enum SharedModelGroupRemoveMode
