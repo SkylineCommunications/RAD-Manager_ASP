@@ -143,7 +143,8 @@
 				MinWidth = 10,
 			};
 
-			if (engine.GetRadHelper().AllowSharedModelGroups)
+			//TODO: put this back when shared model groups are released
+			/*if (engine.GetRadHelper().AllowSharedModelGroups)
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between elements")
 				{
@@ -151,7 +152,7 @@
 					"each element.",
 				};
 				_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
-			}
+			}*/
 
 			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
 
