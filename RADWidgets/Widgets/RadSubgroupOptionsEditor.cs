@@ -9,7 +9,7 @@
 
         public RadSubgroupOptionsEditor(RadHelper radHelper, int columnCount, RadGroupOptions parentOptions, RadSubgroupOptions options = null)
         {
-            _baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, 
+            _baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount,
 				parentOptions?.GetAnomalyThresholdOrDefault(radHelper) ?? radHelper.DefaultAnomalyThreshold,
 				parentOptions?.GetMinimalDurationOrDefault(radHelper) ?? radHelper.DefaultMinimumAnomalyDuration,
 				options);
