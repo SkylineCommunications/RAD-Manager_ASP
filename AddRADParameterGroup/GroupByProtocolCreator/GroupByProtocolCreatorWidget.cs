@@ -119,7 +119,7 @@
 		private readonly WhiteSpace _whiteSpace;
 		private readonly GroupsByProtocolDetails _groupDetails;
 
-		public GroupByProtocolCreatorWidget(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache)
+		public GroupByProtocolCreatorWidget(IEngine engine, RadHelper radHelper, List<string> existingGroupNames, ParametersCache parametersCache)
 		{
 			_engine = engine;
 			_parametersCache = parametersCache;
@@ -144,7 +144,7 @@
 			};
 
 			//TODO: put this back when shared model groups are released
-			/*if (engine.GetRadHelper().AllowSharedModelGroups)
+			/*if (radHelper.AllowSharedModelGroups)
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between elements")
 				{
@@ -154,7 +154,7 @@
 				_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
 			}*/
 
-			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount);
+			_optionsEditor = new RadGroupOptionsEditor(radHelper, _parameterSelector.ColumnCount);
 
 			_whiteSpace = new WhiteSpace()
 			{

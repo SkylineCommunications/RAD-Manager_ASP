@@ -19,7 +19,8 @@
 		private bool _moreThanMinParametersSelected = false;
 		private bool _lessThanMaxParametersSelected = false;
 
-		public RadGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache, RadGroupInfo settings = null)
+		public RadGroupEditor(IEngine engine, RadHelper radHelper, List<string> existingGroupNames, ParametersCache parametersCache,
+			RadGroupInfo settings = null)
 		{
 			_parameterSelector = new MultiParameterSelector(engine, parametersCache, settings?.Subgroups?.FirstOrDefault()?.Parameters?.Select(p => p?.Key));
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
@@ -35,7 +36,7 @@
 					subgroupOptions.MinimalDuration ?? options?.MinimalDuration);
 			}
 
-			_optionsEditor = new RadGroupOptionsEditor(_parameterSelector.ColumnCount, options);
+			_optionsEditor = new RadGroupOptionsEditor(radHelper, _parameterSelector.ColumnCount, options);
 
 			_detailsLabel = new MarginLabel(string.Empty, _parameterSelector.ColumnCount, 10);
 

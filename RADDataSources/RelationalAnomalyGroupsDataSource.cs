@@ -125,8 +125,10 @@ namespace RadDataSources
 						new GQICell() { Value = dataMinerID },
 						new GQICell() { Value = ParameterKeysToString(subgroupInfo.Parameters?.Select(p => p?.Key)) },
 						new GQICell() { Value = groupInfo.Options?.UpdateModel ?? false },
-						new GQICell() { Value = subgroupInfo.Options?.GetAnomalyThresholdOrDefault(groupInfo.Options?.AnomalyThreshold) ?? RadGroupOptions.DefaultAnomalyThreshold },
-						new GQICell() { Value = TimeSpan.FromMinutes(subgroupInfo.Options?.GetMinimalDurationOrDefault(groupInfo.Options?.MinimalDuration) ?? RadGroupOptions.DefaultMinimalDuration) },
+						new GQICell() { Value = subgroupInfo.Options?.GetAnomalyThresholdOrDefault(_connectionHelper.RadHelper,
+							groupInfo.Options?.AnomalyThreshold) ?? _connectionHelper.RadHelper.DefaultAnomalyThreshold },
+						new GQICell() { Value = TimeSpan.FromMinutes(subgroupInfo.Options?.GetMinimalDurationOrDefault(_connectionHelper.RadHelper,
+							groupInfo.Options?.MinimalDuration) ?? _connectionHelper.RadHelper.DefaultMinimumAnomalyDuration) },
 						new GQICell() { Value = subgroupInfo.IsMonitored },
 						new GQICell() { Value = groupName }, // Parent group
 						new GQICell() { Value = sharedModelGroup ? subgroupInfo.ID.ToString() : string.Empty }, // Subgroup ID

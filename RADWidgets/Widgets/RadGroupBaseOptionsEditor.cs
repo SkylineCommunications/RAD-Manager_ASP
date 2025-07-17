@@ -25,9 +25,9 @@
 		/// <param name="defaultMinimalDuration">The default minimal duration to use if not overridden.</param>
 		public RadGroupBaseOptionsEditor(
 			int columnCount,
-			RadGroupBaseOptions options = null,
-			double defaultAnomalyThreshold = RadGroupBaseOptions.DefaultAnomalyThreshold,
-			int defaultMinimalDuration = RadGroupBaseOptions.DefaultMinimalDuration)
+			double defaultAnomalyThreshold,
+			int defaultMinimalDuration,
+			RadGroupBaseOptions options = null)
 		{
 			_defaultAnomalyThreshold = defaultAnomalyThreshold;
 			_defaultMinimalDuration = defaultMinimalDuration;

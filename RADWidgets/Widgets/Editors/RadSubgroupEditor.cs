@@ -22,7 +22,7 @@
 		private bool _hasDuplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
 
-		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
+		public RadSubgroupEditor(IEngine engine, RadHelper radHelper, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
 			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)
 		{
 			_subgroupID = settings?.ID ?? Guid.NewGuid();
@@ -49,7 +49,7 @@
 			_groupNameSection = new GroupNameSection(settings?.Name, _otherSubgroups.Select(s => s.Name).ToList(), parameterSelectorColumnCount, groupNamePlaceHolder);
 			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
 
-			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
+			_optionsEditor = new RadSubgroupOptionsEditor(radHelper, parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
 
 			_detailsLabel = new MarginLabel(string.Empty, 2, 10)
 			{

@@ -25,7 +25,7 @@
 		private bool _hasMissingParameterLabels;
 		private bool _hasWhiteSpaceLabels;
 
-		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache,
+		public RadSharedModelGroupEditor(IEngine engine, RadHelper radHelper, List<string> existingGroupNames, ParametersCache parametersCache,
 			RadGroupInfo settings = null, Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
@@ -66,10 +66,10 @@
 			};
 			parameterLabelsEditorButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
-			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
+			_optionsEditor = new RadGroupOptionsEditor(radHelper, 3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
 
-			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
+			_subgroupSelector = new RadSubgroupSelector(engine, radHelper, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
 			_detailsLabel = new MarginLabel(string.Empty, 3, 10)

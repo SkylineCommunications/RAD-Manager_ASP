@@ -10,6 +10,7 @@ using Skyline.DataMiner.Utils.RadToolkit;
 public class Script
 {
 	private InteractiveController _app;
+	private RadHelper _radHelper;
 
 	/// <summary>
 	/// The Script entry point.
@@ -27,6 +28,7 @@ public class Script
 		try
 		{
 			_app = new InteractiveController(engine);
+			_radHelper = RadWidgets.Utils.GetRadHelper(engine);
 
 			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
@@ -46,7 +48,7 @@ public class Script
 			RadGroupInfo groupInfo;
 			try
 			{
-				groupInfo = engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+				groupInfo = _radHelper.FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 			}
 			catch (Exception e)
 			{
@@ -98,9 +100,9 @@ public class Script
 		{
 			var excludedSubgroups = dialog.GetExcludedSubgroupIDs();
 			if (excludedSubgroups.Count > 0)
-				_app.Engine.GetRadHelper().RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
+				_radHelper.RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
 			else
-				_app.Engine.GetRadHelper().RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
+				_radHelper.RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
 		}
 		catch (Exception ex)
 		{

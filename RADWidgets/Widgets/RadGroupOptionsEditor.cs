@@ -15,9 +15,11 @@
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RadGroupOptionsEditor"/> class.
 		/// </summary>
+		/// <param name="radHelper">RadHelper instance to use.</param>
 		/// <param name="columnCount">The number of columns the section should take (should be 2 or greater).</param>
 		/// <param name="options">The initial settings to display (if any).</param>
 		public RadGroupOptionsEditor(
+			RadHelper radHelper,
 			int columnCount,
 			RadGroupOptions options = null)
 		{
@@ -28,7 +30,8 @@
 				"creation and when you manually specify a training range.",
 			};
 
-			_baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, options);
+			_baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, radHelper.DefaultAnomalyThreshold, radHelper.DefaultMinimumAnomalyDuration,
+				options);
 			_baseOptionsEditor.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;

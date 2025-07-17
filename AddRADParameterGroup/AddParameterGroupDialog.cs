@@ -29,7 +29,7 @@
 		private readonly RadSharedModelGroupEditor _sharedModelGroupEditor;
 		private readonly Button _okButton;
 
-		public AddParameterGroupDialog(IEngine engine) : base(engine)
+		public AddParameterGroupDialog(IEngine engine, RadHelper radHelper) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			Title = "Add Relational Anomaly Group";
@@ -39,7 +39,7 @@
 				Tooltip = "Choose whether to add a single group, or multiple groups at once using the specified method.",
 			};
 			List<AddGroupType> excludedTypes = new List<AddGroupType>();
-			//if (!engine.GetRadHelper().AllowSharedModelGroups) TODO: put this back when shared model groups are released
+			//if (!radHelper.AllowSharedModelGroups) TODO: put this back when shared model groups are released
 			excludedTypes.Add(AddGroupType.SharedModel);
 			_addTypeDropDown = new EnumDropDown<AddGroupType>(excludedTypes)
 			{
@@ -47,15 +47,15 @@
 			};
 			_addTypeDropDown.Changed += (sender, args) => OnAddTypeChanged();
 
-			var existingGroupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+			var existingGroupNames = Utils.FetchRadGroupIDs(engine, radHelper).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			var parametersCache = new EngineParametersCache(engine);
-			_groupEditor = new RadGroupEditor(engine, existingGroupNames, parametersCache);
+			_groupEditor = new RadGroupEditor(engine, radHelper, existingGroupNames, parametersCache);
 			_groupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupEditor.IsValid, _groupEditor.ValidationText);
 
-			_groupByProtocolCreator = new GroupByProtocolCreatorWidget(engine, existingGroupNames, parametersCache);
+			_groupByProtocolCreator = new GroupByProtocolCreatorWidget(engine, radHelper, existingGroupNames, parametersCache);
 			_groupByProtocolCreator.ValidationChanged += (sender, args) => OnEditorValidationChanged(_groupByProtocolCreator.IsValid, _groupByProtocolCreator.ValidationText);
 
-			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, existingGroupNames, parametersCache);
+			_sharedModelGroupEditor = new RadSharedModelGroupEditor(engine, radHelper, existingGroupNames, parametersCache);
 			_sharedModelGroupEditor.ValidationChanged += (sender, args) => OnEditorValidationChanged(_sharedModelGroupEditor.IsValid, _sharedModelGroupEditor.ValidationText);
 
 			_okButton = new Button()

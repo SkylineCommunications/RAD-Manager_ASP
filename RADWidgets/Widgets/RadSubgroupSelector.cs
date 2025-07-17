@@ -120,6 +120,7 @@
 		public const int MinNrOfSubgroups = 1;
 		public const int MaxNrOfSubgroups = 2500;
 		private readonly IEngine _engine;
+		private readonly RadHelper _radHelper;
 		private readonly DetailsViewer<RadSubgroupSelectorItem> _subgroupViewer;
 		private readonly RadSubgroupDetailsView _subgroupDetailsView;
 		private readonly Button _editButton;
@@ -134,15 +135,16 @@
 		private List<string> _subgroupsWithWhitespaceNames;
 		private List<string> _subgroupsWithSameParameters;
 
-		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
+		public RadSubgroupSelector(IEngine engine, RadHelper radHelper, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
 			List<RadSubgroupInfo> subgroups = null, Guid? selectedSubgroup = null)
 		{
-			_engine = engine;
+			_engine = engine ?? throw new ArgumentNullException(nameof(engine));
+			_radHelper = radHelper ?? throw new ArgumentNullException(nameof(radHelper));
 			_parameterLabels = parameterLabels;
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
 			_parametersCache = parametersCache;
 
-			_subgroupDetailsView = new RadSubgroupDetailsView(2, parameterLabels, parentOptions);
+			_subgroupDetailsView = new RadSubgroupDetailsView(radHelper, 2, parameterLabels, parentOptions);
 
 			_subgroupViewer = new DetailsViewer<RadSubgroupSelectorItem>(_subgroupDetailsView, "Subgroups");
 			_subgroupViewer.SelectionChanged += (sender, args) => OnSubgroupViewerSelectionChanged(args.Selection);
@@ -477,7 +479,7 @@
 			var placeHolderName = string.IsNullOrEmpty(settings.Name) ? settings.DisplayName : GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 
 			InteractiveController app = new InteractiveController(_engine);
-			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
+			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _radHelper, _subgroupViewer.GetItems().ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as EditSubgroupDialog;
@@ -515,7 +517,7 @@
 		{
 			var placeHolderName = GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 			InteractiveController app = new InteractiveController(_engine);
-			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, _parentOptions, placeHolderName);
+			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _radHelper, _subgroupViewer.GetItems().ToList(), _parameterLabels, _parentOptions, placeHolderName);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as AddSubgroupDialog;
