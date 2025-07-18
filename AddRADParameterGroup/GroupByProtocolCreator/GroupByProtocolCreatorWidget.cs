@@ -251,9 +251,9 @@
 
 			bool hasValidGroup;
 			if (_sharedModelCheckBox?.IsChecked == true)
-				hasValidGroup = groups.Any(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.ValidGroup);
-			else
 				hasValidGroup = groups.Any(g => g.SharedModelGroupStatus == SharedModelGroupByProtocolStatus.ValidSubgroup);
+			else
+				hasValidGroup = groups.Any(g => g.SeparateGroupStatus == SeparateGroupsByProtocolStatus.ValidGroup);
 			IsValid = hasValidGroup;
 
 			if (!IsValid)
