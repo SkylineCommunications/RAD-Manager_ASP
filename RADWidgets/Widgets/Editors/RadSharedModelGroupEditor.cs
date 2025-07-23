@@ -30,7 +30,7 @@
 		{
 			_engine = engine;
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
-			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
+			_groupNameSection.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			const string parametersPerSubgroupTooltip = "Each subgroup will have this many parameters";
 			var parametersCountLabel = new Label("Number of parameters per subgroup")
@@ -68,7 +68,7 @@
 
 			_optionsEditor = new RadGroupOptionsEditor(radHelper, 3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
-			_optionsEditor.ValidationChanged += (sender, args) => OnOptionsEditorValidationChanged();
+			_optionsEditor.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			_subgroupSelector = new RadSubgroupSelector(engine, radHelper, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
@@ -188,6 +188,12 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		private void UpdateIsValidAndDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+			UpdateIsValid();
+		}
+
 		private void OnEditLabelsButtonPressed()
 		{
 			InteractiveController app = new InteractiveController(_engine);
@@ -237,18 +243,6 @@
 
 			UpdateParameterLabelsValid();
 			UpdateDetailsLabel();
-			UpdateIsValid();
-		}
-
-		private void OnGroupNameSectionValidationChanged()
-		{
-			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
-			UpdateIsValid();
-		}
-
-		private void OnOptionsEditorValidationChanged()
-		{
-			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 			UpdateIsValid();
 		}
 

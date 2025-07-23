@@ -26,7 +26,7 @@
 			_parameterSelector.Changed += (sender, args) => OnParameterSelectorChanged();
 
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, _parameterSelector.ColumnCount - 1);
-			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
+			_groupNameSection.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			var options = settings?.Options;
 			var subgroupOptions = settings?.Subgroups?.FirstOrDefault()?.Options;
@@ -37,7 +37,7 @@
 			}
 
 			_optionsEditor = new RadGroupOptionsEditor(radHelper, _parameterSelector.ColumnCount, options);
-			_optionsEditor.ValidationChanged += (sender, args) => OnOptionsEditorValidationChanged();
+			_optionsEditor.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			_detailsLabel = new MarginLabel(string.Empty, _parameterSelector.ColumnCount, 10);
 
@@ -119,21 +119,15 @@
 			}
 		}
 
+		private void UpdateIsValidAndDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+			UpdateIsValid();
+		}
+
 		private void OnParameterSelectorChanged()
 		{
 			UpdateParametersSelectedInRange();
-		}
-
-		private void OnGroupNameSectionValidationChanged()
-		{
-			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
-			UpdateIsValid();
-		}
-
-		private void OnOptionsEditorValidationChanged()
-		{
-			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
-			UpdateIsValid();
 		}
 	}
 }
