@@ -32,14 +32,23 @@
 
 			_baseOptionsEditor = new RadGroupBaseOptionsEditor(columnCount, radHelper.DefaultAnomalyThreshold, radHelper.DefaultMinimumAnomalyDuration,
 				options);
-			_baseOptionsEditor.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
 
 			int row = 0;
 			AddWidget(_updateModelCheckBox, row++, 0, 1, columnCount);
 			AddSection(_baseOptionsEditor, row, 0);
 		}
 
-		public event EventHandler Changed;
+		public event EventHandler Changed
+		{
+			add => _baseOptionsEditor.Changed += value;
+			remove => _baseOptionsEditor.Changed -= value;
+		}
+
+		public event EventHandler ValidationChanged
+		{
+			add => _baseOptionsEditor.ValidationChanged += value;
+			remove => _baseOptionsEditor.ValidationChanged -= value;
+		}
 
 		public RadGroupOptions Options
 		{
@@ -48,6 +57,8 @@
 				return new RadGroupOptions(UpdateModel, _baseOptionsEditor.AnomalyThreshold, _baseOptionsEditor.MinimalDuration);
 			}
 		}
+
+		public bool IsValid => _baseOptionsEditor.IsValid;
 
 		private bool UpdateModel => _updateModelCheckBox.IsChecked;
 	}

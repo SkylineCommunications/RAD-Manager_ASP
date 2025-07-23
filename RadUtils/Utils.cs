@@ -1,9 +1,17 @@
 ﻿namespace RadUtils
 {
 	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public static class Utils
 	{
+		public static bool AllowSharedModelGroups(RadHelper helper)
+		{
+			// TODO: put this back when shared model groups are released
+			// return helper.AllowSharedModelGroups;
+			return false;
+		}
+
 		public static bool IsRadSupported(this ParameterInfo info)
 		{
 			if (info == null)

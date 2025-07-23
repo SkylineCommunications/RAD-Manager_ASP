@@ -143,8 +143,7 @@
 				MinWidth = 10,
 			};
 
-			//TODO: put this back when shared model groups are released
-			/*if (radHelper.AllowSharedModelGroups)
+			if (RadUtils.Utils.AllowSharedModelGroups(radHelper))
 			{
 				_sharedModelCheckBox = new CheckBox("Share model between elements")
 				{
@@ -152,9 +151,10 @@
 					"each element.",
 				};
 				_sharedModelCheckBox.Changed += (sender, args) => OnSharedModelCheckBoxChanged();
-			}*/
+			}
 
 			_optionsEditor = new RadGroupOptionsEditor(radHelper, _parameterSelector.ColumnCount);
+			_optionsEditor.ValidationChanged += (sender, args) => OnOptionsEditorValidationChanged();
 
 			_whiteSpace = new WhiteSpace()
 			{
@@ -242,6 +242,14 @@
 			{
 				IsValid = false;
 				ValidationText = "Provide a valid group name prefix";
+				ValidationChanged?.Invoke(this, EventArgs.Empty);
+				return;
+			}
+
+			if (!_optionsEditor.IsValid)
+			{
+				IsValid = false;
+				ValidationText = "Make sure the options for the group are valid";
 				ValidationChanged?.Invoke(this, EventArgs.Empty);
 				return;
 			}
@@ -349,7 +357,7 @@
 
 		private bool GetGroupDetailsVisibility()
 		{
-			return _groupPrefixTextBox.ValidationState == UIValidationState.Valid;
+			return _groupPrefixTextBox.ValidationState == UIValidationState.Valid && _optionsEditor.IsValid;
 		}
 
 		private void UpdateGroupDetailsVisibility()
@@ -376,6 +384,12 @@
 		private void OnGroupPrefixTextBoxChanged()
 		{
 			UpdateGroupPrefixCheckboxValidity();
+			UpdateGroupDetailsVisibility();
+			UpdateIsValid();
+		}
+
+		private void OnOptionsEditorValidationChanged()
+		{
 			UpdateGroupDetailsVisibility();
 			UpdateIsValid();
 		}

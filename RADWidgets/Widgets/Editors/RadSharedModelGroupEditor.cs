@@ -68,6 +68,7 @@
 
 			_optionsEditor = new RadGroupOptionsEditor(radHelper, 3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
+			_optionsEditor.ValidationChanged += (sender, args) => OnOptionsEditorValidationChanged();
 
 			_subgroupSelector = new RadSubgroupSelector(engine, radHelper, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
@@ -123,7 +124,8 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (!_subgroupSelector.IsValid || _hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0);
+			return _groupNameSection.IsValid && _optionsEditor.IsValid &&
+				(!_subgroupSelector.IsValid || _hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0);
 		}
 
 		private void UpdateValidationText()
@@ -131,6 +133,10 @@
 			if (!_groupNameSection.IsValid)
 			{
 				ValidationText = "Provide a valid subgroup name.";
+			}
+			else if (!_optionsEditor.IsValid)
+			{
+				ValidationText = "Make sure the options for the group are valid.";
 			}
 			else if (!_subgroupSelector.IsValid)
 			{
@@ -236,7 +242,13 @@
 
 		private void OnGroupNameSectionValidationChanged()
 		{
-			_detailsLabel.IsVisible = GetDetailsLabelVisible();
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+			UpdateIsValid();
+		}
+
+		private void OnOptionsEditorValidationChanged()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 			UpdateIsValid();
 		}
 

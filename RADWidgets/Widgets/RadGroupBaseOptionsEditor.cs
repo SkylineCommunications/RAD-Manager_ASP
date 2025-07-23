@@ -1,6 +1,7 @@
 ﻿namespace RadWidgets.Widgets
 {
 	using System;
+	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 	using Skyline.DataMiner.Utils.RadToolkit;
 
@@ -15,6 +16,7 @@
 		private readonly Time _minimalDurationTime;
 		private readonly double _defaultAnomalyThreshold;
 		private readonly int _defaultMinimalDuration;
+		private bool _isValid;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RadGroupBaseOptionsEditor"/> class.
@@ -53,7 +55,7 @@
 				IsEnabled = options?.AnomalyThreshold != null,
 				Tooltip = anomalyThresholdTooltip,
 			};
-			_anomalyThresholdNumeric.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
+			_anomalyThresholdNumeric.Changed += (sender, args) => OnAnomalyThresholdNumericChanged();
 
 			_minimalDurationOverrideCheckBox = new CheckBox("Override default minimum anomaly duration?")
 			{
@@ -71,12 +73,15 @@
 			_minimalDurationTime = new Time()
 			{
 				HasSeconds = false,
-				Minimum = TimeSpan.FromMinutes(5),
+				Minimum = TimeSpan.FromMinutes(0),
 				TimeSpan = options?.MinimalDuration != null ? TimeSpan.FromMinutes(options.MinimalDuration.Value) : TimeSpan.FromMinutes(_defaultMinimalDuration),
-				ClipValueToRange = true,
 				IsEnabled = options?.MinimalDuration != null,
 			};
-			_minimalDurationTime.Changed += (sender, args) => Changed?.Invoke(this, EventArgs.Empty);
+			_minimalDurationTime.Changed += (sender, args) => OnMinimalDurationTimeChanged();
+
+			UpdateAnomalyThresholdNumericValidationState();
+			UpdateMinimalDurationTimeValidationState();
+			UpdateIsValid();
 
 			int row = 0;
 			AddWidget(_anomalyThresholdOverrideCheckBox, row, 0, 1, columnCount);
@@ -94,6 +99,8 @@
 		}
 
 		public event EventHandler Changed;
+
+		public event EventHandler ValidationChanged;
 
 		public double? AnomalyThreshold
 		{
@@ -117,12 +124,70 @@
 			}
 		}
 
+		public bool IsValid => _isValid;
+
+		private void UpdateAnomalyThresholdNumericValidationState()
+		{
+			if (_anomalyThresholdNumeric.Value > 0)
+			{
+				_anomalyThresholdNumeric.ValidationState = UIValidationState.Valid;
+				_anomalyThresholdNumeric.ValidationText = string.Empty;
+			}
+			else
+			{
+				_anomalyThresholdNumeric.ValidationState = UIValidationState.Invalid;
+				_anomalyThresholdNumeric.ValidationText = "Anomaly threshold must be greater than 0";
+			}
+		}
+
+		private void UpdateMinimalDurationTimeValidationState()
+		{
+			if (_minimalDurationTime.TimeSpan.TotalMinutes >= 5)
+			{
+				_minimalDurationTime.ValidationState = UIValidationState.Valid;
+				_minimalDurationTime.ValidationText = string.Empty;
+			}
+			else
+			{
+				_minimalDurationTime.ValidationState = UIValidationState.Invalid;
+				_minimalDurationTime.ValidationText = "Minimum anomaly duration must be at least 5 minutes";
+			}
+		}
+
+		private void UpdateIsValid()
+		{
+			bool isValid;
+			if (_anomalyThresholdOverrideCheckBox.IsChecked && _anomalyThresholdNumeric.ValidationState != UIValidationState.Valid)
+				isValid = false;
+			else if (_minimalDurationOverrideCheckBox.IsChecked && _minimalDurationTime.ValidationState != UIValidationState.Valid)
+				isValid = false;
+			else
+				isValid = true;
+
+			if (_isValid != isValid)
+			{
+				_isValid = isValid;
+				ValidationChanged?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
 		private void OnAnomalyThresholdOverrideCheckBoxChanged()
 		{
 			_anomalyThresholdNumeric.IsEnabled = _anomalyThresholdOverrideCheckBox.IsChecked;
 			if (!_anomalyThresholdOverrideCheckBox.IsChecked)
+			{
 				_anomalyThresholdNumeric.Value = _defaultAnomalyThreshold;
+				UpdateAnomalyThresholdNumericValidationState();
+			}
 
+			UpdateIsValid();
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void OnAnomalyThresholdNumericChanged()
+		{
+			UpdateAnomalyThresholdNumericValidationState();
+			UpdateIsValid();
 			Changed?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -130,8 +195,18 @@
 		{
 			_minimalDurationTime.IsEnabled = _minimalDurationOverrideCheckBox.IsChecked;
 			if (!_minimalDurationOverrideCheckBox.IsChecked)
+			{
 				_minimalDurationTime.TimeSpan = TimeSpan.FromMinutes(_defaultMinimalDuration);
+				UpdateMinimalDurationTimeValidationState();
+			}
 
+			Changed?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void OnMinimalDurationTimeChanged()
+		{
+			UpdateMinimalDurationTimeValidationState();
+			UpdateIsValid();
 			Changed?.Invoke(this, EventArgs.Empty);
 		}
 	}

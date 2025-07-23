@@ -37,11 +37,13 @@
 			}
 
 			_optionsEditor = new RadGroupOptionsEditor(radHelper, _parameterSelector.ColumnCount, options);
+			_optionsEditor.ValidationChanged += (sender, args) => OnOptionsEditorValidationChanged();
 
 			_detailsLabel = new MarginLabel(string.Empty, _parameterSelector.ColumnCount, 10);
 
-			OnGroupNameSectionValidationChanged();
-			OnParameterSelectorChanged();
+			UpdateParametersSelectedInRange();
+			UpdateDetailsLabel();
+			UpdateIsValid();
 
 			int row = 0;
 			AddSection(_groupNameSection, row, 0);
@@ -74,7 +76,7 @@
 
 		private void UpdateIsValid()
 		{
-			IsValid = _groupNameSection.IsValid && _moreThanMinParametersSelected && _lessThanMaxParametersSelected;
+			IsValid = _groupNameSection.IsValid && _optionsEditor.IsValid && _moreThanMinParametersSelected && _lessThanMaxParametersSelected;
 
 			List<string> validationTexts = new List<string>(2);
 			if (!_groupNameSection.IsValid && !_moreThanMinParametersSelected)
@@ -88,7 +90,7 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
+			return _groupNameSection.IsValid && _optionsEditor.IsValid && (!_moreThanMinParametersSelected || !_lessThanMaxParametersSelected);
 		}
 
 		private void UpdateDetailsLabel()
@@ -103,7 +105,7 @@
 				_detailsLabel.Text = string.Empty;
 		}
 
-		private void OnParameterSelectorChanged()
+		private void UpdateParametersSelectedInRange()
 		{
 			var count = _parameterSelector.GetSelectedParameters().Count();
 			bool newMinParametersState = count >= MIN_PARAMETERS;
@@ -117,7 +119,18 @@
 			}
 		}
 
+		private void OnParameterSelectorChanged()
+		{
+			UpdateParametersSelectedInRange();
+		}
+
 		private void OnGroupNameSectionValidationChanged()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+			UpdateIsValid();
+		}
+
+		private void OnOptionsEditorValidationChanged()
 		{
 			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
 			UpdateIsValid();
