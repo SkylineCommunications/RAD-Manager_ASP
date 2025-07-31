@@ -60,6 +60,9 @@
 
 		public bool HasDuplicatedParameters { get; private set; }
 
+		public bool HasInvalidOptions => (Options.MinimalDuration.HasValue && Options.MinimalDuration.Value < 5) ||
+			(Options.AnomalyThreshold.HasValue && Options.AnomalyThreshold.Value <= 0);
+
 		public bool HasWhiteSpaceName => string.IsNullOrWhiteSpace(Name) && !string.IsNullOrEmpty(Name);
 
 		public RadSubgroupOptions Options { get; private set; }
@@ -110,6 +113,8 @@
 				return $"{DisplayName} (duplicated parameters)";
 			else if (HasWhiteSpaceName)
 				return $"{DisplayName} (invalid name)";
+			else if (HasInvalidOptions)
+				return $"{DisplayName} (invalid options)";
 			else
 				return DisplayName;
 		}
@@ -120,6 +125,7 @@
 		public const int MinNrOfSubgroups = 1;
 		public const int MaxNrOfSubgroups = 2500;
 		private readonly IEngine _engine;
+		private readonly RadHelper _radHelper;
 		private readonly DetailsViewer<RadSubgroupSelectorItem> _subgroupViewer;
 		private readonly RadSubgroupDetailsView _subgroupDetailsView;
 		private readonly Button _editButton;
@@ -133,16 +139,18 @@
 		private List<string> _duplicatedSubgroupNames;
 		private List<string> _subgroupsWithWhitespaceNames;
 		private List<string> _subgroupsWithSameParameters;
+		private List<string> _subgroupsWithInvalidOptions;
 
-		public RadSubgroupSelector(IEngine engine, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
+		public RadSubgroupSelector(IEngine engine, RadHelper radHelper, RadGroupOptions parentOptions, List<string> parameterLabels, ParametersCache parametersCache,
 			List<RadSubgroupInfo> subgroups = null, Guid? selectedSubgroup = null)
 		{
-			_engine = engine;
+			_engine = engine ?? throw new ArgumentNullException(nameof(engine));
+			_radHelper = radHelper ?? throw new ArgumentNullException(nameof(radHelper));
 			_parameterLabels = parameterLabels;
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
 			_parametersCache = parametersCache;
 
-			_subgroupDetailsView = new RadSubgroupDetailsView(2, parameterLabels, parentOptions);
+			_subgroupDetailsView = new RadSubgroupDetailsView(radHelper, 2, parameterLabels, parentOptions);
 
 			_subgroupViewer = new DetailsViewer<RadSubgroupSelectorItem>(_subgroupDetailsView, "Subgroups");
 			_subgroupViewer.SelectionChanged += (sender, args) => OnSubgroupViewerSelectionChanged(args.Selection);
@@ -298,6 +306,11 @@
 				_subgroupsWithSameParameters = new List<string>();
 		}
 
+		private void CalculateSubgroupsWithInvalidOptions(List<RadSubgroupSelectorItem> subgroups)
+		{
+			_subgroupsWithInvalidOptions = subgroups.Where(s => s.HasInvalidOptions).Select(s => s.DisplayName).ToList();
+		}
+
 		private void CalculateIsValidOnEditedSubgroup(List<RadSubgroupSelectorItem> subgroups, RadSubgroupSelectorItem newSettings, RadSubgroupSelectorItem oldSettings)
 		{
 			if (oldSettings.HasMissingParameters)
@@ -314,6 +327,11 @@
 				_subgroupsWithWhitespaceNames.Remove(oldSettings.DisplayName);
 			if (newSettings.HasWhiteSpaceName)
 				_subgroupsWithWhitespaceNames.Add(newSettings.DisplayName);
+
+			if (oldSettings.HasInvalidOptions)
+				_subgroupsWithInvalidOptions.Remove(oldSettings.DisplayName);
+			if (newSettings.HasInvalidOptions)
+				_subgroupsWithInvalidOptions.Add(newSettings.DisplayName);
 
 			if (!string.Equals(newSettings.Name, oldSettings.Name))
 				CalculateDuplicatedSubgroupNames(subgroups);
@@ -332,6 +350,9 @@
 
 			if (newSettings.HasWhiteSpaceName)
 				_subgroupsWithWhitespaceNames.Add(newSettings.DisplayName);
+
+			if (newSettings.HasInvalidOptions)
+				_subgroupsWithInvalidOptions.Add(newSettings.DisplayName);
 
 			string newName = newSettings.Name;
 			if (!string.IsNullOrEmpty(newName) && subgroups.Count(s => string.Equals(s.Name, newName, StringComparison.OrdinalIgnoreCase)) >= 2)
@@ -422,6 +443,20 @@
 			return false;
 		}
 
+		private bool UpdateValidationTextForInvalidOptions()
+		{
+			if (_subgroupsWithInvalidOptions.Count > 0)
+			{
+				if (_subgroupsWithInvalidOptions.Count == 1)
+					ValidationText = $"Subgroup {_subgroupsWithInvalidOptions.First()} has invalid options.";
+				else
+					ValidationText = $"Subgroups {_subgroupsWithInvalidOptions.HumanReadableJoin()} have invalid options.";
+				return true;
+			}
+
+			return false;
+		}
+
 		private void UpdateValidationText(List<RadSubgroupSelectorItem> subgroups)
 		{
 			if (UpdateValidationTextForNrOfSubgroups(subgroups))
@@ -440,6 +475,9 @@
 				return;
 
 			if (UpdateValidationTextForSameParameters())
+				return;
+
+			if (UpdateValidationTextForInvalidOptions())
 				return;
 
 			ValidationText = string.Empty; // No validation errors found
@@ -465,6 +503,7 @@
 			CalculateSubgroupsWithWhitespaceNames(subgroups);
 			CalculateDuplicatedSubgroupNames(subgroups);
 			CalculateSubgroupsWithSameParameters(subgroups);
+			CalculateSubgroupsWithInvalidOptions(subgroups);
 
 			UpdateIsValid(subgroups);
 		}
@@ -477,7 +516,7 @@
 			var placeHolderName = string.IsNullOrEmpty(settings.Name) ? settings.DisplayName : GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 
 			InteractiveController app = new InteractiveController(_engine);
-			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
+			EditSubgroupDialog dialog = new EditSubgroupDialog(_engine, _radHelper, _subgroupViewer.GetItems().ToList(), _parameterLabels, settings, placeHolderName, _parentOptions);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as EditSubgroupDialog;
@@ -515,7 +554,7 @@
 		{
 			var placeHolderName = GetSubgroupPlaceHolderName(_unnamedSubgroupCount + 1);
 			InteractiveController app = new InteractiveController(_engine);
-			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _subgroupViewer.GetItems().ToList(), _parameterLabels, _parentOptions, placeHolderName);
+			AddSubgroupDialog dialog = new AddSubgroupDialog(_engine, _radHelper, _subgroupViewer.GetItems().ToList(), _parameterLabels, _parentOptions, placeHolderName);
 			dialog.Accepted += (sender, args) =>
 			{
 				var d = sender as AddSubgroupDialog;

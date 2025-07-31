@@ -13,15 +13,15 @@
 		private readonly RadGroupEditor _groupEditor;
 		private readonly Button _okButton;
 
-		public EditParameterGroupDialog(IEngine engine, RadGroupInfo groupSettings, int dataMinerID) : base(engine)
+		public EditParameterGroupDialog(IEngine engine, RadHelper radHelper, RadGroupInfo groupSettings, int dataMinerID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
 			Title = $"Edit Group '{groupSettings.GroupName}'";
 			var parametersCache = new EngineParametersCache(engine);
 
-			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-			_groupEditor = new RadGroupEditor(engine, groupNames, parametersCache, groupSettings);
+			var groupNames = Utils.FetchRadGroupIDs(engine, radHelper).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+			_groupEditor = new RadGroupEditor(engine, radHelper, groupNames, parametersCache, groupSettings);
 			_groupEditor.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			_okButton = new Button("Apply")

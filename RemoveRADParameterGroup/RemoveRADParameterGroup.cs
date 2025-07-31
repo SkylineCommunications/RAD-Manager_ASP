@@ -10,6 +10,7 @@ using Skyline.DataMiner.Utils.RadToolkit;
 public class Script
 {
 	private InteractiveController _app;
+	private RadHelper _radHelper;
 
 	/// <summary>
 	/// The Script entry point.
@@ -27,6 +28,7 @@ public class Script
 		try
 		{
 			_app = new InteractiveController(engine);
+			_radHelper = RadWidgets.Utils.GetRadHelper(engine);
 
 			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
 			if (groupIDs.Count == 0)
@@ -35,7 +37,7 @@ public class Script
 				return;
 			}
 
-			var dialog = new RemoveParameterGroupDialog(engine, groupIDs);
+			var dialog = new RemoveParameterGroupDialog(engine, _radHelper, groupIDs);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
@@ -74,13 +76,12 @@ public class Script
 		if (dialog == null)
 			throw new ArgumentException("Invalid sender type");
 
-		var radHelper = _app.Engine.GetRadHelper();
 		var failedGroups = new List<Tuple<string, Exception>>();
 		foreach (var group in dialog.GetGroupsToRemove())
 		{
 			try
 			{
-				radHelper.RemoveParameterGroup(group.DataMinerID, group.GroupName);
+				_radHelper.RemoveParameterGroup(group.DataMinerID, group.GroupName);
 			}
 			catch (Exception ex)
 			{
@@ -93,7 +94,7 @@ public class Script
 		{
 			try
 			{
-				radHelper.RemoveSubgroup(subgroup.DataMinerID, subgroup.GroupName, subgroup.SubgroupID.Value);
+				_radHelper.RemoveSubgroup(subgroup.DataMinerID, subgroup.GroupName, subgroup.SubgroupID.Value);
 			}
 			catch (Exception ex)
 			{

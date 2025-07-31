@@ -27,6 +27,7 @@
 		public const int TextWrapWidth = 150;
 		public const int TextWrapIndentWidth = 5;
 		private readonly IEngine _engine;
+		private readonly RadHelper _radHelper;
 		private readonly ParametersCache _parametersCache;
 		private readonly WrappingLabel _label;
 		private readonly Button _yesButton;
@@ -36,9 +37,10 @@
 		private List<AGroupRemoveSection> _groupRemoveWidgets;
 		private List<RadGroupID> _extraGroupsToRemove;
 
-		public RemoveParameterGroupDialog(IEngine engine, List<IRadGroupID> groupIDs) : base(engine)
+		public RemoveParameterGroupDialog(IEngine engine, RadHelper radHelper, List<IRadGroupID> groupIDs) : base(engine)
 		{
 			_engine = engine ?? throw new ArgumentNullException(nameof(engine));
+			_radHelper = radHelper ?? throw new ArgumentNullException(nameof(radHelper));
 			_parametersCache = new EngineParametersCache(engine);
 			ShowScriptAbortPopup = false;
 
@@ -212,7 +214,7 @@
 		{
 			try
 			{
-				return _engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+				return _radHelper.FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 			}
 			catch (Exception e)
 			{

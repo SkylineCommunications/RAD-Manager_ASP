@@ -25,12 +25,12 @@
 		private bool _hasMissingParameterLabels;
 		private bool _hasWhiteSpaceLabels;
 
-		public RadSharedModelGroupEditor(IEngine engine, List<string> existingGroupNames, ParametersCache parametersCache,
+		public RadSharedModelGroupEditor(IEngine engine, RadHelper radHelper, List<string> existingGroupNames, ParametersCache parametersCache,
 			RadGroupInfo settings = null, Guid? selectedSubgroup = null)
 		{
 			_engine = engine;
 			_groupNameSection = new GroupNameSection(settings?.GroupName, existingGroupNames, 2);
-			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
+			_groupNameSection.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			const string parametersPerSubgroupTooltip = "Each subgroup will have this many parameters";
 			var parametersCountLabel = new Label("Number of parameters per subgroup")
@@ -66,10 +66,11 @@
 			};
 			parameterLabelsEditorButton.Pressed += (sender, args) => OnEditLabelsButtonPressed();
 
-			_optionsEditor = new RadGroupOptionsEditor(3, settings?.Options);
+			_optionsEditor = new RadGroupOptionsEditor(radHelper, 3, settings?.Options);
 			_optionsEditor.Changed += (sender, args) => _subgroupSelector.UpdateParentOptions(_optionsEditor.Options);
+			_optionsEditor.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
-			_subgroupSelector = new RadSubgroupSelector(engine, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
+			_subgroupSelector = new RadSubgroupSelector(engine, radHelper, _optionsEditor.Options, _parameterLabels, parametersCache, settings?.Subgroups, selectedSubgroup);
 			_subgroupSelector.ValidationChanged += (sender, args) => OnSubgroupSelectorValidationChanged();
 
 			_detailsLabel = new MarginLabel(string.Empty, 3, 10)
@@ -123,7 +124,8 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (!_subgroupSelector.IsValid || _hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0);
+			return _groupNameSection.IsValid && _optionsEditor.IsValid &&
+				(!_subgroupSelector.IsValid || _hasMissingParameterLabels || _hasWhiteSpaceLabels || _duplicatedParameterLabels.Count > 0);
 		}
 
 		private void UpdateValidationText()
@@ -131,6 +133,10 @@
 			if (!_groupNameSection.IsValid)
 			{
 				ValidationText = "Provide a valid subgroup name.";
+			}
+			else if (!_optionsEditor.IsValid)
+			{
+				ValidationText = "Make sure the options for the group are valid.";
 			}
 			else if (!_subgroupSelector.IsValid)
 			{
@@ -182,6 +188,12 @@
 			ValidationChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		private void UpdateIsValidAndDetailsLabelVisibility()
+		{
+			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+			UpdateIsValid();
+		}
+
 		private void OnEditLabelsButtonPressed()
 		{
 			InteractiveController app = new InteractiveController(_engine);
@@ -231,12 +243,6 @@
 
 			UpdateParameterLabelsValid();
 			UpdateDetailsLabel();
-			UpdateIsValid();
-		}
-
-		private void OnGroupNameSectionValidationChanged()
-		{
-			_detailsLabel.IsVisible = GetDetailsLabelVisible();
 			UpdateIsValid();
 		}
 

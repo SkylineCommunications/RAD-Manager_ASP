@@ -13,11 +13,11 @@
 		private readonly RadSubgroupEditor _subgroupEditor;
 		private readonly Button _okButton;
 
-		public EditSubgroupDialog(IEngine engine, List<RadSubgroupSelectorItem> existingSubgroups, List<string> labels, RadSubgroupSelectorItem settings,
+		public EditSubgroupDialog(IEngine engine, RadHelper radHelper, List<RadSubgroupSelectorItem> existingSubgroups, List<string> labels, RadSubgroupSelectorItem settings,
 			string groupNamePlaceHolder, RadGroupOptions parentOptions) : base(engine)
 		{
 			Title = string.IsNullOrEmpty(settings?.Name) ? "Edit Subgroup" : $"Edit Subgroup '{settings.Name}'";
-			_subgroupEditor = new RadSubgroupEditor(engine, existingSubgroups, parentOptions, labels, groupNamePlaceHolder, settings);
+			_subgroupEditor = new RadSubgroupEditor(engine, radHelper, existingSubgroups, parentOptions, labels, groupNamePlaceHolder, settings);
 			_subgroupEditor.ValidationChanged += (sender, args) => OnSubgroupEditorValidationChanged();
 
 			_okButton = new Button("Apply")

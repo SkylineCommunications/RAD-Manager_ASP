@@ -138,7 +138,7 @@
 					foreach (var e in whitespaceLabels)
 					{
 						e.ValidationState = UIValidationState.Invalid;
-						editor.ValidationText = "Labels with only whitespace characters are not allowed.";
+						editor.ValidationText = "Labels with only whitespace characters are not allowed";
 					}
 
 					return;
@@ -154,7 +154,7 @@
 					foreach (var e in duplicateLabels.SelectMany(g => g))
 					{
 						e.ValidationState = UIValidationState.Invalid;
-						e.ValidationText = "This label is duplicated.";
+						e.ValidationText = "This label is duplicated";
 					}
 
 					return;

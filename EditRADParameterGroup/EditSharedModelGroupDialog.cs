@@ -13,15 +13,18 @@
 		private readonly RadSharedModelGroupEditor _sharedGroupEditor;
 		private readonly Button _okButton;
 
-		public EditSharedModelGroupDialog(IEngine engine, RadGroupInfo groupSettings, Guid? selectedSubgroup, int dataMinerID) : base(engine)
+		public EditSharedModelGroupDialog(IEngine engine, RadHelper radHelper, RadGroupInfo groupSettings, Guid? selectedSubgroup, int dataMinerID) : base(engine)
 		{
 			ShowScriptAbortPopup = false;
 			DataMinerID = dataMinerID;
 			Title = $"Edit Shared Model Group '{groupSettings.GroupName}'";
 
-			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine).Select(id => id.GroupName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+			var groupNames = RadWidgets.Utils.FetchRadGroupIDs(engine, radHelper)
+				.Select(id => id.GroupName)
+				.Distinct(StringComparer.OrdinalIgnoreCase)
+				.ToList();
 			var parametersCache = new EngineParametersCache(engine);
-			_sharedGroupEditor = new RadSharedModelGroupEditor(engine, groupNames, parametersCache, groupSettings, selectedSubgroup);
+			_sharedGroupEditor = new RadSharedModelGroupEditor(engine, radHelper, groupNames, parametersCache, groupSettings, selectedSubgroup);
 			_sharedGroupEditor.ValidationChanged += (sender, args) => OnGroupEditorValidationChanged();
 
 			_okButton = new Button("Apply")

@@ -9,14 +9,16 @@
 
 	public class RadSubgroupDetailsView : DetailsView<RadSubgroupSelectorItem>
 	{
+		private readonly RadHelper _radHelper;
 		private readonly Label _invalidSelectionLabel;
 		private readonly Label _detailsLabel;
 		private List<string> _parameterLabels;
 		private RadGroupOptions _parentOptions;
 		private RadSubgroupSelectorItem _item;
 
-		public RadSubgroupDetailsView(int columnSpan, List<string> parameterLabels, RadGroupOptions parentOptions)
+		public RadSubgroupDetailsView(RadHelper radHelper, int columnSpan, List<string> parameterLabels, RadGroupOptions parentOptions)
 		{
+			_radHelper = radHelper ?? throw new ArgumentNullException(nameof(radHelper));
 			_parameterLabels = parameterLabels ?? new List<string>();
 			_parentOptions = parentOptions ?? throw new ArgumentNullException(nameof(parentOptions));
 
@@ -86,9 +88,9 @@
 			}
 
 			var parameterText = string.Join("\n", parameterTexts);
-			double anomalyThreshold = _item.Options.GetAnomalyThresholdOrDefault(_parentOptions.AnomalyThreshold);
+			double anomalyThreshold = _item.Options.GetAnomalyThresholdOrDefault(_radHelper, _parentOptions.AnomalyThreshold);
 			string anomalyThresholdText = _item.Options.AnomalyThreshold.HasValue ? anomalyThreshold.ToString() : $"{anomalyThreshold} (same as parent group)";
-			int minimalDuration = _item.Options.GetMinimalDurationOrDefault(_parentOptions.MinimalDuration);
+			int minimalDuration = _item.Options.GetMinimalDurationOrDefault(_radHelper, _parentOptions.MinimalDuration);
 			string minimalDurationText = _item.Options.MinimalDuration.HasValue ? $"{minimalDuration} minutes" : $"{minimalDuration} minutes (same as parent group)";
 			_detailsLabel.Text = $"Parameters:\n{parameterText}\n\n" +
 				$"Options:\n" +

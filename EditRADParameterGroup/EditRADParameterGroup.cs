@@ -11,6 +11,7 @@ using Skyline.DataMiner.Utils.RadToolkit;
 public class Script
 {
 	private InteractiveController _app;
+	private RadHelper _radHelper;
 
 	/// <summary>
 	/// The Script entry point.
@@ -28,13 +29,14 @@ public class Script
 		try
 		{
 			_app = new InteractiveController(engine);
+			_radHelper = RadWidgets.Utils.GetRadHelper(engine);
 
 			if (!TryGetRadGroupID(out var settings, out var groupID))
 				return;
 
 			if (settings.Subgroups?.Count == 1)
 			{
-				var dialog = new EditParameterGroupDialog(engine, settings, groupID.DataMinerID);
+				var dialog = new EditParameterGroupDialog(engine, _radHelper, settings, groupID.DataMinerID);
 				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditParameterGroupDialog, settings);
 				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 				_app.ShowDialog(dialog);
@@ -55,7 +57,7 @@ public class Script
 					}
 				}
 
-				var dialog = new EditSharedModelGroupDialog(engine, settings, subgroupGUID, groupID.DataMinerID);
+				var dialog = new EditSharedModelGroupDialog(engine, _radHelper, settings, subgroupGUID, groupID.DataMinerID);
 				dialog.Accepted += (sender, args) => Dialog_Accepted(sender as EditSharedModelGroupDialog, settings);
 				dialog.Cancelled += (sender, args) => Dialog_Cancelled();
 				_app.ShowDialog(dialog);
@@ -104,7 +106,7 @@ public class Script
 		groupID = groupIDs.First();
 		try
 		{
-			settings = _app.Engine.GetRadHelper().FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+			settings = _radHelper.FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
 		}
 		catch (Exception ex)
 		{
@@ -133,7 +135,6 @@ public class Script
 
 		try
 		{
-			var radHelper = _app.Engine.GetRadHelper();
 			var originalParameters = originalSettings.Subgroups.First().Parameters.Select(p => p.Key).ToHashSet(new ParameterKeyEqualityComparer());
 			if (originalParameters.SetEquals(newSettings.Subgroups.First().Parameters.Select(p => p.Key)))
 			{
@@ -141,21 +142,21 @@ public class Script
 				{
 					try
 					{
-						radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+						_radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
 					}
 					catch (NotSupportedException)
 					{
 						// We can't rename, so remove the old group instead
-						radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
+						_radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 					}
 				}
 			}
 			else
 			{
-				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
+				_radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 			}
 
-			radHelper.AddParameterGroup(newSettings);
+			_radHelper.AddParameterGroup(newSettings);
 		}
 		catch (Exception ex)
 		{
@@ -176,28 +177,26 @@ public class Script
 
 		try
 		{
-			var radHelper = _app.Engine.GetRadHelper();
-
 			GetAddedAndRemovedSubgroups(newSettings.Subgroups, originalSettings.Subgroups,
 				out List<RadSubgroupSettings> addedSubgroups, out List<RadSubgroupSettings> removedSubgroups);
 			if (addedSubgroups.Count == newSettings.Subgroups.Count)
 			{
 				// No subgroup is preserved, so we remove the entire group
-				radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
+				_radHelper.RemoveParameterGroup(dialog.DataMinerID, originalSettings.GroupName);
 			}
 			else
 			{
 				// Add least one of the original subgroups is preserved, so do not remove the entire group
 				if (!originalSettings.GroupName.Equals(newSettings.GroupName, StringComparison.OrdinalIgnoreCase))
-					radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
+					_radHelper.RenameParameterGroup(dialog.DataMinerID, originalSettings.GroupName, newSettings.GroupName);
 
 				foreach (var removedSubgroup in removedSubgroups)
-					radHelper.RemoveSubgroup(dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
+					_radHelper.RemoveSubgroup(dialog.DataMinerID, newSettings.GroupName, removedSubgroup.ID);
 				foreach (var addedSubgroup in addedSubgroups)
-					radHelper.AddSubgroup(dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
+					_radHelper.AddSubgroup(dialog.DataMinerID, newSettings.GroupName, addedSubgroup);
 			}
 
-			radHelper.AddParameterGroup(newSettings);
+			_radHelper.AddParameterGroup(newSettings);
 		}
 		catch (Exception ex)
 		{

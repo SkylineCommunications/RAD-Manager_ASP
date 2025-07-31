@@ -22,7 +22,7 @@
 		private bool _hasDuplicatedParameters;
 		private RadSubgroupSelectorItem _subgroupWithSameParameters;
 
-		public RadSubgroupEditor(IEngine engine, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
+		public RadSubgroupEditor(IEngine engine, RadHelper radHelper, List<RadSubgroupSelectorItem> allSubgroups, RadGroupOptions parentOptions,
 			List<string> parameterLabels, string groupNamePlaceHolder, RadSubgroupSelectorItem settings = null)
 		{
 			_subgroupID = settings?.ID ?? Guid.NewGuid();
@@ -47,17 +47,17 @@
 
 			int parameterSelectorColumnCount = _parameterSelectors.FirstOrDefault()?.Item2.ColumnCount ?? 1;
 			_groupNameSection = new GroupNameSection(settings?.Name, _otherSubgroups.Select(s => s.Name).ToList(), parameterSelectorColumnCount, groupNamePlaceHolder);
-			_groupNameSection.ValidationChanged += (sender, args) => OnGroupNameSectionValidationChanged();
+			_groupNameSection.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
-			_optionsEditor = new RadSubgroupOptionsEditor(parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
+			_optionsEditor = new RadSubgroupOptionsEditor(radHelper, parameterSelectorColumnCount + 1, parentOptions, settings?.Options);
+			_optionsEditor.ValidationChanged += (sender, args) => UpdateIsValidAndDetailsLabelVisibility();
 
 			_detailsLabel = new MarginLabel(string.Empty, 2, 10)
 			{
 				MaxTextWidth = 200,
 			};
 
-			OnGroupNameSectionValidationChanged();
-			OnParameterSelectorChanged();
+			UpdateInvalidGroups();
 
 			int row = 0;
 			AddSection(_groupNameSection, row, 0);
@@ -137,6 +137,8 @@
 			List<string> validationTexts = new List<string>(2);
 			if (!_groupNameSection.IsValid)
 				validationTexts.Add("provide a valid subgroup name");
+			if (!_optionsEditor.IsValid)
+				validationTexts.Add("provide valid options for the subgroup");
 			if (_hasInvalidParameter)
 				validationTexts.Add("make a valid selection for each parameter");
 			else if (_subgroupWithSameParameters != null)
@@ -149,7 +151,7 @@
 
 		private bool GetDetailsLabelVisible()
 		{
-			return _groupNameSection.IsValid && (_hasInvalidParameter || _hasDuplicatedParameters || _subgroupWithSameParameters != null);
+			return _groupNameSection.IsValid && _optionsEditor.IsValid && (_hasInvalidParameter || _hasDuplicatedParameters || _subgroupWithSameParameters != null);
 		}
 
 		private void UpdateDetailsLabel()
@@ -178,7 +180,7 @@
 			}
 		}
 
-		private void OnParameterSelectorChanged()
+		private void UpdateInvalidGroups()
 		{
 			_hasInvalidParameter = _parameterSelectors.Any(p => !p.Item2.InternalIsValid);
 			UpdateDuplicatedParameters();
@@ -189,10 +191,15 @@
 			UpdateDetailsLabel();
 		}
 
-		private void OnGroupNameSectionValidationChanged()
+		private void UpdateIsValidAndDetailsLabelVisibility()
 		{
 			UpdateIsValid();
 			_detailsLabel.IsVisible = IsSectionVisible && GetDetailsLabelVisible();
+		}
+
+		private void OnParameterSelectorChanged()
+		{
+			UpdateInvalidGroups();
 		}
 	}
 }

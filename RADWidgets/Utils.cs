@@ -241,11 +241,11 @@
 		/// Fetch the IDs of all RAD groups in the system.
 		/// </summary>
 		/// <param name="engine">The engine.</param>
+		/// <param name="radHelper">The RAD helper to use for fetching the group names.</param>
 		/// <returns>A list of RAD group IDs.</returns>
-		public static List<RadGroupID> FetchRadGroupIDs(IEngine engine)
+		public static List<RadGroupID> FetchRadGroupIDs(IEngine engine, RadHelper radHelper)
 		{
 			var result = new List<RadGroupID>();
-			var radHelper = engine.GetRadHelper();
 			foreach (var agent in engine.GetDms().GetAgents())
 			{
 				try
@@ -430,7 +430,7 @@
 			return char.ToUpper(s[0]) + s.Substring(1);
 		}
 
-		public static RadHelper GetRadHelper(this IEngine engine)
+		public static RadHelper GetRadHelper(IEngine engine)
 		{
 			if (engine == null)
 				throw new ArgumentNullException(nameof(engine));

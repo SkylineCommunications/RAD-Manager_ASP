@@ -5,10 +5,12 @@ using AddRadParameterGroup;
 using RadWidgets;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
 	private InteractiveController _app;
+	private RadHelper _radHelper;
 
 	/// <summary>
 	/// The Script entry point.
@@ -26,8 +28,9 @@ public class Script
 		try
 		{
 			_app = new InteractiveController(engine);
+			_radHelper = RadWidgets.Utils.GetRadHelper(engine);
 
-			var dialog = new AddParameterGroupDialog(engine);
+			var dialog = new AddParameterGroupDialog(engine, _radHelper);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
@@ -72,7 +75,7 @@ public class Script
 		{
 			try
 			{
-				_app.Engine.GetRadHelper().AddParameterGroup(group);
+				_radHelper.AddParameterGroup(group);
 			}
 			catch (Exception ex)
 			{
