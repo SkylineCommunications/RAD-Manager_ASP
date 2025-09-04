@@ -164,7 +164,7 @@ public class Script
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully edit relational anomaly group");
+		_app.Engine.ExitSuccess("Successfully edited relational anomaly group");
 	}
 
 	private void Dialog_Accepted(EditSharedModelGroupDialog dialog, RadGroupInfo originalSettings)
