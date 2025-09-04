@@ -5,12 +5,24 @@
 	using System.Linq;
 	using RadUtils;
 	using Skyline.DataMiner.Net.Exceptions;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	public class AnomalyScoreData
 	{
-		public string GroupName { get; set; }
+		public AnomalyScoreData(string userDomainName, IRadGroupID groupID,
+			DateTime cacheTime, DateTime requestStartTime, DateTime requestEndTime, List<KeyValuePair<DateTime, double>> anomalyScores)
+		{
+			UserDomainName = userDomainName;
+			GroupID = groupID;
+			CacheTime = cacheTime;
+			RequestStartTime = requestStartTime;
+			RequestEndTime = requestEndTime;
+			AnomalyScores = anomalyScores ?? new List<KeyValuePair<DateTime, double>>();
+		}
 
-		public int DataMinerID { get; set; }
+		public string UserDomainName { get; set; }
+
+		public IRadGroupID GroupID { get; set; }
 
 		public List<KeyValuePair<DateTime, double>> AnomalyScores { get; set; }
 
@@ -19,59 +31,101 @@
 		public DateTime RequestStartTime { get; set; }
 
 		public DateTime RequestEndTime { get; set; }
+
+		public bool IsSameUserAndGroup(string userDomainName, IRadGroupID groupID)
+		{
+			return UserDomainName == userDomainName && GroupID.Equals(groupID);
+		}
+
+		public bool IsValidEntry(string userDomainName, IRadGroupID groupID,
+			DateTime startTime, DateTime endTime)
+		{
+			return IsSameUserAndGroup(userDomainName, groupID) &&
+				DateTime.UtcNow <= CacheTime.AddMinutes(5) &&
+				startTime >= RequestStartTime.AddMinutes(-5) &&
+				endTime <= RequestEndTime.AddMinutes(5);
+		}
 	}
 
 	public class AnomalyScoreCache
 	{
+		private const int MAX_CACHE_SIZE = 5;
 		private readonly object _anomalyScoreDataLock = new object();
-		private AnomalyScoreData _anomalyScoreData = null;
+		private readonly List<AnomalyScoreData> _anomalyScoreData = new List<AnomalyScoreData>();
 
-		public List<KeyValuePair<DateTime, double>> GetAnomalyScores(int dataMinerID, string groupName, DateTime startTime, DateTime endTime, bool skipCache)
+		public List<KeyValuePair<DateTime, double>> GetAnomalyScores(ConnectionHelper helper, IRadGroupID groupID,
+			DateTime startTime, DateTime endTime, bool skipCache)
 		{
 			lock (_anomalyScoreDataLock)
 			{
-				if (_anomalyScoreData == null ||
-					groupName != _anomalyScoreData.GroupName ||
-					DateTime.UtcNow > _anomalyScoreData.CacheTime.AddMinutes(5) ||
-					startTime < _anomalyScoreData.RequestStartTime.AddMinutes(-5) ||
-					endTime > _anomalyScoreData.RequestEndTime.AddMinutes(5) ||
-					skipCache)
+				AnomalyScoreData scoreData = null;
+
+				if (!skipCache)
 				{
-					UpdateAnomalyScoreData(dataMinerID, groupName, startTime, endTime);
+					scoreData = _anomalyScoreData
+						.FirstOrDefault(p => p.IsValidEntry(helper.Connection.UserDomainName, groupID,
+						startTime, endTime));
 				}
 
-				return _anomalyScoreData.AnomalyScores
-					.Where(p => p.Key >= startTime && p.Key <= endTime)
-					.ToList();
+				if (scoreData == null)
+				{
+					scoreData = UpdateAnomalyScoreData(helper, groupID, startTime, endTime);
+				}
+
+				return scoreData.AnomalyScores
+						.Where(p => p.Key >= startTime && p.Key <= endTime)
+						.ToList();
 			}
 		}
 
-		private void UpdateAnomalyScoreData(int dataMinerID, string groupName, DateTime startTime, DateTime endTime)
+		private AnomalyScoreData UpdateAnomalyScoreData(ConnectionHelper helper, IRadGroupID groupID, DateTime startTime,
+			DateTime endTime)
 		{
 			DateTime now = DateTime.UtcNow;
 
 			try
 			{
-				var requestStartTime = Min(now.AddMonths(-1), startTime);
+				var requestStartTime = Min(now.AddDays(-7), startTime);
 				var requestEndTime = Max(now, endTime);
-				var anomalyScores = RadMessageHelper.FetchAnomalyScoreData(ConnectionHelper.Connection, dataMinerID, groupName, requestStartTime, requestEndTime);
+				List<KeyValuePair<DateTime, double>> anomalyScores = null;
+
+				anomalyScores = FetchAnomalyScore(helper.RadHelper, groupID, requestStartTime, requestEndTime);
 				if (anomalyScores == null)
 					throw new DataMinerCommunicationException("No response or a response of the wrong type received");
 
-				_anomalyScoreData = new AnomalyScoreData()
-				{
-					GroupName = groupName,
-					DataMinerID = dataMinerID,
-					CacheTime = now,
-					RequestStartTime = requestStartTime,
-					RequestEndTime = requestEndTime,
-					AnomalyScores = anomalyScores,
-				};
+				_anomalyScoreData.RemoveAll(p => p.IsSameUserAndGroup(helper.Connection.UserDomainName, groupID));
+				if (_anomalyScoreData.Count >= MAX_CACHE_SIZE)
+					_anomalyScoreData.RemoveAt(0); // Remove the oldest entry if cache size exceeds limit
+
+				var newScoreData = new AnomalyScoreData(helper.Connection.UserDomainName, groupID,
+					now, requestStartTime, requestEndTime, anomalyScores);
+				_anomalyScoreData.Add(newScoreData);
+				return newScoreData;
 			}
 			catch (Exception ex)
 			{
 				throw new DataMinerCommunicationException("Failed to fetch RAD data", ex);
 			}
+		}
+
+		private List<KeyValuePair<DateTime, double>> FetchAnomalyScore(RadHelper helper, IRadGroupID groupID, DateTime startTime, DateTime endTime)
+		{
+			try
+			{
+				if (groupID is RadSubgroupID subgroupID)
+				{
+					if (subgroupID.SubgroupID != null)
+						return helper.FetchAnomalyScoreData(subgroupID.DataMinerID, subgroupID.GroupName, subgroupID.SubgroupID.Value, startTime, endTime);
+					else
+						return helper.FetchAnomalyScoreData(subgroupID.DataMinerID, subgroupID.GroupName, subgroupID.SubgroupName, startTime, endTime);
+				}
+			}
+			catch (NotSupportedException)
+			{
+				// If the method is not supported, we fall back to the method without fetching on subgroup
+			}
+
+			return helper.FetchAnomalyScoreData(groupID.DataMinerID, groupID.GroupName, startTime, endTime);
 		}
 
 		private DateTime Min(DateTime time1, DateTime time2)
