@@ -99,7 +99,7 @@
 
 		private void Clean()
 		{
-			var keysToRemove = _cache.OrderBy(kvp => kvp.Value.Timestamp).Skip(_maxCacheSize / 2).ToList();
+			var keysToRemove = _cache.OrderBy(kvp => kvp.Value.Timestamp).Take(_maxCacheSize / 2).ToList();
 			foreach (var key in keysToRemove)
 				_cache.Remove(key.Key);
 		}
