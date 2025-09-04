@@ -10,6 +10,7 @@
 	/// </summary>
 	public class RadGroupBaseOptionsEditor : Section
 	{
+		public const int MinimumDurationLowerLimit = 5;
 		private readonly CheckBox _anomalyThresholdOverrideCheckBox;
 		private readonly Numeric _anomalyThresholdNumeric;
 		private readonly CheckBox _minimalDurationOverrideCheckBox;
@@ -142,7 +143,7 @@
 
 		private void UpdateMinimalDurationTimeValidationState()
 		{
-			if (_minimalDurationTime.TimeSpan.TotalMinutes >= 5)
+			if (_minimalDurationTime.TimeSpan.TotalMinutes >= MinimumDurationLowerLimit)
 			{
 				_minimalDurationTime.ValidationState = UIValidationState.Valid;
 				_minimalDurationTime.ValidationText = string.Empty;
@@ -150,7 +151,7 @@
 			else
 			{
 				_minimalDurationTime.ValidationState = UIValidationState.Invalid;
-				_minimalDurationTime.ValidationText = "Minimum anomaly duration must be at least 5 minutes";
+				_minimalDurationTime.ValidationText = $"Minimum anomaly duration must be at least {MinimumDurationLowerLimit} minutes";
 			}
 		}
 

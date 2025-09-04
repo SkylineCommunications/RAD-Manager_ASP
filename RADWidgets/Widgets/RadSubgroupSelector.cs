@@ -60,7 +60,7 @@
 
 		public bool HasDuplicatedParameters { get; private set; }
 
-		public bool HasInvalidOptions => (Options.MinimalDuration.HasValue && Options.MinimalDuration.Value < 5) ||
+		public bool HasInvalidOptions => (Options.MinimalDuration.HasValue && Options.MinimalDuration.Value < RadGroupBaseOptionsEditor.MinimumDurationLowerLimit) ||
 			(Options.AnomalyThreshold.HasValue && Options.AnomalyThreshold.Value <= 0);
 
 		public bool HasWhiteSpaceName => string.IsNullOrWhiteSpace(Name) && !string.IsNullOrEmpty(Name);
