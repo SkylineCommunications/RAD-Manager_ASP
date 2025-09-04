@@ -204,7 +204,7 @@ public class Script
 			return;
 		}
 
-		_app.Engine.ExitSuccess("Successfully editted relational anomaly group");
+		_app.Engine.ExitSuccess("Successfully edited relational anomaly group");
 	}
 
 	private void GetAddedAndRemovedSubgroups(List<RadSubgroupSettings> newSubgroups, List<RadSubgroupInfo> oldSubgroups,
