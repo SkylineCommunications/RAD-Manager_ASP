@@ -1,16 +1,17 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RadUtils;
+	using RadWidgets;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
 
 	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-	public class ParameterSelectorInfo : MultiSelectorItem
+	public class ParameterSelectorInfo : SelectorItem
 	{
 		public string ElementName { get; set; }
 
@@ -65,19 +66,12 @@
 
 	public class ParameterSelector : ParameterSelectorBase<ParameterSelectorInfo>
 	{
-		private readonly DropDown<LiteElementInfoEvent> _elementsDropDown;
+		private readonly ElementsDropDown _elementsDropDown;
 
 		public ParameterSelector(IEngine engine) : base(engine, true)
 		{
 			var elementsLabel = new Label("Element");
-			var elements = Utils.FetchElements(engine).Where(e => !e.IsDynamicElement).OrderBy(e => e.Name).ToList();
-			_elementsDropDown = new DropDown<LiteElementInfoEvent>()
-			{
-				Options = elements.Select(e => new Option<LiteElementInfoEvent>(e.Name, e)),
-				IsDisplayFilterShown = true,
-				IsSorted = true,
-				MinWidth = 300,
-			};
+			_elementsDropDown = new ElementsDropDown(engine);
 			_elementsDropDown.Changed += (sender, args) => OnSelectedElementChanged();
 			OnSelectedElementChanged();
 
@@ -92,27 +86,25 @@
 				var element = _elementsDropDown.Selected;
 				if (element == null)
 				{
-					ValidationState = UIValidationState.Invalid;
-					ValidationText = "Select a valid element";
+					UpdateValidationState();
 					return null;
 				}
 
 				var parameter = ParametersDropDown.Selected;
 				if (parameter == null)
 				{
-					ValidationState = UIValidationState.Invalid;
-					ValidationText = "Select a valid parameter";
+					UpdateValidationState();
 					return null;
 				}
 
 				var matchingInstances = new List<DynamicTableIndex>();
 				if (parameter.IsTableColumn && parameter.ParentTable != null)
 				{
-					matchingInstances = Utils.FetchMatchingInstancesWithTrending(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();
+					matchingInstances = Utils.FetchInstancesWithTrending(Engine, element.DataMinerID, element.ElementID, parameter, InstanceTextBox.Text).ToList();
 					if (matchingInstances.Count == 0)
 					{
-						ValidationState = UIValidationState.Invalid;
-						ValidationText = "No matching instances found";
+						HasInvalidInstance = true;
+						UpdateValidationState();
 						return null;
 					}
 				}
@@ -131,23 +123,34 @@
 			}
 		}
 
-		protected override bool IsValidForRAD(ParameterInfo info)
+		protected override void UpdateValidationState()
 		{
-			return base.IsValidForRAD(info) && info.HasTrending();
+			if (_elementsDropDown.Selected == null)
+			{
+				_elementsDropDown.ValidationState = UIValidationState.Invalid;
+				_elementsDropDown.ValidationText = "Select a valid element";
+				ParametersDropDown.ValidationState = UIValidationState.Valid;
+				ParametersDropDown.ValidationText = string.Empty;
+				InstanceTextBox.ValidationState = UIValidationState.Valid;
+				InstanceTextBox.ValidationText = string.Empty;
+			}
+			else
+			{
+				base.UpdateValidationState();
+			}
 		}
 
 		private void OnSelectedElementChanged()
 		{
 			var element = _elementsDropDown.Selected;
-			_elementsDropDown.Tooltip = element?.Name ?? string.Empty;
 			if (element == null)
 			{
 				ClearPossibleParameters();
 				return;
 			}
 
-			var protocol = Utils.FetchElementProtocol(Engine, element.DataMinerID, element.ElementID);
-			SetPossibleParameters(protocol);
+			SetPossibleParameters(element.DataMinerID, element.ElementID);
+			UpdateValidationState();
 		}
 	}
 }

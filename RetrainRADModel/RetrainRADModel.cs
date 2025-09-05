@@ -5,10 +5,12 @@ using RadWidgets;
 using RetrainRADModel;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Utils.InteractiveAutomationScript;
+using Skyline.DataMiner.Utils.RadToolkit;
 
 public class Script
 {
 	private InteractiveController _app;
+	private RadHelper _radHelper;
 
 	/// <summary>
 	/// The Script entry point.
@@ -26,20 +28,36 @@ public class Script
 		try
 		{
 			_app = new InteractiveController(engine);
+			_radHelper = RadWidgets.Utils.GetRadHelper(engine);
 
-			var groupNamesAndIds = RadWidgets.Utils.GetGroupNameAndDataMinerID(_app);
-			if (groupNamesAndIds.Count == 0)
+			var groupIDs = RadWidgets.Utils.ParseGroupIDParameter(_app);
+			if (groupIDs.Count == 0)
 			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "No parameter group selected", "Please select the parameter group you want to retrain first");
-				return;
-			}
-			else if (groupNamesAndIds.Count > 1)
-			{
-				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple parameter groups selected", "Please select a single parameter group you want to retrain");
+				RadWidgets.Utils.ShowMessageDialog(_app, "No relational anomaly group selected", "Please select the relational anomaly group you want to retrain first");
 				return;
 			}
 
-			var dialog = new RetrainRadModelDialog(engine, groupNamesAndIds[0].Item2, groupNamesAndIds[0].Item1);
+			var parentGroups = groupIDs.Select(id => new RadGroupID(id.DataMinerID, id.GroupName)).Distinct();
+			if (parentGroups.Count() > 1)
+			{
+				RadWidgets.Utils.ShowMessageDialog(_app, "Multiple relational anomaly groups selected", "Please select a single relational anomaly group you want to retrain");
+				return;
+			}
+
+			var groupID = parentGroups.First();
+			RadGroupInfo groupInfo;
+			try
+			{
+				groupInfo = _radHelper.FetchParameterGroupInfo(groupID.DataMinerID, groupID.GroupName);
+			}
+			catch (Exception e)
+			{
+				engine.Log($"Failed to fetch group info for relational anomaly group {groupID.DataMinerID}/{groupID.GroupName}: {e}");
+				RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to fetch relational anomaly group info", e);
+				return;
+			}
+
+			var dialog = new RetrainRadModelDialog(engine, groupID, groupInfo);
 			dialog.Accepted += Dialog_Accepted;
 			dialog.Cancelled += Dialog_Cancelled;
 
@@ -69,7 +87,7 @@ public class Script
 
 	private void Dialog_Cancelled(object sender, EventArgs e)
 	{
-		_app.Engine.ExitSuccess("Removing parameter group cancelled");
+		_app.Engine.ExitSuccess("Removing relational anomaly group cancelled");
 	}
 
 	private void Dialog_Accepted(object sender, EventArgs e)
@@ -80,11 +98,15 @@ public class Script
 
 		try
 		{
-			RadMessageHelper.RetrainParameterGroup(_app.Engine, dialog.DataMinerID, dialog.GroupName, dialog.GetSelectedTimeRanges());
+			var excludedSubgroups = dialog.GetExcludedSubgroupIDs();
+			if (excludedSubgroups.Count > 0)
+				_radHelper.RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges(), excludedSubgroups);
+			else
+				_radHelper.RetrainParameterGroup(dialog.GroupID.DataMinerID, dialog.GroupID.GroupName, dialog.GetSelectedTimeRanges());
 		}
 		catch (Exception ex)
 		{
-			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to retrain parameter group", ex, dialog);
+			RadWidgets.Utils.ShowExceptionDialog(_app, "Failed to retrain relational anomaly group", ex, dialog);
 			return;
 		}
 

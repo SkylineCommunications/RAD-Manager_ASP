@@ -1,7 +1,9 @@
-﻿namespace RadWidgets
+﻿namespace RadWidgets.Widgets
 {
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
+	using RadWidgets.Widgets.Generic;
 	using Skyline.DataMiner.Analytics.DataTypes;
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net.Messages;
@@ -10,10 +12,11 @@
 	{
 		private bool _parameterAlreadySelected = false;
 
-		public MultiParameterSelector(IEngine engine, IEnumerable<ParameterKey> parameters = null) : base(new ParameterSelector(engine), null, "No parameters selected")
+		public MultiParameterSelector(IEngine engine, ParametersCache parametersCache, IEnumerable<ParameterKey> parameters = null) :
+			base(new ParameterSelector(engine), null, "No parameters selected")
 		{
-			AddButtonTooltip = "Add the instance specified on the left to the parameter group.";
-			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the parameter group.";
+			AddButtonTooltip = "Add the instance specified on the left to the relational anomaly group.";
+			RemoveButtonTooltip = "Remove the instance(s) selected on the left from the relational anomaly group.";
 
 			if (parameters != null)
 			{
@@ -21,8 +24,11 @@
 				foreach (var parameter in parameters)
 				{
 					var element = engine.FindElement(parameter.DataMinerID, parameter.ElementID);
-					var protocol = Utils.FetchElementProtocol(engine, parameter.DataMinerID, parameter.ElementID);
-					var paramInfo = protocol?.Parameters.FirstOrDefault(p => p.ID == parameter.ParameterID);
+					var paramInfo = RadWidgets.Utils.FetchParameterInfo(engine, parametersCache, parameter.DataMinerID, parameter.ElementID, parameter.ParameterID);
+					string displayKeyFilter = parameter.DisplayInstance;
+					if (paramInfo?.IsTableColumn == true && string.IsNullOrEmpty(parameter.DisplayInstance))
+						displayKeyFilter = parameter.Instance;
+
 					selection.Add(new ParameterSelectorInfo()
 					{
 						ElementName = element?.ElementName ?? "Unknown element",
@@ -30,7 +36,7 @@
 						DataMinerID = parameter.DataMinerID,
 						ElementID = parameter.ElementID,
 						ParameterID = parameter.ParameterID,
-						DisplayKeyFilter = parameter.DisplayInstance,
+						DisplayKeyFilter = displayKeyFilter,
 						MatchingInstances = new List<DynamicTableIndex>() { new DynamicTableIndex(parameter.Instance, parameter.DisplayInstance) },
 						IsTableColumn = paramInfo?.IsTableColumn ?? false,
 					});
@@ -40,13 +46,13 @@
 			}
 
 			var selector = ItemSelector as ParameterSelector;
-			selector.InstanceChanged += (sender, args) => OnChanged();
+			selector.Changed += (sender, args) => OnChanged();
 			Changed += (sender, args) => OnChanged();
 		}
 
 		public IEnumerable<ParameterKey> GetSelectedParameters()
 		{
-			return GetSelected().SelectMany(i => i.GetParameterKeys()).Distinct();
+			return GetSelected().SelectMany(i => i.GetParameterKeys()).Distinct(new ParameterKeyEqualityComparer());
 		}
 
 		protected override bool AddItem(ParameterSelectorInfo item)
@@ -71,6 +77,7 @@
 				// If an item has been added or removed, then the validation state of the selector should be reset
 				var selector = ItemSelector as ParameterSelector;
 				selector.ValidationState = UIValidationState.Valid;
+				selector.ValidationText = string.Empty;
 				_parameterAlreadySelected = false;
 			}
 		}

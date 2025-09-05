@@ -3,7 +3,9 @@ namespace RadDataSources
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RadUtils;
 	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
 	/// <summary>
 	/// Represents a DataMiner Automation script.
@@ -11,39 +13,50 @@ namespace RadDataSources
 	[GQIMetaData(Name = "Get Relational Anomaly Score")]
 	public class RelationalAnomalyScoreDataSource : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIOnPrepareFetch
 	{
-		private static readonly GQIStringArgument GroupName = new GQIStringArgument("Group Name");
 		private static readonly GQIIntArgument DataMinerID = new GQIIntArgument("DataMiner ID");
+		private static readonly GQIStringArgument GroupName = new GQIStringArgument("Group Name");
+		private static readonly GQIStringArgument _subGroupNameArgument = new GQIStringArgument("Subgroup Name");
+		private static readonly GQIStringArgument _subGroupIDArgument = new GQIStringArgument("Subgroup ID");
 		private static readonly GQIDateTimeArgument StartTime = new GQIDateTimeArgument("Start Time");
 		private static readonly GQIDateTimeArgument EndTime = new GQIDateTimeArgument("End Time");
 		private static readonly GQIBooleanArgument SkipCache = new GQIBooleanArgument("Skip Cache");
 		private static readonly AnomalyScoreCache _anomalyScoreCache = new AnomalyScoreCache();
 		private List<KeyValuePair<DateTime, double>> _anomalyScores = new List<KeyValuePair<DateTime, double>>();
-		private string _groupName = string.Empty;
-		private bool _skipCache = false;
 		private int _dataMinerID = -1;
+		private string _groupName = string.Empty;
+		private string _subGroupName = string.Empty;
+		private Guid _subGroupID = Guid.Empty;
+		private bool _skipCache = false;
 		private DateTime? _startTime = null;
 		private DateTime? _endTime = null;
 		private IGQILogger _logger;
+		private ConnectionHelper _connectionHelper;
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			ConnectionHelper.InitializeConnection(args.DMS);
+			_connectionHelper = new ConnectionHelper(args.DMS, args.Logger);
 			_logger = args.Logger;
 			return default;
 		}
 
 		public GQIArgument[] GetInputArguments()
 		{
-			return new GQIArgument[] { GroupName, DataMinerID, StartTime, EndTime, SkipCache };
+			return new GQIArgument[] { DataMinerID, GroupName, _subGroupNameArgument, _subGroupIDArgument, StartTime, EndTime, SkipCache };
 		}
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
+			if (!args.TryGetArgumentValue(DataMinerID, out _dataMinerID))
+				_logger.Error("No DataMiner ID provided");
+
 			if (!args.TryGetArgumentValue(GroupName, out _groupName))
 				_logger.Error("No group name provided");
 
-			if (!args.TryGetArgumentValue(DataMinerID, out _dataMinerID))
-				_logger.Error("No DataMiner ID provided");
+			if (!args.TryGetArgumentValue(_subGroupNameArgument, out _subGroupName))
+				_subGroupName = string.Empty;
+
+			if (!args.TryGetArgumentValue(_subGroupIDArgument, out string s) || !Guid.TryParse(s, out _subGroupID))
+				_subGroupID = Guid.Empty;
 
 			if (args.TryGetArgumentValue(StartTime, out DateTime startTimeValue) && args.TryGetArgumentValue(EndTime, out DateTime endTimeValue))
 			{
@@ -70,9 +83,17 @@ namespace RadDataSources
 				return default;
 			}
 
+			IRadGroupID groupID;
+			if (_subGroupID != Guid.Empty)
+				groupID = new RadSubgroupID(_dataMinerID, _groupName, _subGroupID);
+			else if (!string.IsNullOrEmpty(_subGroupName))
+				groupID = new RadSubgroupID(_dataMinerID, _groupName, _subGroupName);
+			else
+				groupID = new RadGroupID(_dataMinerID, _groupName);
+
 			try
 			{
-				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_dataMinerID, _groupName, _startTime.Value, _endTime.Value, _skipCache);
+				_anomalyScores = _anomalyScoreCache.GetAnomalyScores(_connectionHelper, groupID, _startTime.Value, _endTime.Value, _skipCache);
 			}
 			catch (Exception e)
 			{

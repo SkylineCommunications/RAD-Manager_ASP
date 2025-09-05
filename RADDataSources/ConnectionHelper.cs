@@ -1,46 +1,62 @@
 ﻿namespace RadDataSources
 {
 	using System;
+	using System.Collections.Generic;
 	using System.IO;
 
 	using Skyline.DataMiner.Analytics.GenericInterface;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Exceptions;
 	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Utils.RadToolkit;
 
-	internal static class ConnectionHelper
+	public class ConnectionHelper
 	{
 		private const string APPLICATION_NAME = "GQI RAD data sources";
-		private static readonly object _connectionLock = new object();
-		private static Connection _connection = null;
+		private static readonly object _connectionDictLock = new object();
+
+		/// <summary>
+		/// The connection per user.
+		/// </summary>
+		private static readonly Dictionary<string, Connection> _connectionDict = new Dictionary<string, Connection>();
+
+		public ConnectionHelper(GQIDMS dms, IGQILogger logger)
+		{
+			if (dms == null)
+				throw new ArgumentNullException(nameof(dms));
+
+			Connection = InitializeConnection(dms, logger);
+			RadHelper = new RadHelper(Connection, new Logger(s => logger.Error(s)));
+		}
 
 		/// <summary>
 		/// Gets the connection to the DataMiner Agent.
 		/// </summary>
-		public static Connection Connection
-		{
-			get => _connection;
-		}
+		public Connection Connection { get; private set; }
 
-		public static void InitializeConnection(GQIDMS dms)
+		public RadHelper RadHelper { get; private set; }
+
+		private static Connection InitializeConnection(GQIDMS dms, IGQILogger logger)
 		{
-			lock (_connectionLock)
+			lock (_connectionDictLock)
 			{
-				if (_connection?.IsShuttingDown == false)
-					return;
-
-				if (dms == null)
-					throw new ArgumentNullException(nameof(dms));
+				string userDomainName = dms.GetConnection().UserDomainName;
+				if (_connectionDict.TryGetValue(userDomainName, out var existingConnection) && !existingConnection.IsShuttingDown)
+					return existingConnection;
 
 				var attributes = ConnectionAttributes.AllowMessageThrottling;
 				try
 				{
-					_connection = ConnectionSettings.GetConnection("localhost", attributes);
-					_connection.ClientApplicationName = APPLICATION_NAME;
-					_connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
+					var connection = ConnectionSettings.GetConnection("localhost", attributes);
+					connection.ClientApplicationName = APPLICATION_NAME;
+					connection.AuthenticateUsingTicket(RequestCloneTicket(dms));
+					_connectionDict[userDomainName] = connection;
+
+					return connection;
 				}
 				catch (Exception ex)
 				{
+					logger.Error(ex, "Failed to setup a connection with the DataMiner Agent: " + ex.Message);
 					throw new InvalidOperationException("Failed to setup a connection with the DataMiner Agent: " + ex.Message, ex);
 				}
 			}
