@@ -136,6 +136,8 @@
 			}
 			else
 			{
+				_elementsDropDown.ValidationState = UIValidationState.Valid;
+				_elementsDropDown.ValidationText = string.Empty;
 				base.UpdateValidationState();
 			}
 		}
