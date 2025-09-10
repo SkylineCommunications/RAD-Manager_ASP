@@ -91,6 +91,7 @@
 			}
 
 			Changed?.Invoke(this, EventArgs.Empty);
+			HasInvalidInstance = false;
 			UpdateValidationState();
 		}
 
