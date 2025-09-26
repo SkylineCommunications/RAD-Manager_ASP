@@ -26,16 +26,20 @@
 
 		protected IBrowserContext? Context { get; private set; }
 
-		protected async Task<IPage> CreatePage()
+		/// <summary>
+		/// Should be called from [AssemblyCleanup] to cleanup Playwright properly.
+		/// </summary>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+		public static async Task CleanupAsync()
 		{
-			if(Context != null)
+			if (_browser != null)
 			{
-				return await Context.NewPageAsync();
+				await _browser.CloseAsync();
+				_browser = null;
 			}
-			else
-			{
-				throw new InvalidOperationException("Browser context is not initialized.");
-			}
+
+			_playwright?.Dispose();
+			_playwright = null;
 		}
 
 		[TestInitialize]
@@ -109,20 +113,16 @@
 			Context = null;
 		}
 
-		/// <summary>
-		/// Should be called from [AssemblyCleanup] to cleanup Playwright properly.
-		/// </summary>
-		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-		public static async Task CleanupAsync()
+		protected async Task<IPage> CreatePage()
 		{
-			if (_browser != null)
+			if (Context != null)
 			{
-				await _browser.CloseAsync();
-				_browser = null;
+				return await Context.NewPageAsync();
 			}
-
-			_playwright?.Dispose();
-			_playwright = null;
+			else
+			{
+				throw new InvalidOperationException("Browser context is not initialized.");
+			}
 		}
 
 		private static async Task<IBrowser> LaunchBrowserAsync()
