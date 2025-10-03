@@ -14,7 +14,7 @@
 		private LowCodeAppPage? page = null;
 
 		[TestMethod]
-		public async Task RADTests_Playwright_AddGroup()
+		public async Task RADTests_Playwright_AddEditTrainRemoveGroup()
 		{
 			RADManagerApp? app = null;
 			if (Context != null)
@@ -37,76 +37,14 @@
 
 			if (page != null)
 			{
+				await RemoveGroupsFromPreviousRun(page);
+
 				await ValidateAddGroupPanelComponents(page);
 				await AddGroup(page);
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("LowCodeAppPage is not initialized.");
-			}
-		}
 
-		[TestMethod]
-		[Order(2)]
-		public async Task RADTests_Playwright_EditTrainGroup()
-		{
-			RADManagerApp? app = null;
-			if (Context != null)
-			{
-				app = new RADManagerApp(Context);
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Browser context is not initialized.");
-			}
-
-			if (app != null)
-			{
-				await LogIn(app);
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("RADManagerApp is not initialized.");
-			}
-
-			if (page != null)
-			{
 				await ValidateEditGroupPanelComponents(page);
 				await EditGroup(page);
 
-				// TODO: Validate Specify Training Range Panel and train the group
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("LowCodeAppPage is not initialized.");
-			}
-		}
-
-		[TestMethod]
-		[Order(3)]
-		public async Task RADTests_Playwright_RemoveGroup()
-		{
-			RADManagerApp? app = null;
-			if (Context != null)
-			{
-				app = new RADManagerApp(Context);
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Browser context is not initialized.");
-			}
-
-			if (app != null)
-			{
-				await LogIn(app);
-			}
-			else
-			{
-				Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("RADManagerApp is not initialized.");
-			}
-
-			if (page != null)
-			{
 				await ValidateRemoveGroupPanelComponents(page);
 				await RemoveGroup(page);
 			}
@@ -219,6 +157,12 @@
 		{
 			await page.RemoveGroup();
 			await page.ValidateGroupWasRemoved("PlaywrightGroup_Renamed");
+		}
+
+		private async Task RemoveGroupsFromPreviousRun(LowCodeAppPage page)
+		{
+			await page.RemoveGroupIfExists("PlaywrightGroup");
+			await page.RemoveGroupIfExists("PlaywrightGroup_Renamed");
 		}
     }
 }

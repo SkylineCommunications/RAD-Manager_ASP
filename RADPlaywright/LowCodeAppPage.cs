@@ -264,6 +264,7 @@
 			{
 				// Scroll down by a fixed amount (e.g., 500 pixels)
 				await Page.Mouse.WheelAsync(1, 10000);
+
 				// Optionally, wait a bit for lazy-loaded content
 				await Task.Delay(200);
 
@@ -272,6 +273,31 @@
 			}
 
 			Assert.IsFalse(await relationalAnomalyGroups.GetByText(groupName).IsVisibleAsync());
+		}
+
+		public async Task RemoveGroupIfExists(string groupName)
+		{
+			var relationalAnomalyGroups = GetComponentById(1).First;
+			await relationalAnomalyGroups.ClickAsync();
+			var timeout = TimeSpan.FromSeconds(10);
+			var start = DateTime.UtcNow;
+			while (await relationalAnomalyGroups.GetByText(groupName).IsVisibleAsync())
+			{
+				// Scroll down by a fixed amount (e.g., 500 pixels)
+				await Page.Mouse.WheelAsync(1, 10000);
+
+				// Optionally, wait a bit for lazy-loaded content
+				await Task.Delay(200);
+
+				if ((DateTime.UtcNow - start > timeout) && relationalAnomalyGroups.GetByText(groupName).IsVisibleAsync().Result)
+				{
+					await relationalAnomalyGroups.GetByText(groupName).ClickAsync();
+					var removeGroupButton = GetComponentByTitle("Remove Group");
+					await removeGroupButton.ClickAsync();
+					await RemoveGroup();
+					return;
+				}
+			}
 		}
 	}
 }
