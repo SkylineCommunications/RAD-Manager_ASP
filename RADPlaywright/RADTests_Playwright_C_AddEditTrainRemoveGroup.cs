@@ -8,6 +8,7 @@
 	[TestClass]
 	[DoNotParallelize]
 	[Order(1)]
+	[Microsoft.VisualStudio.TestTools.UnitTesting.Ignore("Test not compatible with the old RAD Manager app")]
 	[TestCategory("IntegrationTest")]
 	public class RADTests_Playwright_C_AddEditTrainRemoveGroup(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext) : PlaywrightTestBase(testContext)
 	{
