@@ -19,7 +19,7 @@
 				throw new ArgumentNullException(nameof(configuration));
 			}
 
-			Credentials = new Authentication.Credentials(configuration["PLAYWRIGHT_USERNAME"], configuration["PLAYWRIGHT_PASSWORD"]);
+			Credentials = new Authentication.Credentials(configuration["PLAYWRIGHT_USERNAME"], configuration["PLAYWRIGHT_PASSWORD"], configuration["EMAIL"]);
 
 			BaseUrl = configuration["PLAYWRIGHT_URL"] ?? "https://analyticscl56-skyline.on.dataminer.services/";
 		}

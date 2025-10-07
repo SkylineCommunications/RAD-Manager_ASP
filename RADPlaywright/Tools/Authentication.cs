@@ -78,9 +78,9 @@
 			if (!loginNeeded.Result)
 				return;
 
-			if(credentials.Username != null)
+			if(credentials.Email != null)
 			{
-				await page.GetByPlaceholder("Email Address").FillAsync(credentials.Username);
+				await page.GetByPlaceholder("Email Address").FillAsync(credentials.Email);
 			}
 
 			if(credentials.Password != null)
@@ -141,7 +141,7 @@
 
 		public class Credentials
 		{
-			public Credentials(string? username, string? password)
+			public Credentials(string? username, string? password, string? email)
 			{
 				if(username != null)
 				{
@@ -152,11 +152,22 @@
 				{
 					Password = password;
 				}
+
+				if (email != null)
+				{
+					Email = email;
+				}
+				else
+				{
+					Email = "adelina.spatariu@skyline.be";
+				}
 			}
 
 			public string? Username { get; }
 
 			public string? Password { get; }
+
+			public string? Email { get; }
 		}
 	}
 }
