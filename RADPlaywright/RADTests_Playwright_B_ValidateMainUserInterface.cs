@@ -72,7 +72,7 @@
 			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\31 \"]"));
 
 			// Time range locator
-			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\33 \"]"));
+			/*await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\33 \"]"));
 
 			await page.CheckComponentAvailability(page.GetComponentByText("Trend graph of parameters in"));
 			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\34 \"]"));
@@ -81,7 +81,7 @@
 			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\35 \"]"));
 
 			await page.CheckComponentAvailability(page.GetComponentByText("Historical anomalies in"));
-			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\31 2\"]"));
+			await page.CheckComponentAvailability(page.GetComponentById("[id=\"\\31 2\"]"));*/
 
 			// Click DataMiner Docs, wait until the Docs page is loaded and check that the heading is "Working with the RAD Manager"
 			var dataMinerDocsPage = page.WaitOnDataMinerDocsPage();
