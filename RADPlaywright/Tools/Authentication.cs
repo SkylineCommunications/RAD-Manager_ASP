@@ -147,10 +147,18 @@
 				{
 					Username = username;
 				}
+				else
+				{
+					throw new ArgumentNullException(nameof(username), "Username must be provided.");
+				}
 
 				if (password != null)
 				{
 					Password = password;
+				}
+				else
+				{
+				    throw new ArgumentNullException(nameof(password), "Password must be provided.");
 				}
 
 				if (email != null)
