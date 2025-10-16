@@ -82,10 +82,18 @@
 			{
 				await page.GetByPlaceholder("Email Address").FillAsync(credentials.Email);
 			}
+			else
+			{
+			    throw new ArgumentNullException(nameof(credentials.Email), "Email must be provided for DAAS login.");
+			}
 
-			if(credentials.Password != null)
+			if (credentials.Password != null)
 			{
 				await page.GetByPlaceholder("Password").FillAsync(credentials.Password);
+			}
+			else
+			{
+				throw new ArgumentNullException(nameof(credentials.Password), "Password must be provided for DAAS login.");
 			}
 
 			await page.GetByRole(AriaRole.Button, new() { Name = "Sign in" }).ClickAsync();
@@ -117,10 +125,18 @@
 			{
 				await userNameTextBox.FillAsync(credentials.Username);
 			}
+			else
+			{
+				throw new ArgumentNullException(nameof(credentials.Username), "Username must be provided for local login.");
+			}
 
-			if(credentials.Password != null)
+			if (credentials.Password != null)
 			{
 				await page.GetByRole(AriaRole.Textbox, new() { Name = "Password" }).FillAsync(credentials.Password);
+			}
+			else
+			{
+				throw new ArgumentNullException(nameof(credentials.Password), "Password must be provided for local login.");
 			}
 
 			var keepMeLoggedIn = page.Locator("dma-switch").Filter(new() { HasTextString = "Keep me logged in" });
