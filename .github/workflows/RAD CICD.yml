@@ -117,6 +117,7 @@ jobs:
     env:
       PLAYWRIGHT_USERNAME: ${{ secrets.PLAYWRIGHT_USERNAME }}
       PLAYWRIGHT_PASSWORD: ${{ secrets.PLAYWRIGHT_PASSWORD }}
+      EMAIL:  ${{ secrets.EMAIL }}
       PLAYWRIGHT_URL: https://analyticscl56-skyline.on.dataminer.services/
     steps:
       - uses: actions/checkout@v4

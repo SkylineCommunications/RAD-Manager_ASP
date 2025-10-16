@@ -159,7 +159,7 @@
 				}
 				else
 				{
-					Email = "adelina.spatariu@skyline.be";
+					Email = "domain.create.data-analytics@skyline.be";
 				}
 			}
 
