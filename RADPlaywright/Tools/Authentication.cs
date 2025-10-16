@@ -145,7 +145,7 @@
 			{
 				if(username != null)
 				{
-					Username = username;
+					Username = "Playwright";
 				}
 				else
 				{
@@ -154,7 +154,7 @@
 
 				if (password != null)
 				{
-					Password = password;
+					Password = "ScEmiMPerNfU1!";
 				}
 				else
 				{
@@ -163,7 +163,7 @@
 
 				if (email != null)
 				{
-					Email = email;
+					Email = "domain.create.data-analytics@skyline.be";
 				}
 				else
 				{
