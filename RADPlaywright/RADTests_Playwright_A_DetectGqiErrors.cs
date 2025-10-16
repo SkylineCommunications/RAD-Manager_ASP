@@ -44,7 +44,7 @@
 
 		private async Task CheckGqiErrors(LowCodeApp app)
 		{
-			var initialPage = await app.NavigateToInitialPageAsync();
+			var initialPage = await app.NavigateToPageAsync("RAD%20Manager");
 
 			await initialPage.LoginAsync(Config.Credentials);
 			await initialPage.WaitUntilEverythingIsLoadedAsync();

@@ -57,7 +57,7 @@
 
 		private async Task LogIn(LowCodeApp app)
 		{
-		    page = await app.NavigateToInitialPageAsync();
+		    page = await app.NavigateToPageAsync("RAD%20Manager");
 
 		    await page.LoginAsync(Config.Credentials);
 		    await page.WaitUntilEverythingIsLoadedAsync();
