@@ -145,7 +145,7 @@
 			{
 				if(username != null)
 				{
-					Username = "Playwright";
+					Username = username;
 				}
 				else
 				{
@@ -154,7 +154,7 @@
 
 				if (password != null)
 				{
-					Password = "ScEmiMPerNfU1!";
+					Password = password;
 				}
 				else
 				{
