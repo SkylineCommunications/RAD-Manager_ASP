@@ -179,7 +179,7 @@
 
 				if (email != null)
 				{
-					Email = "domain.create.data-analytics@skyline.be";
+					Email = email;
 				}
 				else
 				{
