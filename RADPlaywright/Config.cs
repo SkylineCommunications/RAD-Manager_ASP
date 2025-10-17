@@ -31,8 +31,8 @@
 		public static Config Load()
 		{
 			var builder = new ConfigurationBuilder()
-				.AddUserSecrets(Assembly.GetExecutingAssembly())
-				.AddEnvironmentVariables();
+				.AddEnvironmentVariables()
+				.AddUserSecrets(Assembly.GetExecutingAssembly());
 
 			return new Config(builder.Build());
 		}
