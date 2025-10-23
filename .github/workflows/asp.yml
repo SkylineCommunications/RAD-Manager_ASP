@@ -1,7 +1,5 @@
 name: asp
 on:
-  schedule:
-    - cron: '0 0 * * *' # Every day at midnight UTC
   # push:
   #   branches: 
   #    - '**'
